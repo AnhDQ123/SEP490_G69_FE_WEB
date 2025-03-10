@@ -1,7 +1,5 @@
 import {configureStore} from "@reduxjs/toolkit";
 import {usersService} from "../service/usersService.js";
-import {employeeService} from "../service/employeeService.js";
-import {departmentService} from "../service/departmentService.js";
 import {roleService} from "../service/roleService.js";
 import {authService} from "../service/authService.js";
 

@@ -1,4 +1,3 @@
-import avata from "../assets/neil-sims.png"
 import {HiMenuAlt1} from "react-icons/hi";
 import {BsBellFill, BsSearch} from "react-icons/bs";
 import {MdNightlight} from "react-icons/md";

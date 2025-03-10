@@ -1,5 +1,5 @@
 import {NavLink, useRouteError} from "react-router-dom";
-import errorAvt from "../../assets/500.svg"
+import errorAvt from "../../assets/react.svg"
 
 function ErrorPage() {
     const error = useRouteError();

@@ -1,4 +1,4 @@
-import notfound from "../../assets/404.svg"
+import notfound from "../../assets/react.svg"
 
 
 function NotFound() {

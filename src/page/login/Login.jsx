@@ -1,4 +1,4 @@
-import loginImg from "../../assets/login.jpg"
+import loginImg from "../../assets/react.svg";
 import {useForm} from "react-hook-form";
 import {yupResolver} from "@hookform/resolvers/yup";
 import {loginValidation} from "../../utils/validation.js";
