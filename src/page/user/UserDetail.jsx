@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
     CRow,
     CCol,
@@ -9,22 +9,55 @@ import {
     CFormSelect,
     CButton,
     CImage,
-} from '@coreui/react';
-import { useGetUserByIdQuery } from '../../service/userService.js';
+} from "@coreui/react";
+import { useGetUserByIdQuery, useUpdateUserMutation } from "../../service/userService.js";
 
 const UserDetail = () => {
-    const [user, setUser] = useState({});
     const { id } = useParams(); // Lấy id người dùng từ URL
     const navigate = useNavigate();
 
-    // Gọi API để lấy thông tin người dùng theo id
+    // Gọi API lấy thông tin người dùng theo id
     const { data, error, isLoading } = useGetUserByIdQuery(id);
+    const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
+
+    const [user, setUser] = useState({
+        name: "",
+        email: "",
+        phone: "",
+        address: "",
+        role: "",
+        status: "active",
+        createdAt: "",
+        avatar: "",
+    });
 
     useEffect(() => {
         if (data) {
-            setUser(data);
+            setUser({
+                name: data.name || "",
+                email: data.email || "",
+                phone: data.phone || "",
+                address: data.address || "",
+                role: data.role || "",
+                status: data.status || "active",
+                createdAt: data.createdAt || "",
+                avatar: data.avatar || "",
+            });
         }
     }, [data]);
+
+    const handleStatusChange = async (e) => {
+        const newStatus = e.target.value;
+        setUser((prev) => ({ ...prev, status: newStatus }));
+
+        try {
+            await updateUser({ user: { ...user, status: newStatus } }).unwrap();
+            alert("Cập nhật trạng thái thành công!");
+        } catch (err) {
+            console.error("Lỗi khi cập nhật trạng thái:", err);
+            alert("Cập nhật thất bại! Vui lòng thử lại.");
+        }
+    };
 
     if (isLoading) return <p>Đang tải dữ liệu...</p>;
     if (error) return <p>Lỗi khi lấy dữ liệu người dùng</p>;
@@ -47,43 +80,43 @@ const UserDetail = () => {
                     </CCol>
                 </CRow>
 
-                {/* Hàng đầu tiên: Họ tên & Vai trò */}
+                {/* Họ tên & Vai trò */}
                 <CRow className="mb-3">
                     <CCol md={6}>
                         <label className="fw-semibold">Họ Tên</label>
-                        <CFormInput disabled value={user.name || ''} className="border rounded-2" />
+                        <CFormInput disabled value={user.name} className="border rounded-2" />
                     </CCol>
                     <CCol md={6}>
                         <label className="fw-semibold">Vai trò</label>
-                        <CFormInput disabled value={user.role} className="border rounded-2"/>
+                        <CFormInput disabled value={user.role} className="border rounded-2" />
                     </CCol>
                 </CRow>
 
-                {/* Hàng thứ hai: Số điện thoại & Địa chỉ */}
+                {/* Số điện thoại & Địa chỉ */}
                 <CRow className="mb-3">
                     <CCol md={6}>
                         <label className="fw-semibold">SĐT</label>
-                        <CFormInput disabled value={user.phone || ''} className="border rounded-2" />
+                        <CFormInput disabled value={user.phone} className="border rounded-2" />
                     </CCol>
                     <CCol md={6}>
                         <label className="fw-semibold">Địa chỉ</label>
-                        <CFormInput disabled value={user.address || ''} className="border rounded-2" />
+                        <CFormInput disabled value={user.address} className="border rounded-2" />
                     </CCol>
                 </CRow>
 
-                {/* createdAt */}
+                {/* Ngày tham gia */}
                 <CRow className="mb-3">
                     <CCol md={6}>
                         <label className="fw-semibold">Ngày tham gia</label>
-                        <CFormInput disabled value={user.createdAt || ''} className="border rounded-2" />
+                        <CFormInput disabled value={user.createdAt} className="border rounded-2" />
                     </CCol>
                 </CRow>
 
-                {/* change status */}
+                {/* Trạng thái */}
                 <CRow className="mb-3">
                     <CCol md={6}>
                         <label className="fw-semibold">Trạng thái</label>
-                        <CFormSelect value={user.status} className="border rounded-2">
+                        <CFormSelect value={user.status} onChange={handleStatusChange} className="border rounded-2">
                             <option value="active">Hoạt động</option>
                             <option value="inactive">Tạm dừng</option>
                         </CFormSelect>
@@ -103,8 +136,8 @@ const UserDetail = () => {
                         </CButton>
                     </CCol>
                     <CCol md={4}>
-                        <CButton color="success" className="w-100 rounded-3 py-2 fw-semibold">
-                            💾 Lưu
+                        <CButton color="success" className="w-100 rounded-3 py-2 fw-semibold" disabled={isUpdating}>
+                            {isUpdating ? "Đang lưu..." : "💾 Lưu"}
                         </CButton>
                     </CCol>
                 </CRow>
