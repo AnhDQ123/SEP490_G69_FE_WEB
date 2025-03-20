@@ -3,6 +3,7 @@ import {usersService} from "../service/userService.js";
 import {productService} from "../service/productService.js";
 import {shopService} from "../service/shopService.js";
 import {rolesService} from "../service/roleService.js";
+import {loginService} from "../service/loginService.js";
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,8 @@ export const store = configureStore({
     [productService.reducerPath]: productService.reducer,
     [shopService.reducerPath]: shopService.reducer,
     [rolesService.reducerPath]: rolesService.reducer,
+    [loginService.reducerPath]: loginService.reducer,
+
 
 
   },
@@ -18,5 +21,6 @@ export const store = configureStore({
           usersService.middleware,
           productService.middleware,
           shopService.middleware,
-          rolesService.middleware,),
+          rolesService.middleware,
+          loginService.middleware,),
 })

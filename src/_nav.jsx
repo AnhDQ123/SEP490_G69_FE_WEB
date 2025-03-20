@@ -37,7 +37,7 @@ const _nav = [
     {
         component: CNavItem,
         name: 'Shipper',
-        to: '/nav5',
+        to: '/shipper-list',
         icon: <CIcon icon={freeSet.cilBike} customClassName="nav-icon"/>,
     },
     {
@@ -67,7 +67,7 @@ const _nav = [
     {
         component: CNavItem,
         name: 'Thông báo',
-        to: '/nav7',
+        to: '/notifications-list',
         icon: <CIcon icon={freeSet.cilBell} customClassName="nav-icon"/>,
     },
 ]

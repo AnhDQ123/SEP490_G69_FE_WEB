@@ -46,19 +46,19 @@ const UserDetail = () => {
         }
     }, [data]);
 
-    const handleStatusChange = async (e) => {
+    const handleStatusChange = (e) => {
         const newStatus = e.target.value;
         setUser((prev) => ({ ...prev, status: newStatus }));
-
+    };
+    const handleClickSave = async  () => {
         try {
-            await updateUser({ user: { ...user, status: newStatus } }).unwrap();
+            await updateUser({ user: { ...user}}).unwrap();
             alert("Cập nhật trạng thái thành công!");
         } catch (err) {
             console.error("Lỗi khi cập nhật trạng thái:", err);
             alert("Cập nhật thất bại! Vui lòng thử lại.");
         }
-    };
-
+    }
     if (isLoading) return <p>Đang tải dữ liệu...</p>;
     if (error) return <p>Lỗi khi lấy dữ liệu người dùng</p>;
 
@@ -136,7 +136,7 @@ const UserDetail = () => {
                         </CButton>
                     </CCol>
                     <CCol md={4}>
-                        <CButton color="success" className="w-100 rounded-3 py-2 fw-semibold" disabled={isUpdating}>
+                        <CButton color="success" className="w-100 rounded-3 py-2 fw-semibold" onClick={handleClickSave} disabled={isUpdating}>
                             {isUpdating ? "Đang lưu..." : "💾 Lưu"}
                         </CButton>
                     </CCol>

@@ -9,6 +9,13 @@ import ShopInactive from "../page/shop/ShopInactive.jsx";
 import ShopReject from "../page/shop/ShopReject.jsx";
 import BannerList from "../page/banner/BannerList.jsx";
 import OrderManagement from "../page/order/OrderManagement.jsx";
+import ShipperList from "../page/shipper/ShipperList.jsx";
+import ShipperPending from "../page/shipper/ShipperPending.jsx";
+import Login from "../page/login/Login.jsx";
+import ShipperActive from "../page/shipper/ShipperActive.jsx";
+import ShipperInactive from "../page/shipper/ShipperInactive.jsx";
+import NotificationsList from "../page/notification/NotificationsList.jsx";
+import CategoriesList from "../page/category/CategoriesList.jsx";
 
 // const Dashboard = React.lazy(() => import('../views/dashboard/Dashboard'))
 
@@ -25,6 +32,17 @@ const routes = [
   { path: '/shop-reject/:id', name: 'ShopReject', element: ShopReject },
   { path: '/banners-list', name: 'BannerList', element: BannerList },
   { path: '/order-management', name: 'OrderManagement', element: OrderManagement },
+  { path: '/shipper-list', name: 'ShipperList', element: ShipperList },
+  { path: '/shipper-pending/:id', name: 'ShipperPending', element: ShipperPending },
+  { path: '/shipper-active/:id', name: 'ShipperActive', element: ShipperActive },
+  { path: '/shipper-inactive/:id', name: 'ShipperInactive', element: ShipperInactive },
+  { path: '/notifications-list', name: 'NotificationsList', element: NotificationsList },
+  { path: '/categories-list', name: 'CategoriesList', element: CategoriesList },
+
+
+  { path: '/login', name: 'Login', element: Login },
+
+
 
 
 ]

@@ -28,6 +28,8 @@ const UserList = () => {
     const [size, setSize] = useState(10);
     const [modal, setModal] = useState(false);
     const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [username, setUsername] = useState('');
     const [role, setRole] = useState(null); // Ban đầu không chọn role
     const [roles, setRoles] = useState([]); // Lưu danh sách role từ API
 
@@ -61,8 +63,6 @@ const UserList = () => {
     const handleSubmit = async () => {
         try {
             const roleNumber = Number(role);
-
-            // Kiểm tra role hợp lệ
             if (!roles.some(r => r.id === roleNumber)) {
                 alert("Vai trò không hợp lệ! Vui lòng chọn lại.");
                 return;
@@ -70,26 +70,26 @@ const UserList = () => {
 
             const newUser = {
                 email,
+                phone,
+                username,
                 password: "defaultPass123",
-                phone: "0123456789",
-                username: email.split('@')[0],
-                role_id: roleNumber,
+                roleId: roleNumber,
             };
-
-            console.log("Dữ liệu gửi lên API:", newUser);
 
             await addUser(newUser).unwrap();
             alert("Thêm người dùng thành công!");
 
-            // Reset form và đóng modal
             setModal(false);
             setEmail('');
+            setPhone('');
+            setUsername('');
             setRole(roles.length > 0 ? roles[0].id : null);
         } catch (err) {
             alert("Lỗi khi thêm người dùng! Vui lòng thử lại.");
             console.error("Lỗi khi thêm user:", err);
         }
     };
+
 
     if (isLoading) return <p>Loading...</p>;
     if (error) return <p>Error fetching users</p>;
@@ -184,21 +184,19 @@ const UserList = () => {
                 <CModalBody>
                     <div className="mb-3">
                         <label>Email</label>
-                        <input
-                            type="email"
-                            className="form-control"
-                            placeholder="Nhập email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                        />
+                        <input type="email" className="form-control" placeholder="Nhập email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    </div>
+                    <div className="mb-3">
+                        <label>Số điện thoại</label>
+                        <input type="text" className="form-control" placeholder="Nhập số điện thoại" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                    </div>
+                    <div className="mb-3">
+                        <label>Username</label>
+                        <input type="text" className="form-control" placeholder="Nhập username" value={username} onChange={(e) => setUsername(e.target.value)} />
                     </div>
                     <div className="mb-3">
                         <label>Vai trò</label>
-                        {isLoadingRoles ? (
-                            <p>Đang tải vai trò...</p>
-                        ) : roleError ? (
-                            <p>Lỗi tải danh sách vai trò!</p>
-                        ) : (
+                        {isLoadingRoles ? <p>Đang tải vai trò...</p> : roleError ? <p>Lỗi tải danh sách vai trò!</p> : (
                             <CFormSelect value={role} onChange={(e) => setRole(Number(e.target.value))}>
                                 {roles.map((r) => (
                                     <option key={r.id} value={r.id}>{r.name}</option>
@@ -208,12 +206,8 @@ const UserList = () => {
                     </div>
                 </CModalBody>
                 <CModalFooter>
-                    <CButton color="secondary" onClick={() => setModal(false)}>
-                        Đóng
-                    </CButton>
-                    <CButton color="primary" onClick={handleSubmit} disabled={isAdding}>
-                        {isAdding ? "Đang gửi..." : "Gửi"}
-                    </CButton>
+                    <CButton color="secondary" onClick={() => setModal(false)}>Đóng</CButton>
+                    <CButton color="primary" onClick={handleSubmit} disabled={isAdding}>{isAdding ? "Đang gửi..." : "Gửi"}</CButton>
                 </CModalFooter>
             </CModal>
         </>
