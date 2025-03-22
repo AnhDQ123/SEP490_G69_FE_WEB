@@ -20,6 +20,7 @@ import {
 } from '@coreui/react';
 import { useSearchAndPaginationQuery, useAddUserMutation } from "../../service/userService.js";
 import { useGetRolesQuery } from "../../service/roleService.js"; // Import API lấy danh sách role
+import { userValidationSchema } from "../../utils/validation.js";
 
 const UserList = () => {
     const [users, setUsers] = useState([]);
@@ -62,6 +63,9 @@ const UserList = () => {
 
     const handleSubmit = async () => {
         try {
+            // Validate form trước
+            await userValidationSchema.validate({ email, phone, username });
+
             const roleNumber = Number(role);
             if (!roles.some(r => r.id === roleNumber)) {
                 alert("Vai trò không hợp lệ! Vui lòng chọn lại.");
@@ -79,16 +83,22 @@ const UserList = () => {
             await addUser(newUser).unwrap();
             alert("Thêm người dùng thành công!");
 
+            // Reset modal và form
             setModal(false);
             setEmail('');
             setPhone('');
             setUsername('');
             setRole(roles.length > 0 ? roles[0].id : null);
         } catch (err) {
-            alert("Lỗi khi thêm người dùng! Vui lòng thử lại.");
-            console.error("Lỗi khi thêm user:", err);
+            if (err.name === "ValidationError") {
+                alert(err.message); // Hiển thị lỗi validate cho người dùng
+            } else {
+                alert("Lỗi khi thêm người dùng! Vui lòng thử lại.");
+                console.error("Lỗi khi thêm user:", err);
+            }
         }
     };
+
 
 
     if (isLoading) return <p>Loading...</p>;
@@ -188,7 +198,7 @@ const UserList = () => {
                     </div>
                     <div className="mb-3">
                         <label>Số điện thoại</label>
-                        <input type="text" className="form-control" placeholder="Nhập số điện thoại" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                        <input type="text" className="form-control" placeholder="Nhập số điện thoại (+84)" value={phone} onChange={(e) => setPhone(e.target.value)} />
                     </div>
                     <div className="mb-3">
                         <label>Username</label>

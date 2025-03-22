@@ -20,14 +20,20 @@ import { useSearchAndPaginateShopsQuery } from "../../service/shopService";
 
 const ShopList = () => {
     const [search, setSearch] = useState('');
-    const [status, setStatus] = useState("");
+    const [searchTerm, setSearchTerm] = useState('');
     const [page, setPage] = useState(1);
-    const [size, setSize] = useState(5);
+    const [size, setSize] = useState();
     const navigate = useNavigate();
+    const [statusFilter, setStatusFilter] = useState("");
+
 
     // Gọi API lấy danh sách cửa hàng theo search và status
-    const { data, error, isLoading } = useSearchAndPaginateShopsQuery({ status, search, page:page - 1, size });
-
+    const { data, error, isLoading } = useSearchAndPaginateShopsQuery({
+        status: statusFilter,
+        search,
+        page: page - 1,
+        size
+    });
     useEffect(() => {
         if (data) {
             console.log("Shop Data:", data);
@@ -65,28 +71,41 @@ const ShopList = () => {
                     <CTableBody>
                         <CTableRow>
                             <CTableDataCell>
-                                <h3>Tìm kiếm</h3>
-                            </CTableDataCell>
-                            <CTableDataCell>
-                                <input
+                                <CFormInput
                                     type="text"
                                     className="form-control"
                                     placeholder="Nhập tên hoặc thông tin cần tìm kiếm..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                            setSearch(searchTerm);
+                                        }
+                                    }}
                                 />
                             </CTableDataCell>
                             <CTableDataCell>
-                                <CFormSelect>
-                                    <option value="0">Sắp xếp theo</option>
-                                    <option value="1">Thời gian</option>
-                                    <option value="2">Trạng thái</option>
+                                <CFormSelect value={size} onChange={(e) => setSize(Number(e.target.value))}>
+                                    <option value="10">Hiển thị 10</option>
+                                    <option value="20">Hiển thị 20</option>
+                                    <option value="50">Hiển thị 50</option>
+                                </CFormSelect>
+                            </CTableDataCell>
+                            <CTableDataCell>
+                                <CFormSelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                                    <option value="">Tất cả</option>
+                                    <option value="ACTIVE">Active</option>
+                                    <option value="INACTIVE">Inactive</option>
+                                    <option value="PENDING">Pending</option>
+                                    <option value="REJECTED">Rejected</option>
                                 </CFormSelect>
                             </CTableDataCell>
                         </CTableRow>
                     </CTableBody>
                 </CTable>
             </CRow>
+
+
 
             {/* Danh sách cửa hàng */}
             <CRow>
@@ -126,23 +145,18 @@ const ShopList = () => {
             </CRow>
 
             {/* Phân trang */}
+            {/* Phân trang */}
             <CRow className="mt-3 d-flex justify-content-center">
                 <CPagination align="center">
-                    <CPaginationItem disabled={page === 1} onClick={() => setPage((prev) => Math.max(prev - 1, 1))}>
+                    <CPaginationItem disabled={page === 1} onClick={() => setPage(prev => Math.max(prev - 1, 1))}>
                         Trước
                     </CPaginationItem>
-
                     {Array.from({ length: data?.totalPages || 1 }, (_, i) => i + 1).map((pageNumber) => (
-                        <CPaginationItem
-                            key={pageNumber}
-                            active={pageNumber === page}
-                            onClick={() => setPage(pageNumber)}
-                        >
+                        <CPaginationItem key={pageNumber} active={pageNumber === page} onClick={() => setPage(pageNumber)}>
                             {pageNumber}
                         </CPaginationItem>
                     ))}
-
-                    <CPaginationItem disabled={page === data?.totalPages} onClick={() => setPage((prev) => prev + 1)}>
+                    <CPaginationItem disabled={page === data?.totalPages} onClick={() => setPage(prev => prev + 1)}>
                         Sau
                     </CPaginationItem>
                 </CPagination>

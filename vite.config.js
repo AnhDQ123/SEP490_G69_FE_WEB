@@ -5,6 +5,6 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   server: {
     plugins: [react()],
-    port: 5174, // hoặc cổng tùy chọn
+    port: 5173,
   },
 })
