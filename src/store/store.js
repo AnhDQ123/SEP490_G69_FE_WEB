@@ -4,6 +4,7 @@ import {productService} from "../service/productService.js";
 import {shopService} from "../service/shopService.js";
 import {rolesService} from "../service/roleService.js";
 import {loginService} from "../service/loginService.js";
+import {shipperService} from "../service/shipperService.js";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     [shopService.reducerPath]: shopService.reducer,
     [rolesService.reducerPath]: rolesService.reducer,
     [loginService.reducerPath]: loginService.reducer,
+    [shipperService.reducerPath]: shipperService.reducer,
 
 
 
@@ -22,5 +24,6 @@ export const store = configureStore({
           productService.middleware,
           shopService.middleware,
           rolesService.middleware,
+          shipperService.middleware,
           loginService.middleware,),
 })

@@ -15,6 +15,7 @@ export const usersService = createApi({
                 url: `api/users`,
                 params: { search, page, size },
             }),
+            providesTags: ["user"],
         }),
         getUserById: builder.query({
             query: (id) => `api/users/${id}`,
@@ -46,6 +47,24 @@ export const usersService = createApi({
             },
             invalidatesTags: ["user"],
         }),
+        inactiveUser: builder.mutation({
+            query: (id) => ({
+                url: "api/users/inactive",
+                method: "POST",
+                params: { id },
+            }),
+            invalidatesTags: ["user"],
+        }),
+
+        // ✅ Kích hoạt user
+        activeUser: builder.mutation({
+            query: (id) => ({
+                url: "api/users/active",
+                method: "POST",
+                params: { id },
+            }),
+            invalidatesTags: ["user"],
+        }),
     }),
 });
 
@@ -55,4 +74,6 @@ export const {
     useGetUserByIdQuery,
     useAddUserMutation,
     useUpdateUserMutation,
+    useInactiveUserMutation,
+    useActiveUserMutation,
 } = usersService;

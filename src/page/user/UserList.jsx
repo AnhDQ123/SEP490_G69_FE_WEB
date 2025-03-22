@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom'; // ✅ Thêm useLocation
 import {
     CFormSelect,
     CRow,
@@ -19,7 +19,7 @@ import {
     CModalFooter
 } from '@coreui/react';
 import { useSearchAndPaginationQuery, useAddUserMutation } from "../../service/userService.js";
-import { useGetRolesQuery } from "../../service/roleService.js"; // Import API lấy danh sách role
+import { useGetRolesQuery } from "../../service/roleService.js";
 import { userValidationSchema } from "../../utils/validation.js";
 
 const UserList = () => {
@@ -31,15 +31,17 @@ const UserList = () => {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [username, setUsername] = useState('');
-    const [role, setRole] = useState(null); // Ban đầu không chọn role
-    const [roles, setRoles] = useState([]); // Lưu danh sách role từ API
+    const [role, setRole] = useState(null);
+    const [roles, setRoles] = useState([]);
 
     const navigate = useNavigate();
+    const location = useLocation(); // ✅ Lấy location để kiểm tra state
 
-    // API lấy danh sách người dùng
-    const { data, error, isLoading } = useSearchAndPaginationQuery({ search, page, size });
+    const { data, error, isLoading, refetch } = useSearchAndPaginationQuery(
+        { search, page, size },
+        { refetchOnMountOrArgChange: true }
+    );
 
-    // API lấy danh sách role từ roleService.js
     const { data: roleData, error: roleError, isLoading: isLoadingRoles } = useGetRolesQuery();
 
     useEffect(() => {
@@ -48,22 +50,26 @@ const UserList = () => {
         }
     }, [data]);
 
-    // Lưu danh sách role vào state khi API trả về dữ liệu
     useEffect(() => {
         if (roleData) {
             setRoles(roleData);
             if (roleData.length > 0) {
-                setRole(roleData[0].id); // Mặc định chọn role đầu tiên
+                setRole(roleData[0].id);
             }
         }
     }, [roleData]);
 
-    // API thêm người dùng
+    // ✅ Tự động refetch nếu quay lại từ UserDetail có cập nhật
+    useEffect(() => {
+        if (location.state?.shouldRefetch) {
+            refetch();
+        }
+    }, [location.state]);
+
     const [addUser, { isLoading: isAdding }] = useAddUserMutation();
 
     const handleSubmit = async () => {
         try {
-            // Validate form trước
             await userValidationSchema.validate({ email, phone, username });
 
             const roleNumber = Number(role);
@@ -83,7 +89,6 @@ const UserList = () => {
             await addUser(newUser).unwrap();
             alert("Thêm người dùng thành công!");
 
-            // Reset modal và form
             setModal(false);
             setEmail('');
             setPhone('');
@@ -91,15 +96,13 @@ const UserList = () => {
             setRole(roles.length > 0 ? roles[0].id : null);
         } catch (err) {
             if (err.name === "ValidationError") {
-                alert(err.message); // Hiển thị lỗi validate cho người dùng
+                alert(err.message);
             } else {
                 alert("Lỗi khi thêm người dùng! Vui lòng thử lại.");
                 console.error("Lỗi khi thêm user:", err);
             }
         }
     };
-
-
 
     if (isLoading) return <p>Loading...</p>;
     if (error) return <p>Error fetching users</p>;

@@ -20,7 +20,7 @@ import {
 } from '@coreui/react';
 
 const OrderManagement = () => {
-    const [searchParams, setSearchParams] = useState({
+    const [setSearchParams] = useState({
         startDate: '',
         endDate: '',
         product: '',
@@ -29,8 +29,7 @@ const OrderManagement = () => {
         shippingStatus: 'all',
         store: '',
     });
-    const [page, setPage] = useState(1);
-    const [size] = useState(10);
+
 
     const orders = [
         { id: 'ORD001', customer: 'Nguyễn Văn A', product: 'Cơm rang', date: '2024-03-01', status: 'Hoàn thành', paymentStatus: 'Đã thanh toán', shippingStatus: 'Đã giao' },
@@ -51,28 +50,26 @@ const OrderManagement = () => {
             <CCardBody>
                 <CForm>
                     <CRow className="mb-3">
-                        <CCol md={2}><CFormInput type="date" name="startDate" label="Ngày bắt đầu" onChange={handleInputChange} /></CCol>
-                        <CCol md={2}><CFormInput type="date" name="endDate" label="Ngày kết thúc" onChange={handleInputChange} /></CCol>
-                        <CCol md={2}><CFormInput type="text" name="product" label="Sản phẩm" placeholder="Nhập tên sản phẩm..." onChange={handleInputChange} /></CCol>
-                        <CCol md={2}><CFormSelect name="status" label="Trạng thái" onChange={handleInputChange}>
-                            <option value="all">Tất cả</option>
-                            <option value="pending">Chờ xử lý</option>
-                            <option value="completed">Hoàn thành</option>
-                        </CFormSelect></CCol>
-                        <CCol md={2}><CFormSelect name="paymentStatus" label="Thanh toán" onChange={handleInputChange}>
-                            <option value="all">Tất cả</option>
-                            <option value="paid">Đã thanh toán</option>
-                            <option value="unpaid">Chưa thanh toán</option>
-                        </CFormSelect></CCol>
-                        <CCol md={2}><CFormSelect name="shippingStatus" label="Vận chuyển" onChange={handleInputChange}>
-                            <option value="all">Tất cả</option>
-                            <option value="shipped">Đã giao</option>
-                            <option value="processing">Đang giao</option>
-                        </CFormSelect></CCol>
+                        <CCol><CFormInput type="date" name="startDate" label="Ngày bắt đầu" onChange={handleInputChange} /></CCol>
+                        <CCol><CFormInput type="date" name="endDate" label="Ngày kết thúc" onChange={handleInputChange} /></CCol>
+                        <CCol><CFormInput type="text" name="product" label="Mã đơn" placeholder="Nhập mã đơn..." onChange={handleInputChange} /></CCol>
                     </CRow>
                     <CRow>
-                        <CCol md={3}><CFormInput type="text" name="store" label="Cửa hàng" placeholder="Nhập tên cửa hàng..." onChange={handleInputChange} /></CCol>
-                        <CCol md={2} className="d-flex align-items-end">
+                        <CCol><CFormSelect name="status" label="Trạng thái" onChange={handleInputChange}>
+                            <option value="all">Tất cả</option>
+                            <option value="pending">Chờ xác nhận</option>
+                            <option value="processing">Đang chuẩn bị</option>
+                            <option value="shipping">Đang giao</option>
+                            <option value="delivered">Đã giao</option>
+                            <option value="cancelled">Đã hủy</option>
+                            <option value="return_pending">Chở xứ lý trả hàng</option>
+                            <option value="returned">Đã trả</option>
+                            <option value="rejected">Đã từ chối</option>
+                            <option value="return_rejected">Từ chối trả hàng</option>
+                        </CFormSelect></CCol>
+                        <CCol><CFormInput type="text" name="store" label="Cửa hàng" placeholder="Nhập tên cửa hàng..."
+                                          onChange={handleInputChange} /></CCol>
+                        <CCol className="d-flex align-items-end">
                             <CButton color="primary">Tìm kiếm</CButton>
                         </CCol>
                     </CRow>

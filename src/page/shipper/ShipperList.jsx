@@ -13,52 +13,62 @@ import {
     CPaginationItem,
     CButton
 } from '@coreui/react';
-import { useSearchAndPaginationQuery } from "../../service/userService.js";
+import { useGetShippersByStatusQuery } from '../../service/shipperService';
 
 const ShipperList = () => {
-    const [shippers, setShippers] = useState([]);
-    const [search, setSearch] = useState('');
-    const [page, setPage] = useState(1);
-    const [size, setSize] = useState(10);
     const navigate = useNavigate();
 
-    // API lấy danh sách shipper
-    const { data, error, isLoading } = useSearchAndPaginationQuery({ search, page, size });
+    const [status, setStatus] = useState('PENDING'); // Mặc định lọc shipper đang chờ
+    const [page, setPage] = useState(0);
+    const [size, setSize] = useState(10);
+    const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
 
-    console.log("Trước khi gọi", data);
+    // Debounce search
     useEffect(() => {
-        if (data) {
-            const filteredShippers = data.content.filter(user => user.role === 'shipper');
-            setShippers(filteredShippers);
-        }
-    }, [data]);
-    console.log("Sau khi ", shippers);
+        const delay = setTimeout(() => {
+            setDebouncedSearch(search);
+            setPage(0);
+        }, 400);
+        return () => clearTimeout(delay);
+    }, [search]);
 
-    if (isLoading) return <p>Loading...</p>;
-    if (error) return <p>Error fetching shippers</p>;
+    // Call API
+    const { data, error, isLoading } = useGetShippersByStatusQuery({
+        status,
+        page,
+        size,
+        search: debouncedSearch,
+    });
 
+    const shippers = data?.content || [];
+    const totalPages = data?.totalPages || 1;
+
+    // Điều hướng sang detail tương ứng theo trạng thái shipper
     const handleViewDetail = (shipper) => {
-        switch (shipper.status) {
-            case "ACTIVE":
-                navigate(`/shipper-active/${shipper.id}`);
+        const { shipperStatus, userId } = shipper;
+
+        switch (shipperStatus) {
+            case 'ACTIVE':
+                navigate(`/shipper-active/${userId}`);
                 break;
-            case "PENDING":
-                navigate(`/shipper-pending/${shipper.id}`);
+            case 'PENDING':
+                navigate(`/shipper-pending/${userId}`);
                 break;
-            case "INACTIVE":
-                navigate(`/shipper-inactive/${shipper.id}`);
-                break;
-            case "REJECTED":
-                navigate(`/shipper-reject/${shipper.id}`);
+            case 'INACTIVE':
+                navigate(`/shipper-inactive/${userId}`);
                 break;
             default:
-                alert("Trạng thái người dùng không hợp lệ!");
+                alert('⚠️ Trạng thái người giao hàng không hợp lệ!');
         }
     };
 
+    if (isLoading) return <p>🔄 Đang tải danh sách shipper...</p>;
+    if (error) return <p>❌ Lỗi khi lấy dữ liệu shipper!</p>;
+
     return (
         <>
-            {/* Ô tìm kiếm và bộ lọc */}
+            {/* Tìm kiếm và bộ lọc */}
             <CRow className="mb-3">
                 <CTable>
                     <CTableBody>
@@ -67,10 +77,17 @@ const ShipperList = () => {
                                 <input
                                     type="text"
                                     className="form-control"
-                                    placeholder="Tìm kiếm theo tên hoặc số điện thoại..."
+                                    placeholder="🔍 Tìm kiếm theo tên hoặc số điện thoại..."
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                 />
+                            </CTableDataCell>
+                            <CTableDataCell>
+                                <CFormSelect value={status} onChange={(e) => { setStatus(e.target.value); setPage(0); }}>
+                                    <option value="PENDING">Chờ duyệt</option>
+                                    <option value="ACTIVE">Hoạt động</option>
+                                    <option value="INACTIVE">Tạm dừng</option>
+                                </CFormSelect>
                             </CTableDataCell>
                             <CTableDataCell>
                                 <CFormSelect value={size} onChange={(e) => setSize(Number(e.target.value))}>
@@ -84,34 +101,40 @@ const ShipperList = () => {
                 </CTable>
             </CRow>
 
-            {/* Danh sách shipper */}
+            {/* Bảng dữ liệu */}
             <CRow>
-                <CTable striped hover>
+                <CTable striped hover responsive>
                     <CTableHead>
                         <CTableRow>
-                            <CTableHeaderCell>Tài khoản</CTableHeaderCell>
-                            <CTableHeaderCell>Tên Shipper</CTableHeaderCell>
-                            <CTableHeaderCell>Số điện thoại</CTableHeaderCell>
-                            <CTableHeaderCell>Ngày đăng ký</CTableHeaderCell>
+                            <CTableHeaderCell>Họ tên</CTableHeaderCell>
+                            <CTableHeaderCell>SĐT</CTableHeaderCell>
+                            <CTableHeaderCell>Email</CTableHeaderCell>
                             <CTableHeaderCell>Trạng thái</CTableHeaderCell>
                             <CTableHeaderCell>Hành động</CTableHeaderCell>
                         </CTableRow>
                     </CTableHead>
                     <CTableBody>
-                        {shippers.map((shipper, index) => (
-                            <CTableRow key={index}>
-                                <CTableDataCell>{shipper.username}</CTableDataCell>
-                                <CTableDataCell>{shipper.name}</CTableDataCell>
-                                <CTableDataCell>{shipper.phone}</CTableDataCell>
-                                <CTableDataCell>{shipper.registrationDate}</CTableDataCell>
-                                <CTableDataCell>{shipper.status}</CTableDataCell>
-                                <CTableDataCell>
-                                    <CButton color="info" onClick={() => handleViewDetail(shipper)}>
-                                        Xem chi tiết
-                                    </CButton>
+                        {shippers.length === 0 ? (
+                            <CTableRow>
+                                <CTableDataCell colSpan={5} className="text-center text-muted">
+                                    Không có shipper nào phù hợp
                                 </CTableDataCell>
                             </CTableRow>
-                        ))}
+                        ) : (
+                            shippers.map((shipper, index) => (
+                                <CTableRow key={index}>
+                                    <CTableDataCell>{shipper.name}</CTableDataCell>
+                                    <CTableDataCell>{shipper.phone}</CTableDataCell>
+                                    <CTableDataCell>{shipper.email}</CTableDataCell>
+                                    <CTableDataCell>{shipper.shipperStatus}</CTableDataCell>
+                                    <CTableDataCell>
+                                        <CButton size="sm" color="info" onClick={() => handleViewDetail(shipper)}>
+                                            Xem chi tiết
+                                        </CButton>
+                                    </CTableDataCell>
+                                </CTableRow>
+                            ))
+                        )}
                     </CTableBody>
                 </CTable>
             </CRow>
@@ -119,15 +142,19 @@ const ShipperList = () => {
             {/* Phân trang */}
             <CRow className="mt-3 d-flex justify-content-center">
                 <CPagination align="center">
-                    <CPaginationItem disabled={page === 1} onClick={() => setPage(prev => Math.max(prev - 1, 1))}>
+                    <CPaginationItem disabled={page === 0} onClick={() => setPage((prev) => Math.max(prev - 1, 0))}>
                         Trước
                     </CPaginationItem>
-                    {Array.from({ length: data?.totalPages || 1 }, (_, i) => i + 1).map((pageNumber) => (
-                        <CPaginationItem key={pageNumber} active={pageNumber === page} onClick={() => setPage(pageNumber)}>
-                            {pageNumber}
+                    {Array.from({ length: totalPages }, (_, i) => (
+                        <CPaginationItem
+                            key={i}
+                            active={i === page}
+                            onClick={() => setPage(i)}
+                        >
+                            {i + 1}
                         </CPaginationItem>
                     ))}
-                    <CPaginationItem disabled={page === data?.totalPages} onClick={() => setPage(prev => prev + 1)}>
+                    <CPaginationItem disabled={page + 1 === totalPages} onClick={() => setPage((prev) => prev + 1)}>
                         Sau
                     </CPaginationItem>
                 </CPagination>

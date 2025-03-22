@@ -10,15 +10,19 @@ import {
     CButton,
     CImage,
 } from "@coreui/react";
-import { useGetUserByIdQuery, useUpdateUserMutation } from "../../service/userService.js";
+import {
+    useGetUserByIdQuery,
+    useActiveUserMutation,
+    useInactiveUserMutation,
+} from "../../service/userService.js";
 
 const UserDetail = () => {
-    const { id } = useParams(); // Lấy id người dùng từ URL
+    const { id } = useParams();
     const navigate = useNavigate();
 
-    // Gọi API lấy thông tin người dùng theo id
     const { data, error, isLoading } = useGetUserByIdQuery(id);
-    const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
+    const [activeUser, { isLoading: isActivating }] = useActiveUserMutation();
+    const [inactiveUser, { isLoading: isDeactivating }] = useInactiveUserMutation();
 
     const [user, setUser] = useState({
         name: "",
@@ -47,18 +51,26 @@ const UserDetail = () => {
     }, [data]);
 
     const handleStatusChange = (e) => {
-        const newStatus = e.target.value;
-        setUser((prev) => ({ ...prev, status: newStatus }));
+        setUser((prev) => ({ ...prev, status: e.target.value }));
     };
-    const handleClickSave = async  () => {
+
+    const handleClickSave = async () => {
         try {
-            await updateUser({ user: { ...user}}).unwrap();
-            alert("Cập nhật trạng thái thành công!");
+            console.log("User ID:", id, "Trạng thái:", user.status);
+            if (user.status.toLowerCase() === "active") {
+                await activeUser(id).unwrap();
+                alert("✅ Kích hoạt tài khoản thành công!");
+            } else if (user.status.toLowerCase() === "inactive") {
+                await inactiveUser(id).unwrap();
+                alert("⛔ Tạm dừng tài khoản thành công!");
+            }
+            navigate(-1, { state: { shouldRefetch: true } });
         } catch (err) {
             console.error("Lỗi khi cập nhật trạng thái:", err);
-            alert("Cập nhật thất bại! Vui lòng thử lại.");
+            alert("❌ Cập nhật thất bại! Vui lòng thử lại.");
         }
-    }
+    };
+
     if (isLoading) return <p>Đang tải dữ liệu...</p>;
     if (error) return <p>Lỗi khi lấy dữ liệu người dùng</p>;
 
@@ -80,64 +92,64 @@ const UserDetail = () => {
                     </CCol>
                 </CRow>
 
-                {/* Họ tên & Vai trò */}
                 <CRow className="mb-3">
                     <CCol md={6}>
                         <label className="fw-semibold">Họ Tên</label>
-                        <CFormInput disabled value={user.name} className="border rounded-2" />
+                        <CFormInput disabled value={user.name} />
                     </CCol>
                     <CCol md={6}>
                         <label className="fw-semibold">Vai trò</label>
-                        <CFormInput disabled value={user.role} className="border rounded-2" />
+                        <CFormInput disabled value={user.role} />
                     </CCol>
                 </CRow>
 
-                {/* Số điện thoại & Địa chỉ */}
                 <CRow className="mb-3">
                     <CCol md={6}>
                         <label className="fw-semibold">SĐT</label>
-                        <CFormInput disabled value={user.phone} className="border rounded-2" />
+                        <CFormInput disabled value={user.phone} />
                     </CCol>
                     <CCol md={6}>
                         <label className="fw-semibold">Địa chỉ</label>
-                        <CFormInput disabled value={user.address} className="border rounded-2" />
+                        <CFormInput disabled value={user.address} />
                     </CCol>
                 </CRow>
 
-                {/* Ngày tham gia */}
                 <CRow className="mb-3">
                     <CCol md={6}>
                         <label className="fw-semibold">Ngày tham gia</label>
-                        <CFormInput disabled value={user.createdAt} className="border rounded-2" />
+                        <CFormInput disabled value={user.createdAt} />
                     </CCol>
                 </CRow>
 
-                {/* Trạng thái */}
                 <CRow className="mb-3">
                     <CCol md={6}>
                         <label className="fw-semibold">Trạng thái</label>
-                        <CFormSelect value={user.status} onChange={handleStatusChange} className="border rounded-2">
-                            <option value="active">Hoạt động</option>
-                            <option value="inactive">Tạm dừng</option>
+                        <CFormSelect value={user.status} onChange={handleStatusChange}>
+                            <option value="ACTIVE">Hoạt động</option>
+                            <option value="INACTIVE">Tạm dừng</option>
                         </CFormSelect>
                     </CCol>
                 </CRow>
 
-                {/* Nút chức năng */}
                 <CRow className="text-center mt-4">
                     <CCol md={4}>
-                        <CButton color="danger" className="w-100 rounded-3 py-2 fw-semibold">
+                        <CButton color="danger" className="w-100 py-2 fw-semibold">
                             🚨 Gửi cảnh báo
                         </CButton>
                     </CCol>
                     <CCol md={4}>
-                        <CButton color="secondary" className="w-100 rounded-3 py-2 fw-semibold" onClick={() => navigate(-1)}>
+                        <CButton color="secondary" className="w-100 py-2 fw-semibold" onClick={() => navigate(-1)}>
                             ⬅️ Quay lại
                         </CButton>
                     </CCol>
                     <CCol md={4}>
-                        <CButton color="success" className="w-100 rounded-3 py-2 fw-semibold" onClick={handleClickSave} disabled={isUpdating}>
-                            {isUpdating ? "Đang lưu..." : "💾 Lưu"}
+                        <CButton
+                            color="success"
+                            className="w-100 py-2 fw-semibold"
+                            onClick={handleClickSave}
+                            disabled={isActivating || isDeactivating}
+                        >
+                            {(isActivating || isDeactivating) ? "Đang lưu..." : "💾 Lưu"}
                         </CButton>
                     </CCol>
                 </CRow>
