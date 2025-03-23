@@ -39,7 +39,6 @@ const routes = [
   { path: '/notifications-list', name: 'NotificationsList', element: NotificationsList },
   { path: '/categories-list', name: 'CategoriesList', element: CategoriesList },
 
-
   { path: '/login', name: 'Login', element: Login },
 
 

@@ -8,9 +8,9 @@ export const shipperService = createApi({
     endpoints: (builder) => ({
         // Shipper list by status
         getShippersByStatus: builder.query({
-            query: ({ status, page = 0, size = 10 }) => ({
-                url: `api/shippers/status/${status}`,
-                params: { page, size },
+            query: ({ status, page = 0, size = 10, search = '' }) => ({
+                url: `api/shippers`,
+                params: { status, page, size, search },
             }),
             providesTags: ["shipper"],
         }),

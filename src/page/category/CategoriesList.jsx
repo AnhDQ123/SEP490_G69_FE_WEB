@@ -1,38 +1,33 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
-    CRow,
-    CCol,
-    CCard,
-    CCardBody,
-    CCardHeader,
-    CTable,
-    CTableBody,
-    CTableDataCell,
-    CTableHead,
-    CTableHeaderCell,
-    CTableRow,
-    CButton,
-    CImage,
-    CFormInput,
-    CFormSelect,
-    CPagination,
-    CPaginationItem,
-    CModal,
-    CModalHeader,
-    CModalTitle,
-    CModalBody,
-    CModalFooter,
+    CRow, CCol, CCard, CCardBody, CCardHeader, CTable, CTableBody,
+    CTableDataCell, CTableHead, CTableHeaderCell, CTableRow, CButton,
+    CImage, CFormInput, CFormSelect, CPagination, CPaginationItem,
+    CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter,
 } from '@coreui/react';
-import { useGetAllCategoriesQuery } from '../../service/categoryService';
 
-const CategoryList = () => {
+import {
+    useGetAllCategoriesQuery,
+    useCreateCategoryMutation,
+    useUpdateCategoryMutation,
+    useDeleteCategoryMutation,
+} from '../../service/categoryService';
+
+const CategoriesList = () => {
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
-    const [page, setPage] = useState(0);
+    const [page, setPage] = useState(1);
     const [size, setSize] = useState(5);
 
-    const { data = [], isLoading, error } = useGetAllCategoriesQuery();
-    const [filteredData, setFilteredData] = useState([]);
+    const {data, isLoading, error, refetch} = useGetAllCategoriesQuery({
+        search: debouncedSearch || '',
+        page,
+        size
+    });
+
+    const [createCategory] = useCreateCategoryMutation();
+    const [updateCategory] = useUpdateCategoryMutation();
+    const [deleteCategory] = useDeleteCategoryMutation();
 
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [categoryToDelete, setCategoryToDelete] = useState(null);
@@ -44,88 +39,80 @@ const CategoryList = () => {
     const [newCategory, setNewCategory] = useState({
         name: '',
         description: '',
-        image: '',
         imageFile: null,
+        image: '',
     });
 
-
+    // Debounce search input
     useEffect(() => {
         const timeout = setTimeout(() => {
-            setDebouncedSearch(search.toLowerCase());
-            setPage(0);
+            setDebouncedSearch(search.trim().toLowerCase());
+            setPage(1);
         }, 400);
         return () => clearTimeout(timeout);
     }, [search]);
 
-    useEffect(() => {
-        const filtered = data.filter((cat) =>
-            cat.name.toLowerCase().includes(debouncedSearch)
-        );
-        setFilteredData(filtered);
-    }, [data, debouncedSearch]);
-
-    const totalPages = Math.ceil(filteredData.length / size);
-    const paginated = filteredData.slice(page * size, page * size + size);
-
-    const handleDelete = (id) => {
-        alert(`✅ Đã xoá danh mục ID: ${id} (Demo)`);
-        setShowDeleteModal(false);
-    };
-
-    const handleAdd = () => {
-        setShowAddModal(true);
-    };
-
-
-    const confirmDelete = (category) => {
-        setCategoryToDelete(category);
-        setShowDeleteModal(true);
-    };
-
-    const handleEdit = (category) => {
-        setCategoryToEdit({ ...category }); // clone để tránh ảnh hưởng state gốc
-        setShowEditModal(true);
-    };
-
-    const handleSaveEdit = () => {
-        alert(`✅ Đã cập nhật danh mục: ${categoryToEdit.name} (Demo)`);
-        setShowEditModal(false);
-    };
-
-    const handleSaveNewCategory = () => {
-        if (!newCategory.name.trim()) {
-            alert('⚠️ Vui lòng nhập tên danh mục!');
-            return;
+    // Handle delete
+    const handleDelete = async () => {
+        try {
+            await deleteCategory(categoryToDelete.id).unwrap();
+            alert('🗑️ Xoá thành công');
+            refetch();
+        } catch {
+            alert('❌ Xoá thất bại');
+        } finally {
+            setShowDeleteModal(false);
         }
-
-        const newCat = {
-            ...newCategory,
-            id: Date.now(),
-            createdAt: new Date().toISOString().split('T')[0],
-            image: newCategory.image || 'https://via.placeholder.com/100x60.png?text=No+Image',
-        };
-
-        setFilteredData((prev) => [newCat, ...prev]);
-        setShowAddModal(false);
-        setNewCategory({ name: '', description: '', image: '', imageFile: null });
     };
 
+    // Handle create
+    const handleSaveNewCategory = async () => {
+        if (!newCategory.name.trim()) return alert('⚠️ Vui lòng nhập tên danh mục');
+        try {
+            await createCategory({data: newCategory, file: newCategory.imageFile}).unwrap();
+            alert('✅ Thêm thành công');
+            setShowAddModal(false);
+            setNewCategory({name: '', description: '', imageFile: null, image: ''});
+            refetch();
+        } catch {
+            alert('❌ Thêm thất bại');
+        }
+    };
+
+    // Handle update
+    const handleSaveEdit = async () => {
+        if (!categoryToEdit.name.trim()) return alert('⚠️ Vui lòng nhập tên danh mục');
+        try {
+            await updateCategory({
+                id: categoryToEdit.id,
+                data: categoryToEdit,
+                file: categoryToEdit.imageFile,
+            }).unwrap();
+            alert('✅ Cập nhật thành công');
+            setShowEditModal(false);
+            refetch();
+        } catch {
+            alert('❌ Cập nhật thất bại');
+        }
+    };
+
+    const categories = data?.content || [];
+    const totalPages = data?.totalPages || 1;
 
     if (isLoading) return <p>🔄 Đang tải danh sách danh mục...</p>;
-    if (error) return <p>❌ Lỗi khi tải dữ liệu danh mục!</p>;
+    if (error) return <p>❌ Lỗi khi tải danh mục!</p>;
 
     return (
         <CCard>
             <CCardHeader className="d-flex justify-content-between align-items-center">
                 <h4>📋 Danh sách danh mục</h4>
-                <CButton color="primary" onClick={handleAdd}>➕ Thêm danh mục</CButton>
+                <CButton color="primary" onClick={() => setShowAddModal(true)}>➕ Thêm danh mục</CButton>
             </CCardHeader>
 
             <CCardBody>
                 <CRow className="mb-3">
                     <CCol md={6}>
                         <CFormInput
-                            type="text"
                             placeholder="🔍 Tìm kiếm theo tên danh mục..."
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
@@ -135,6 +122,7 @@ const CategoryList = () => {
                         <CFormSelect value={size} onChange={(e) => setSize(Number(e.target.value))}>
                             <option value="5">Hiển thị 5</option>
                             <option value="10">Hiển thị 10</option>
+                            <option value="20">Hiển thị 20</option>
                         </CFormSelect>
                     </CCol>
                 </CRow>
@@ -150,28 +138,28 @@ const CategoryList = () => {
                         </CTableRow>
                     </CTableHead>
                     <CTableBody>
-                        {paginated.length === 0 ? (
+                        {categories.length === 0 ? (
                             <CTableRow>
                                 <CTableDataCell colSpan={5} className="text-center text-muted">
                                     Không tìm thấy danh mục phù hợp.
                                 </CTableDataCell>
                             </CTableRow>
                         ) : (
-                            paginated.map((cat) => (
+                            categories.map((cat) => (
                                 <CTableRow key={cat.id}>
                                     <CTableDataCell>{cat.name}</CTableDataCell>
                                     <CTableDataCell>{cat.createdAt}</CTableDataCell>
                                     <CTableDataCell>{cat.description}</CTableDataCell>
+                                    <CTableDataCell><CImage src={cat.image} width={100}/></CTableDataCell>
                                     <CTableDataCell>
-                                        <CImage src={cat.image} width={100} />
-                                    </CTableDataCell>
-                                    <CTableDataCell>
-                                        <CButton size="sm" color="warning" onClick={() => handleEdit(cat)}>
-                                            ✏
-                                        </CButton>{' '}
-                                        <CButton size="sm" color="danger" onClick={() => confirmDelete(cat)}>
-                                            🗑
-                                        </CButton>
+                                        <CButton size="sm" color="warning" onClick={() => {
+                                            setCategoryToEdit({...cat});
+                                            setShowEditModal(true);
+                                        }}>✏</CButton>{' '}
+                                        <CButton size="sm" color="danger" onClick={() => {
+                                            setCategoryToDelete(cat);
+                                            setShowDeleteModal(true);
+                                        }}>🗑</CButton>
                                     </CTableDataCell>
                                 </CTableRow>
                             ))
@@ -179,91 +167,94 @@ const CategoryList = () => {
                     </CTableBody>
                 </CTable>
 
-                {/* Pagination */}
                 {totalPages > 1 && (
                     <CRow className="mt-4 d-flex justify-content-center">
-                        <CPagination align="center">
-                            <CPaginationItem disabled={page === 0} onClick={() => setPage((p) => p - 1)}>
-                                Trước
-                            </CPaginationItem>
-                            {Array.from({ length: totalPages }, (_, i) => (
-                                <CPaginationItem
-                                    key={i}
-                                    active={i === page}
-                                    onClick={() => setPage(i)}
-                                >
+                        <CPagination>
+                            <CPaginationItem disabled={page === 1}
+                                             onClick={() => setPage(p => p - 1)}>Trước</CPaginationItem>
+                            {Array.from({length: totalPages}, (_, i) => (
+                                <CPaginationItem key={i} active={i + 1 === page} onClick={() => setPage(i + 1)}>
                                     {i + 1}
                                 </CPaginationItem>
                             ))}
-                            <CPaginationItem disabled={page + 1 === totalPages} onClick={() => setPage((p) => p + 1)}>
-                                Sau
-                            </CPaginationItem>
+                            <CPaginationItem disabled={page === totalPages}
+                                             onClick={() => setPage(p => p + 1)}>Sau</CPaginationItem>
                         </CPagination>
                     </CRow>
                 )}
             </CCardBody>
 
-            {/* Modal xoá danh mục */}
+            {/* Delete Modal */}
             <CModal visible={showDeleteModal} onClose={() => setShowDeleteModal(false)} centered>
-                <CModalHeader closeButton>
-                    <CModalTitle>Xác nhận xoá</CModalTitle>
-                </CModalHeader>
-                <CModalBody>
-                    Bạn có chắc chắn muốn xoá danh mục{' '}
-                    <strong>{categoryToDelete?.name}</strong> không?
-                </CModalBody>
+                <CModalHeader closeButton><CModalTitle>Xác nhận xoá</CModalTitle></CModalHeader>
+                <CModalBody>Bạn có chắc muốn xoá <strong>{categoryToDelete?.name}</strong>?</CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" onClick={() => setShowDeleteModal(false)}>Hủy</CButton>
-                    <CButton color="danger" onClick={() => handleDelete(categoryToDelete?.id)}>Xoá</CButton>
+                    <CButton color="danger" onClick={handleDelete}>Xoá</CButton>
                 </CModalFooter>
             </CModal>
 
-            {/* Modal update category */}
+            {/* Edit Modal */}
             <CModal visible={showEditModal} onClose={() => setShowEditModal(false)} centered>
                 <CModalHeader closeButton>
                     <CModalTitle>📝 Sửa danh mục</CModalTitle>
                 </CModalHeader>
                 <CModalBody>
+                    {/* Tên danh mục */}
                     <CFormInput
                         className="mb-3"
-                        label="Tên danh mục"
+                        placeholder="Tên danh mục"
                         value={categoryToEdit?.name || ''}
                         onChange={(e) =>
-                            setCategoryToEdit((prev) => ({ ...prev, name: e.target.value }))
+                            setCategoryToEdit((prev) => ({...prev, name: e.target.value}))
                         }
-                        placeholder="Tên danh mục"
                     />
+
+                    {/* Mô tả */}
                     <CFormInput
                         className="mb-3"
-                        label="Mô tả"
+                        placeholder="Mô tả"
                         value={categoryToEdit?.description || ''}
                         onChange={(e) =>
-                            setCategoryToEdit((prev) => ({ ...prev, description: e.target.value }))
+                            setCategoryToEdit((prev) => ({...prev, description: e.target.value}))
                         }
-                        placeholder="Mô tả"
+                    />
+
+                    {/* Nhập URL ảnh */}
+                    <CFormInput
+                        className="mb-2"
+                        placeholder="URL ảnh từ trang web (nếu có)"
+                        value={categoryToEdit?.image || ''}
+                        onChange={(e) =>
+                            setCategoryToEdit((prev) => ({
+                                ...prev,
+                                image: e.target.value,
+                                imageFile: null, // reset file nếu dùng URL
+                            }))
+                        }
                     />
 
                     {/* Upload ảnh từ máy */}
                     <div className="mb-3">
-                        <label className="form-label">Ảnh danh mục</label>
+                        <label className="form-label">Hoặc chọn ảnh từ máy</label>
                         <CFormInput
                             type="file"
                             accept="image/*"
                             onChange={(e) => {
                                 const file = e.target.files[0];
                                 if (file) {
-                                    const imageUrl = URL.createObjectURL(file);
+                                    const previewURL = URL.createObjectURL(file);
                                     setCategoryToEdit((prev) => ({
                                         ...prev,
                                         imageFile: file,
-                                        image: imageUrl, // dùng preview ảnh
+                                        image: previewURL,
                                     }));
                                 }
                             }}
                         />
                     </div>
 
-                    {/* Preview ảnh đã chọn */}
+                    {/* Preview ảnh */}
                     {categoryToEdit?.image && (
                         <div className="text-center">
                             <CImage
@@ -284,46 +275,68 @@ const CategoryList = () => {
                 </CModalFooter>
             </CModal>
 
-            {/* Modal thêm danh mục */}
+
+            {/* Add Modal */}
             <CModal visible={showAddModal} onClose={() => setShowAddModal(false)} centered>
                 <CModalHeader closeButton>
                     <CModalTitle>➕ Thêm danh mục</CModalTitle>
                 </CModalHeader>
                 <CModalBody>
+                    {/* Tên danh mục */}
                     <CFormInput
                         className="mb-3"
-                        label="Tên danh mục"
                         placeholder="Tên danh mục"
                         value={newCategory.name}
-                        onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
-                    />
-                    <CFormInput
-                        className="mb-3"
-                        label="Mô tả"
-                        placeholder="Mô tả"
-                        value={newCategory.description}
-                        onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
+                        onChange={(e) =>
+                            setNewCategory((prev) => ({...prev, name: e.target.value}))
+                        }
                     />
 
+                    {/* Mô tả */}
+                    <CFormInput
+                        className="mb-3"
+                        placeholder="Mô tả"
+                        value={newCategory.description}
+                        onChange={(e) =>
+                            setNewCategory((prev) => ({...prev, description: e.target.value}))
+                        }
+                    />
+
+                    {/* Nhập URL ảnh */}
+                    <CFormInput
+                        className="mb-2"
+                        placeholder="URL ảnh từ trang web (nếu có)"
+                        value={newCategory.image}
+                        onChange={(e) =>
+                            setNewCategory((prev) => ({
+                                ...prev,
+                                image: e.target.value,
+                                imageFile: null, // reset file nếu dùng URL
+                            }))
+                        }
+                    />
+
+                    {/* Upload ảnh từ máy */}
                     <div className="mb-3">
-                        <label className="form-label">Ảnh danh mục</label>
+                        <label className="form-label">Hoặc chọn ảnh từ máy</label>
                         <CFormInput
                             type="file"
                             accept="image/*"
                             onChange={(e) => {
                                 const file = e.target.files[0];
                                 if (file) {
-                                    const imageUrl = URL.createObjectURL(file);
+                                    const previewURL = URL.createObjectURL(file);
                                     setNewCategory((prev) => ({
                                         ...prev,
                                         imageFile: file,
-                                        image: imageUrl,
+                                        image: previewURL,
                                     }));
                                 }
                             }}
                         />
                     </div>
 
+                    {/* Preview ảnh */}
                     {newCategory.image && (
                         <div className="text-center">
                             <CImage
@@ -335,14 +348,17 @@ const CategoryList = () => {
                     )}
                 </CModalBody>
                 <CModalFooter>
-                    <CButton color="secondary" onClick={() => setShowAddModal(false)}>Hủy</CButton>
-                    <CButton color="primary" onClick={handleSaveNewCategory}>Lưu</CButton>
+                    <CButton color="secondary" onClick={() => setShowAddModal(false)}>
+                        Hủy
+                    </CButton>
+                    <CButton color="primary" onClick={handleSaveNewCategory}>
+                        Lưu
+                    </CButton>
                 </CModalFooter>
             </CModal>
-
 
         </CCard>
     );
 };
 
-export default CategoryList;
+export default CategoriesList;

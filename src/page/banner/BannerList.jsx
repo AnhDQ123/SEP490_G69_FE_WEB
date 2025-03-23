@@ -12,42 +12,31 @@ import {
     CModalHeader,
     CModalBody,
     CModalFooter,
+    CSpinner
 } from '@coreui/react';
 import { FaArrowLeft, FaArrowRight, FaTrash, FaUpload } from 'react-icons/fa';
+import {
+    useGetBannersQuery,
+    useDeleteBannerMutation,
+    useUpdateBannerMutation
+} from '../../service/bannerService';
 
 const BannerList = () => {
     const [showBanner, setShowBanner] = useState(true);
     const [randomBanner, setRandomBanner] = useState(false);
     const [randomInterval, setRandomInterval] = useState(false);
-    const [banners, setBanners] = useState([
-        { id: 1, name: 'Banner 1', imageUrl: '' },
-        { id: 2, name: 'Banner 2', imageUrl: '' },
-        { id: 3, name: 'Banner 3', imageUrl: '' },
-        { id: 4, name: 'Banner 4', imageUrl: '' },
-        { id: 5, name: 'Banner 5', imageUrl: '' },
-    ]);
-    const [startIndex, setStartIndex] = useState(0);
     const [showModal, setShowModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedBanner, setSelectedBanner] = useState(null);
+    const [startIndex, setStartIndex] = useState(0);
 
-    const handleNext = () => {
-        if (startIndex + 2 < banners.length) {
-            setStartIndex(startIndex + 1);
-        }
-    };
+    const { data, isLoading } = useGetBannersQuery({ page: 0, size: 10 });
+    const [deleteBanner] = useDeleteBannerMutation();
+    const [updateBanner] = useUpdateBannerMutation();
 
-    const handlePrev = () => {
-        if (startIndex > 0) {
-            setStartIndex(startIndex - 1);
-        }
-    };
-
-    const handleDeleteImage = () => {
-        if (selectedBanner !== null) {
-            setBanners(banners.map(banner =>
-                banner.id === selectedBanner ? { ...banner, imageUrl: '' } : banner
-            ));
+    const handleDeleteImage = async () => {
+        if (selectedBanner) {
+            await deleteBanner(selectedBanner);
         }
         setShowDeleteModal(false);
     };
@@ -62,21 +51,37 @@ const BannerList = () => {
         setShowModal(true);
     };
 
-    const handleFileChange = (event) => {
-        if (selectedBanner !== null) {
-            const file = event.target.files[0];
-            if (file) {
-                const imageUrl = URL.createObjectURL(file);
-                setBanners(banners.map(banner =>
-                    banner.id === selectedBanner ? { ...banner, imageUrl } : banner
-                ));
-            }
+    const handleFileChange = async (event) => {
+        const file = event.target.files[0];
+        if (file && selectedBanner) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('name', 'Updated Banner');
+            formData.append('description', 'Banner updated via UI');
+
+            await updateBanner({ bannerId: selectedBanner, formData });
         }
         setShowModal(false);
     };
 
     const handleSave = () => {
-        console.log({ showBanner, randomBanner, randomInterval, banners });
+        console.log({ showBanner, randomBanner, randomInterval });
+    };
+
+    const banners = data?.content || [];
+
+    if (isLoading) return <CSpinner color="primary" />;
+
+    const handleNext = () => {
+        if (startIndex + 2 < banners.length) {
+            setStartIndex(startIndex + 1);
+        }
+    };
+
+    const handlePrev = () => {
+        if (startIndex > 0) {
+            setStartIndex(startIndex - 1);
+        }
     };
 
     return (
@@ -96,13 +101,13 @@ const BannerList = () => {
                         <FaArrowLeft className="position-absolute start-0" size={32} style={{ cursor: 'pointer' }} onClick={handlePrev} />
                         <CRow className="flex-nowrap overflow-hidden justify-content-center" style={{ width: '80%' }}>
                             {banners.slice(startIndex, startIndex + 2).map((banner) => (
-                                <CCol key={banner.id} md={6} className="text-center">
+                                <CCol key={banner.imageId} md={6} className="text-center">
                                     <div className="banner-box p-3 border rounded d-flex flex-column align-items-center justify-content-center" style={{ height: '300px', width: '100%' }}>
-                                        <div className="banner-image" style={{ width: '100%', height: '150px', background: banner.imageUrl ? `url(${banner.imageUrl})` : '#ccc', backgroundSize: 'cover' }}></div>
-                                        <p className="mt-2">{banner.name}</p>
+                                        <div className="banner-image" style={{ width: '100%', height: '150px', background: banner.url ? `url(${banner.url})` : '#ccc', backgroundSize: 'cover' }}></div>
+                                        <p className="mt-2">Banner #{banner.imageId}</p>
                                         <div className="d-flex gap-2 mt-2">
-                                            <FaUpload size={20} style={{ cursor: 'pointer' }} onClick={() => handleUploadClick(banner.id)} />
-                                            <FaTrash size={20} style={{ cursor: 'pointer', color: 'red' }} onClick={() => confirmDelete(banner.id)} />
+                                            <FaUpload size={20} style={{ cursor: 'pointer' }} onClick={() => handleUploadClick(banner.imageId)} />
+                                            <FaTrash size={20} style={{ cursor: 'pointer', color: 'red' }} onClick={() => confirmDelete(banner.imageId)} />
                                         </div>
                                     </div>
                                 </CCol>
@@ -118,7 +123,7 @@ const BannerList = () => {
                     />
                     <CFormCheck
                         className="mt-2"
-                        label="Chọn hiển thị banner ngẫu nhiên mỗi 30 phút"
+                        label="Chọn hiển thị banner ngắu nhiên mỗi 30 phút"
                         checked={randomInterval}
                         onChange={() => setRandomInterval(!randomInterval)}
                     />

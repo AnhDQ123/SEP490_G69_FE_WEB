@@ -17,30 +17,43 @@ import {
     CTableRow,
     CPagination,
     CPaginationItem,
+    CSpinner,
 } from '@coreui/react';
+import { useGetOrdersByStatusAndDateQuery } from '../../service/orderService';
 
 const OrderManagement = () => {
-    const [setSearchParams] = useState({
+    const [searchParams, setSearchParams] = useState({
         startDate: '',
         endDate: '',
-        product: '',
         status: 'all',
-        paymentStatus: 'all',
-        shippingStatus: 'all',
-        store: '',
+        storeName: '',
+        shipperName: '',
+        page: 0,
+        size: 10,
     });
 
-
-    const orders = [
-        { id: 'ORD001', customer: 'Nguyễn Văn A', product: 'Cơm rang', date: '2024-03-01', status: 'Hoàn thành', paymentStatus: 'Đã thanh toán', shippingStatus: 'Đã giao' },
-        { id: 'ORD002', customer: 'Trần Thị B', product: 'Phở bò', date: '2024-03-02', status: 'Chờ xử lý', paymentStatus: 'Chưa thanh toán', shippingStatus: 'Đang giao' },
-        { id: 'ORD003', customer: 'Lê Văn C', product: 'Bún chả', date: '2024-03-03', status: 'Hoàn thành', paymentStatus: 'Đã thanh toán', shippingStatus: 'Đã giao' },
-    ];
+    const [triggerSearch, setTriggerSearch] = useState(false);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setSearchParams(prev => ({ ...prev, [name]: value }));
     };
+
+    const handleSearch = () => {
+        setTriggerSearch(true);
+    };
+
+    const shouldSkip = !searchParams.startDate || !searchParams.endDate || !triggerSearch;
+
+    const { data, isLoading } = useGetOrdersByStatusAndDateQuery({
+        status: searchParams.status !== 'all' ? searchParams.status : 'PENDING',
+        startDate: `${searchParams.startDate}T00:00:00`,
+        endDate: `${searchParams.endDate}T23:59:59`,
+        page: searchParams.page,
+        size: searchParams.size,
+    }, { skip: shouldSkip });
+
+    const orders = data?.content || [];
 
     return (
         <CCard>
@@ -52,54 +65,54 @@ const OrderManagement = () => {
                     <CRow className="mb-3">
                         <CCol><CFormInput type="date" name="startDate" label="Ngày bắt đầu" onChange={handleInputChange} /></CCol>
                         <CCol><CFormInput type="date" name="endDate" label="Ngày kết thúc" onChange={handleInputChange} /></CCol>
-                        <CCol><CFormInput type="text" name="product" label="Mã đơn" placeholder="Nhập mã đơn..." onChange={handleInputChange} /></CCol>
-                    </CRow>
-                    <CRow>
+                        <CCol><CFormInput type="text" name="storeName" label="Tên cửa hàng" placeholder="Nhập tên cửa hàng..." onChange={handleInputChange} /></CCol>
+                        <CCol><CFormInput type="text" name="shipperName" label="Tên shipper" placeholder="Nhập tên shipper..." onChange={handleInputChange} /></CCol>
                         <CCol><CFormSelect name="status" label="Trạng thái" onChange={handleInputChange}>
                             <option value="all">Tất cả</option>
-                            <option value="pending">Chờ xác nhận</option>
-                            <option value="processing">Đang chuẩn bị</option>
-                            <option value="shipping">Đang giao</option>
-                            <option value="delivered">Đã giao</option>
-                            <option value="cancelled">Đã hủy</option>
-                            <option value="return_pending">Chở xứ lý trả hàng</option>
-                            <option value="returned">Đã trả</option>
-                            <option value="rejected">Đã từ chối</option>
-                            <option value="return_rejected">Từ chối trả hàng</option>
+                            <option value="PENDING">Chờ xác nhận</option>
+                            <option value="PROCESSING">Đang chuẩn bị</option>
+                            <option value="SHIPPING">Đang giao</option>
+                            <option value="DELIVERED">Đã giao</option>
+                            <option value="CANCELLED">Đã hủy</option>
+                            <option value="RETURN_PENDING">Chờ xử lý trả hàng</option>
+                            <option value="RETURNED">Đã trả</option>
+                            <option value="REJECTED">Đã từ chối</option>
+                            <option value="RETURN_REJECTED">Từ chối trả hàng</option>
                         </CFormSelect></CCol>
-                        <CCol><CFormInput type="text" name="store" label="Cửa hàng" placeholder="Nhập tên cửa hàng..."
-                                          onChange={handleInputChange} /></CCol>
                         <CCol className="d-flex align-items-end">
-                            <CButton color="primary">Tìm kiếm</CButton>
+                            <CButton color="primary" onClick={handleSearch}>Tìm kiếm</CButton>
                         </CCol>
                     </CRow>
                 </CForm>
-                <CTable striped hover className="mt-4">
-                    <CTableHead>
-                        <CTableRow>
-                            <CTableHeaderCell>Mã đơn</CTableHeaderCell>
-                            <CTableHeaderCell>Khách hàng</CTableHeaderCell>
-                            <CTableHeaderCell>Sản phẩm</CTableHeaderCell>
-                            <CTableHeaderCell>Ngày đặt</CTableHeaderCell>
-                            <CTableHeaderCell>Trạng thái</CTableHeaderCell>
-                            <CTableHeaderCell>Thanh toán</CTableHeaderCell>
-                            <CTableHeaderCell>Vận chuyển</CTableHeaderCell>
-                        </CTableRow>
-                    </CTableHead>
-                    <CTableBody>
-                        {orders.map((order, index) => (
-                            <CTableRow key={index}>
-                                <CTableDataCell>{order.id}</CTableDataCell>
-                                <CTableDataCell>{order.customer}</CTableDataCell>
-                                <CTableDataCell>{order.product}</CTableDataCell>
-                                <CTableDataCell>{order.date}</CTableDataCell>
-                                <CTableDataCell>{order.status}</CTableDataCell>
-                                <CTableDataCell>{order.paymentStatus}</CTableDataCell>
-                                <CTableDataCell>{order.shippingStatus}</CTableDataCell>
+
+                {isLoading ? (
+                    <div className="text-center mt-4">
+                        <CSpinner color="primary" />
+                    </div>
+                ) : (
+                    <CTable striped hover className="mt-4">
+                        <CTableHead>
+                            <CTableRow>
+                                <CTableHeaderCell>Mã đơn</CTableHeaderCell>
+                                <CTableHeaderCell>Khách hàng</CTableHeaderCell>
+                                <CTableHeaderCell>Sản phẩm</CTableHeaderCell>
+                                <CTableHeaderCell>Ngày đặt</CTableHeaderCell>
+                                <CTableHeaderCell>Trạng thái</CTableHeaderCell>
                             </CTableRow>
-                        ))}
-                    </CTableBody>
-                </CTable>
+                        </CTableHead>
+                        <CTableBody>
+                            {orders.map((order, index) => (
+                                <CTableRow key={index}>
+                                    <CTableDataCell>{order.code || order.id}</CTableDataCell>
+                                    <CTableDataCell>{order.customerName || 'Ẩn danh'}</CTableDataCell>
+                                    <CTableDataCell>{order.productName || '---'}</CTableDataCell>
+                                    <CTableDataCell>{order.createdAt?.slice(0, 10)}</CTableDataCell>
+                                    <CTableDataCell>{order.status}</CTableDataCell>
+                                </CTableRow>
+                            ))}
+                        </CTableBody>
+                    </CTable>
+                )}
             </CCardBody>
         </CCard>
     );

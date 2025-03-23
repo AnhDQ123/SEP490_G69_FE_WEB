@@ -10,7 +10,7 @@ import { useGetShippersByStatusQuery } from '../../service/shipperService';
 
 const ShipperList = () => {
     const navigate = useNavigate();
-    const [status, setStatus] = useState('PENDING');
+    const [status, setStatus] = useState('ACTIVE');
     const [page, setPage] = useState(0);
     const [size, setSize] = useState(10);
     const [search, setSearch] = useState('');
@@ -35,7 +35,8 @@ const ShipperList = () => {
     const totalPages = data?.totalPages || 1;
 
     const handleViewDetail = (shipper) => {
-        const status = shipper.shipperStatus || shipper.status;
+        console.log(shipper)
+        const status = shipper.shipper_status || null;
         const id = shipper.userId || shipper.id;
 
         switch (status) {
@@ -97,7 +98,6 @@ const ShipperList = () => {
                             <CTableHeaderCell>Họ tên</CTableHeaderCell>
                             <CTableHeaderCell>SĐT</CTableHeaderCell>
                             <CTableHeaderCell>Email</CTableHeaderCell>
-                            <CTableHeaderCell>Trạng thái</CTableHeaderCell>
                             <CTableHeaderCell>Hành động</CTableHeaderCell>
                         </CTableRow>
                     </CTableHead>
@@ -111,10 +111,9 @@ const ShipperList = () => {
                         ) : (
                             shippers.map((shipper, index) => (
                                 <CTableRow key={index}>
-                                    <CTableDataCell>{shipper.fullname}</CTableDataCell>
+                                    <CTableDataCell>{shipper.name}</CTableDataCell>
                                     <CTableDataCell>{shipper.phone}</CTableDataCell>
                                     <CTableDataCell>{shipper.email}</CTableDataCell>
-                                    <CTableDataCell>{shipper.shipperStatus}</CTableDataCell>
                                     <CTableDataCell>
                                         <CButton size="sm" color="info" onClick={() => handleViewDetail(shipper)}>
                                             Xem chi tiết
