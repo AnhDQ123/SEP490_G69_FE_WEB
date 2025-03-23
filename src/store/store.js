@@ -5,6 +5,7 @@ import {shopService} from "../service/shopService.js";
 import {rolesService} from "../service/roleService.js";
 import {loginService} from "../service/loginService.js";
 import {shipperService} from "../service/shipperService.js";
+import {categoryService} from "../service/categoryService.js";
 
 export const store = configureStore({
   reducer: {
@@ -14,9 +15,7 @@ export const store = configureStore({
     [rolesService.reducerPath]: rolesService.reducer,
     [loginService.reducerPath]: loginService.reducer,
     [shipperService.reducerPath]: shipperService.reducer,
-
-
-
+    [categoryService.reducerPath]: categoryService.reducer,
   },
   middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(
@@ -25,5 +24,6 @@ export const store = configureStore({
           shopService.middleware,
           rolesService.middleware,
           shipperService.middleware,
+          categoryService.middleware,
           loginService.middleware,),
 })

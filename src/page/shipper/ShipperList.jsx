@@ -1,30 +1,21 @@
+// ShipperList.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    CFormSelect,
-    CRow,
-    CTable,
-    CTableBody,
-    CTableDataCell,
-    CTableHead,
-    CTableHeaderCell,
-    CTableRow,
-    CPagination,
-    CPaginationItem,
-    CButton
+    CFormSelect, CRow, CTable, CTableBody, CTableDataCell,
+    CTableHead, CTableHeaderCell, CTableRow,
+    CPagination, CPaginationItem, CButton
 } from '@coreui/react';
 import { useGetShippersByStatusQuery } from '../../service/shipperService';
 
 const ShipperList = () => {
     const navigate = useNavigate();
-
-    const [status, setStatus] = useState('PENDING'); // Mặc định lọc shipper đang chờ
+    const [status, setStatus] = useState('PENDING');
     const [page, setPage] = useState(0);
     const [size, setSize] = useState(10);
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
 
-    // Debounce search
     useEffect(() => {
         const delay = setTimeout(() => {
             setDebouncedSearch(search);
@@ -33,7 +24,6 @@ const ShipperList = () => {
         return () => clearTimeout(delay);
     }, [search]);
 
-    // Call API
     const { data, error, isLoading } = useGetShippersByStatusQuery({
         status,
         page,
@@ -44,19 +34,19 @@ const ShipperList = () => {
     const shippers = data?.content || [];
     const totalPages = data?.totalPages || 1;
 
-    // Điều hướng sang detail tương ứng theo trạng thái shipper
     const handleViewDetail = (shipper) => {
-        const { shipperStatus, userId } = shipper;
+        const status = shipper.shipperStatus || shipper.status;
+        const id = shipper.userId || shipper.id;
 
-        switch (shipperStatus) {
-            case 'ACTIVE':
-                navigate(`/shipper-active/${userId}`);
-                break;
+        switch (status) {
             case 'PENDING':
-                navigate(`/shipper-pending/${userId}`);
+                navigate(`/shipper-pending/${id}`);
+                break;
+            case 'ACTIVE':
+                navigate(`/shipper-active/${id}`);
                 break;
             case 'INACTIVE':
-                navigate(`/shipper-inactive/${userId}`);
+                navigate(`/shipper-inactive/${id}`);
                 break;
             default:
                 alert('⚠️ Trạng thái người giao hàng không hợp lệ!');
@@ -68,7 +58,6 @@ const ShipperList = () => {
 
     return (
         <>
-            {/* Tìm kiếm và bộ lọc */}
             <CRow className="mb-3">
                 <CTable>
                     <CTableBody>
@@ -101,7 +90,6 @@ const ShipperList = () => {
                 </CTable>
             </CRow>
 
-            {/* Bảng dữ liệu */}
             <CRow>
                 <CTable striped hover responsive>
                     <CTableHead>
@@ -123,7 +111,7 @@ const ShipperList = () => {
                         ) : (
                             shippers.map((shipper, index) => (
                                 <CTableRow key={index}>
-                                    <CTableDataCell>{shipper.name}</CTableDataCell>
+                                    <CTableDataCell>{shipper.fullname}</CTableDataCell>
                                     <CTableDataCell>{shipper.phone}</CTableDataCell>
                                     <CTableDataCell>{shipper.email}</CTableDataCell>
                                     <CTableDataCell>{shipper.shipperStatus}</CTableDataCell>
@@ -139,7 +127,6 @@ const ShipperList = () => {
                 </CTable>
             </CRow>
 
-            {/* Phân trang */}
             <CRow className="mt-3 d-flex justify-content-center">
                 <CPagination align="center">
                     <CPaginationItem disabled={page === 0} onClick={() => setPage((prev) => Math.max(prev - 1, 0))}>

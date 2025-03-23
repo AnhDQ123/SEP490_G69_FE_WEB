@@ -38,7 +38,7 @@ const ShipperPending = () => {
 
     const handleConfirmUpdateStatus = async () => {
         try {
-            if (confirmStatus === 'APPROVED') {
+            if (confirmStatus === 'ACTIVE') {
                 await approveShipper(id).unwrap();
                 alert('✅ Duyệt thành công!');
             } else {
