@@ -42,12 +42,6 @@ const _nav = [
     },
     {
         component: CNavItem,
-        name: 'Sản phẩm',
-        to: '/products-list',
-        icon: <CIcon icon={freeSet.cilBurger} customClassName="nav-icon"/>,
-    },
-    {
-        component: CNavItem,
         name: 'Category',
         to: '/categories-list',
         icon: <CIcon icon={freeSet.cilApple} customClassName="nav-icon"/>,
@@ -69,6 +63,12 @@ const _nav = [
         name: 'Thông báo',
         to: '/notifications-list',
         icon: <CIcon icon={freeSet.cilBell} customClassName="nav-icon"/>,
+    },
+    {
+        component: CNavItem,
+        name: 'Cài đặt',
+        to: 'nav',
+        icon: <CIcon icon={freeSet.cilSettings} customClassName="nav-icon"/>,
     },
 ]
 

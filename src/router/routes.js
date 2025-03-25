@@ -24,7 +24,7 @@ const routes = [
   { path: '/user-list', name: 'UserList', element: UserList },
   { path: '/user/:id', name: 'UserDetail', element: UserDetail },
   { path: '/shop-list', name: 'ShopList', element: ShopList },
-  { path: '/products-list', name: 'ProductList', element: ProductList },
+  { path: '/products-list/:id', name: 'ProductList', element: ProductList },
   { path: '/product/:id', name: 'ProductDetail', element: ProductDetail },
   { path: '/shop-pending/:id', name: 'ShopPending', element: ShopPending },
   { path: '/shop-active/:id', name: 'ShopActive', element: ShopActive },

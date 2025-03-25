@@ -1,4 +1,3 @@
-// ShipperList.jsx
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -10,35 +9,39 @@ import { useGetShippersByStatusQuery } from '../../service/shipperService';
 
 const ShipperList = () => {
     const navigate = useNavigate();
-    const [status, setStatus] = useState('ACTIVE');
-    const [page, setPage] = useState(0);
-    const [size, setSize] = useState(10);
-    const [search, setSearch] = useState('');
-    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [status, setStatus] = useState('ACTIVE');  // Default to 'ACTIVE'
+    const [page, setPage] = useState(0);  // Pagination
+    const [size, setSize] = useState(10);  // Number of items per page
+    const [search, setSearch] = useState('');  // Search query
+    const [debouncedSearch, setDebouncedSearch] = useState('');  // For debouncing search
 
+    // Debouncing search input
     useEffect(() => {
         const delay = setTimeout(() => {
             setDebouncedSearch(search);
-            setPage(0);
+            setPage(0);  // Reset page number to 0 on search change
         }, 400);
-        return () => clearTimeout(delay);
+        return () => clearTimeout(delay);  // Cleanup timeout on unmount or search change
     }, [search]);
 
+    // Fetching shippers based on status, pagination, and debounced search
     const { data, error, isLoading } = useGetShippersByStatusQuery({
-        status,
-        page,
-        size,
-        search: debouncedSearch,
+        status,  // The current status (ACTIVE, INACTIVE, PENDING)
+        page,    // Current page
+        size,    // Number of items per page
+        search: debouncedSearch,  // The debounced search query
     });
 
-    const shippers = data?.content || [];
-    const totalPages = data?.totalPages || 1;
+    const shippers = data?.content || [];  // The list of shippers
+    const totalPages = data?.totalPages || 1;  // Total number of pages
 
+    // Handle view detail of a shipper
     const handleViewDetail = (shipper) => {
         console.log(shipper)
-        const status = shipper.shipper_status || null;
+        const status = shipper.shipperStatus || null;
         const id = shipper.userId || shipper.id;
 
+        // Navigate based on the status of the shipper
         switch (status) {
             case 'PENDING':
                 navigate(`/shipper-pending/${id}`);
@@ -48,6 +51,9 @@ const ShipperList = () => {
                 break;
             case 'INACTIVE':
                 navigate(`/shipper-inactive/${id}`);
+                break;
+            case 'REJECTED':
+                navigate(`/shipper-rjected/${id}`);
                 break;
             default:
                 alert('⚠️ Trạng thái người giao hàng không hợp lệ!');
@@ -73,10 +79,14 @@ const ShipperList = () => {
                                 />
                             </CTableDataCell>
                             <CTableDataCell>
-                                <CFormSelect value={status} onChange={(e) => { setStatus(e.target.value); setPage(0); }}>
+                                <CFormSelect value={status} onChange={(e) => {
+                                    setStatus(e.target.value);
+                                    setPage(0);
+                                }}>
                                     <option value="PENDING">Chờ duyệt</option>
                                     <option value="ACTIVE">Hoạt động</option>
                                     <option value="INACTIVE">Tạm dừng</option>
+                                    <option value="REJECTED">Từ chối</option>
                                 </CFormSelect>
                             </CTableDataCell>
                             <CTableDataCell>

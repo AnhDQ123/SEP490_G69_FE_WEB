@@ -9,10 +9,10 @@ export const shipperService = createApi({
         // Shipper list by status
         getShippersByStatus: builder.query({
             query: ({ status, page = 0, size = 10, search = '' }) => ({
-                url: `api/shippers`,
-                params: { status, page, size, search },
+                url: `api/shippers`, // The endpoint to fetch the list of shippers
+                params: { status, page, size, search }, // Query parameters passed
             }),
-            providesTags: ["shipper"],
+            providesTags: ["shipper"], // Used to manage cache invalidation for this query
         }),
 
         // Shipper detail

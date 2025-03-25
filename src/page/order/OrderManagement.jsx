@@ -65,8 +65,7 @@ const OrderManagement = () => {
                     <CRow className="mb-3">
                         <CCol><CFormInput type="date" name="startDate" label="Ngày bắt đầu" onChange={handleInputChange} /></CCol>
                         <CCol><CFormInput type="date" name="endDate" label="Ngày kết thúc" onChange={handleInputChange} /></CCol>
-                        <CCol><CFormInput type="text" name="storeName" label="Tên cửa hàng" placeholder="Nhập tên cửa hàng..." onChange={handleInputChange} /></CCol>
-                        <CCol><CFormInput type="text" name="shipperName" label="Tên shipper" placeholder="Nhập tên shipper..." onChange={handleInputChange} /></CCol>
+                        <CCol><CFormInput type="text" name="orderId" label="Mã đơn hàng" placeholder="Nhập mã đơn hàng..." onChange={handleInputChange} /></CCol>
                         <CCol><CFormSelect name="status" label="Trạng thái" onChange={handleInputChange}>
                             <option value="all">Tất cả</option>
                             <option value="PENDING">Chờ xác nhận</option>
@@ -94,20 +93,21 @@ const OrderManagement = () => {
                         <CTableHead>
                             <CTableRow>
                                 <CTableHeaderCell>Mã đơn</CTableHeaderCell>
-                                <CTableHeaderCell>Khách hàng</CTableHeaderCell>
-                                <CTableHeaderCell>Sản phẩm</CTableHeaderCell>
+                                <CTableHeaderCell>Người mua</CTableHeaderCell>
+                                <CTableHeaderCell>Cửa hàng</CTableHeaderCell>
                                 <CTableHeaderCell>Ngày đặt</CTableHeaderCell>
-                                <CTableHeaderCell>Trạng thái</CTableHeaderCell>
+                                <CTableHeaderCell>Giá đơn</CTableHeaderCell>
+
                             </CTableRow>
                         </CTableHead>
                         <CTableBody>
                             {orders.map((order, index) => (
                                 <CTableRow key={index}>
                                     <CTableDataCell>{order.code || order.id}</CTableDataCell>
-                                    <CTableDataCell>{order.customerName || 'Ẩn danh'}</CTableDataCell>
-                                    <CTableDataCell>{order.productName || '---'}</CTableDataCell>
+                                    <CTableDataCell>{order.username}</CTableDataCell>
+                                    <CTableDataCell>{order.name}</CTableDataCell>
                                     <CTableDataCell>{order.createdAt?.slice(0, 10)}</CTableDataCell>
-                                    <CTableDataCell>{order.status}</CTableDataCell>
+                                    <CTableDataCell>{order.total}</CTableDataCell>
                                 </CTableRow>
                             ))}
                         </CTableBody>

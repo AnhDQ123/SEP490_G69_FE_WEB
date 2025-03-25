@@ -134,13 +134,6 @@ const ShopList = () => {
                             </CTableRow>
                         ))}
                     </CTableBody>
-                    {/*<CTableFoot>*/}
-                    {/*    <CTableRow>*/}
-                    {/*        <CTableHeaderCell>*/}
-                    {/*            <span>Tổng số: {data?.totalElements || 0} cửa hàng</span>*/}
-                    {/*        </CTableHeaderCell>*/}
-                    {/*    </CTableRow>*/}
-                    {/*</CTableFoot>*/}
                 </CTable>
             </CRow>
 

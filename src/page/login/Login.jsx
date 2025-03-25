@@ -19,7 +19,6 @@ import {useLoginMutation} from "../../service/loginService.js";
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [rememberMe, setRememberMe] = useState(false);
     const navigate = useNavigate();
     const [login, { isLoading, error }] = useLoginMutation();
 
@@ -76,14 +75,7 @@ const Login = () => {
                                             required
                                         />
                                     </div>
-                                    <div className="mb-3">
-                                        <CFormCheck
-                                            id="rememberMe"
-                                            label="Ghi nhớ tài khoản"
-                                            checked={rememberMe}
-                                            onChange={() => setRememberMe(!rememberMe)}
-                                        />
-                                    </div>
+
                                     <div className="mb-3 text-center">
                                         <CButton type="submit" color="primary" disabled={isLoading}>Đăng nhập</CButton>
                                     </div>

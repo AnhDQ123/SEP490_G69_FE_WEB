@@ -115,18 +115,6 @@ const BannerList = () => {
                         </CRow>
                         <FaArrowRight className="position-absolute end-0" size={32} style={{ cursor: 'pointer' }} onClick={handleNext} />
                     </div>
-                    <CFormCheck
-                        className="mt-3"
-                        label="Chọn hiển thị banner ngẫu nhiên"
-                        checked={randomBanner}
-                        onChange={() => setRandomBanner(!randomBanner)}
-                    />
-                    <CFormCheck
-                        className="mt-2"
-                        label="Chọn hiển thị banner ngắu nhiên mỗi 30 phút"
-                        checked={randomInterval}
-                        onChange={() => setRandomInterval(!randomInterval)}
-                    />
                     <div className="mt-4 d-flex justify-content-center">
                         <CButton color="primary" onClick={handleSave}>Lưu</CButton>
                     </div>

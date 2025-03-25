@@ -12,6 +12,7 @@ import {
     useUpdateCategoryMutation,
     useDeleteCategoryMutation,
 } from '../../service/categoryService';
+import {categoryValidationSchema} from "../../utils/validation.js";
 
 const CategoriesList = () => {
     const [search, setSearch] = useState('');
@@ -67,15 +68,23 @@ const CategoriesList = () => {
 
     // Handle create
     const handleSaveNewCategory = async () => {
-        if (!newCategory.name.trim()) return alert('⚠️ Vui lòng nhập tên danh mục');
         try {
-            await createCategory({data: newCategory, file: newCategory.imageFile}).unwrap();
+            // Validate the newCategory data
+            await categoryValidationSchema.validate(newCategory, { abortEarly: false });
+
+            // If validation passes, save the category
+            await createCategory({ data: newCategory, file: newCategory.imageFile }).unwrap();
             alert('✅ Thêm thành công');
             setShowAddModal(false);
-            setNewCategory({name: '', description: '', imageFile: null, image: ''});
-            refetch();
-        } catch {
-            alert('❌ Thêm thất bại');
+            setNewCategory({ name: '', description: '', imageFile: null, image: '' });
+        } catch (err) {
+            // If validation fails, show errors
+            if (err.inner) {
+                const errorMessages = err.inner.map((error) => error.message);
+                alert(`❌ Lỗi: ${errorMessages.join(', ')}`);
+            } else {
+                alert(`❌ Lỗi: ${err.message}`);
+            }
         }
     };
 
