@@ -11,7 +11,7 @@ import {
     CModalBody,
     CModalFooter,
     CModalHeader,
-    CModalTitle
+    CModalTitle, CFormTextarea
 } from '@coreui/react';
 import { FaArrowRight, FaArrowCircleRight, FaArrowCircleLeft } from 'react-icons/fa';
 import { useGetShopByIdQuery, useUpdateShopStatusMutation } from '../../service/shopService.js';
@@ -31,7 +31,9 @@ const ShopPending = () => {
 
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [confirmStatus, setConfirmStatus] = useState('');
-
+    const [rejectionReason, setRejectionReason] = useState('');
+    const [showRejectionReasonModal, setShowRejectionReasonModal] = useState(false); // Modal nhập lý do từ chối
+    const [currentSide, setCurrentSide] = useState('front'); // Mặt hiện tại (mặt trước hoặc mặt sau)
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
     useEffect(() => {
@@ -47,13 +49,21 @@ const ShopPending = () => {
     // Mở modal xác nhận
     const handleOpenConfirmModal = (status) => {
         setConfirmStatus(status);
-        setShowConfirmModal(true);
+        if (status === 'REJECTED') {
+            setShowRejectionReasonModal(true); // Hiện modal nhập lý do từ chối khi chọn 'REJECTED'
+        } else {
+            setShowConfirmModal(true); // Mở modal xác nhận nếu không phải từ chối
+        }
     };
 
     // Update status
     const handleConfirmUpdateStatus = async () => {
         try {
-            await updateShopStatus({ shopId: id, status: confirmStatus }).unwrap();
+            const updateData = { shopId: id, status: confirmStatus };
+            if (confirmStatus === 'REJECTED' && rejectionReason) {
+                updateData.rejectionReason = rejectionReason; // Thêm lý do từ chối vào
+            }
+            await updateShopStatus(updateData).unwrap();
             setShop({ ...shop, isActive: confirmStatus });
             alert(`Cửa hàng đã được cập nhật trạng thái: ${confirmStatus}`);
             navigate('/shop-list');
@@ -62,21 +72,32 @@ const ShopPending = () => {
             alert('Cập nhật thất bại!');
         } finally {
             setShowConfirmModal(false);
+            setShowRejectionReasonModal(false);
         }
     };
 
     const imagesBackground = shop?.images || [shop.backgroundImage];
     const imageRegistrationCertificate = shop?.images || [shop.registrationCertificate];
-    const foodSafetyCertificate = shop?.foodSafetyCertificate || []; // Assuming food safety certificate is stored in `foodSafetyCertificate`
-    const citizenIdFront = shop?.citizenIdFront || []; // Assuming Citizen ID Front is stored in `citizenIdFront`
-    const citizenIdBack = shop?.citizenIdBack || []; // Assuming Citizen ID Back is stored in `citizenIdBack`
+    const foodSafetyCertificate = shop?.images || [shop.foodSafetyCertificate];
+    const citizenIdFront = shop?.images || [shop.citizenIDCardFront];
+    const citizenIdBack = shop?.images || [shop.citizenIDCardBack];
 
     const handleNextImage = () => {
-        setCurrentImageIndex((prevIndex) => (prevIndex + 1) % imagesBackground.length);
+        if (currentSide === 'front') {
+            setCurrentSide('back');
+        } else {
+            setCurrentSide('front');
+        }
     };
 
     const handlePrevImage = () => {
-        setCurrentImageIndex((prevIndex) => (prevIndex - 1 + imagesBackground.length) % imagesBackground.length);
+        if (currentSide === 'front') {
+            // Quay lại ảnh căn cước công dân mặt trước
+            setCurrentImageIndex((prevIndex) => (prevIndex - 1 + citizenIdFront.length) % citizenIdFront.length);
+        } else if (currentSide === 'back') {
+            // Quay lại ảnh căn cước công dân mặt sau
+            setCurrentImageIndex((prevIndex) => (prevIndex - 1 + citizenIdBack.length) % citizenIdBack.length);
+        }
     };
 
     return (
@@ -84,17 +105,15 @@ const ShopPending = () => {
             <CCardBody>
                 <h4 className="mb-3">Danh sách cửa hàng {'>'} Cửa hàng chờ duyệt</h4>
                 <CRow className="mb-3">
-                    <CCol md={6}>
+                    <CCol>
                         <label>Tên cửa hàng</label>
                         <CFormInput disabled value={shop.name} />
                     </CCol>
-                </CRow>
-                <CRow className="mb-3">
-                    <CCol md={6}>
+                    <CCol>
                         <label>Chủ cửa hàng</label>
                         <CFormInput disabled value={shop.owner.username} />
                     </CCol>
-                    <CCol md={6}>
+                    <CCol>
                         <label>Số điện thoại</label>
                         <CFormInput disabled value={shop.phone} />
                     </CCol>
@@ -148,7 +167,6 @@ const ShopPending = () => {
                         />
                     </CCol>
                 </CRow>
-
                 {/* New section for food safety certificate */}
                 <CRow className="mb-3">
                     <CCol md={6} className="d-flex align-items-center">
@@ -161,7 +179,6 @@ const ShopPending = () => {
                         />
                     </CCol>
                 </CRow>
-
                 {/* New section for Citizen ID */}
                 <CRow className="mb-3">
                     <CCol md={6} className="d-flex align-items-center">
@@ -210,6 +227,25 @@ const ShopPending = () => {
                 </CModalFooter>
             </CModal>
 
+            {/* Modal nhập lý do từ chối */}
+            <CModal visible={showRejectionReasonModal} onClose={() => setShowRejectionReasonModal(false)} centered>
+                <CModalHeader>
+                    <CModalTitle>Nhập lý do từ chối</CModalTitle>
+                </CModalHeader>
+                <CModalBody>
+                    <CFormTextarea
+                        rows={4}
+                        placeholder="Vui lòng nhập lý do từ chối cửa hàng này"
+                        value={rejectionReason}
+                        onChange={(e) => setRejectionReason(e.target.value)}
+                    />
+                </CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={() => setShowRejectionReasonModal(false)}>Hủy</CButton>
+                    <CButton color="danger" onClick={handleConfirmUpdateStatus}>Từ chối</CButton>
+                </CModalFooter>
+            </CModal>
+
             {/* Modal image shop's background */}
             <CModal visible={showImageBackground} onClose={() => setShowImageBackground(false)} size="lg" centered>
                 <CModalBody
@@ -224,12 +260,6 @@ const ShopPending = () => {
                         borderRadius: '10px'
                     }}
                 >
-                    <FaArrowCircleLeft
-                        size={40}
-                        className="position-absolute start-0 ms-3"
-                        style={{ cursor: 'pointer' }}
-                        onClick={handlePrevImage}
-                    />
                     {imagesBackground.length > 0 && (
                         <img
                             src={imagesBackground[currentImageIndex]}
@@ -242,12 +272,6 @@ const ShopPending = () => {
                             }}
                         />
                     )}
-                    <FaArrowCircleRight
-                        size={40}
-                        className="position-absolute end-0 me-3"
-                        style={{ cursor: 'pointer' }}
-                        onClick={handleNextImage}
-                    />
                 </CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" onClick={() => setShowImageBackground(false)}>Đóng</CButton>
@@ -268,12 +292,6 @@ const ShopPending = () => {
                         borderRadius: '10px'
                     }}
                 >
-                    <FaArrowCircleLeft
-                        size={40}
-                        className="position-absolute start-0 ms-3"
-                        style={{ cursor: 'pointer' }}
-                        onClick={handlePrevImage}
-                    />
                     {imageRegistrationCertificate.length > 0 && (
                         <img
                             src={imageRegistrationCertificate[currentImageIndex]}
@@ -286,12 +304,6 @@ const ShopPending = () => {
                             }}
                         />
                     )}
-                    <FaArrowCircleRight
-                        size={40}
-                        className="position-absolute end-0 me-3"
-                        style={{ cursor: 'pointer' }}
-                        onClick={handleNextImage}
-                    />
                 </CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" onClick={() => setShowImageRegistrationCertificate(false)}>Đóng</CButton>
@@ -312,12 +324,6 @@ const ShopPending = () => {
                         borderRadius: '10px'
                     }}
                 >
-                    <FaArrowCircleLeft
-                        size={40}
-                        className="position-absolute start-0 ms-3"
-                        style={{ cursor: 'pointer' }}
-                        onClick={handlePrevImage}
-                    />
                     {foodSafetyCertificate.length > 0 && (
                         <img
                             src={foodSafetyCertificate[currentImageIndex]}
@@ -330,12 +336,6 @@ const ShopPending = () => {
                             }}
                         />
                     )}
-                    <FaArrowCircleRight
-                        size={40}
-                        className="position-absolute end-0 me-3"
-                        style={{ cursor: 'pointer' }}
-                        onClick={handleNextImage}
-                    />
                 </CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" onClick={() => setShowFoodSafetyCertificate(false)}>Đóng</CButton>
@@ -362,18 +362,41 @@ const ShopPending = () => {
                         style={{ cursor: 'pointer' }}
                         onClick={handlePrevImage}
                     />
-                    {citizenIdFront.length > 0 && (
-                        <img
-                            src={citizenIdFront[currentImageIndex]}
-                            alt="Căn cước công dân mặt trước"
-                            style={{
-                                maxWidth: '100%',
-                                maxHeight: '80vh',
-                                objectFit: 'contain',
-                                borderRadius: '8px'
-                            }}
-                        />
+
+                    {/* Hiển thị ảnh căn cước công dân mặt trước */}
+                    {currentSide === 'front' && citizenIdFront.length > 0 && (
+                        <div className="d-flex flex-column align-items-center">
+                            <h5>Mặt trước</h5>
+                            <img
+                                src={citizenIdFront[currentImageIndex]}
+                                alt="Căn cước công dân mặt trước"
+                                style={{
+                                    maxWidth: '100%',
+                                    maxHeight: '80vh',
+                                    objectFit: 'contain',
+                                    borderRadius: '8px'
+                                }}
+                            />
+                        </div>
                     )}
+
+                    {/* Hiển thị ảnh căn cước công dân mặt sau */}
+                    {currentSide === 'back' && citizenIdBack.length > 0 && (
+                        <div className="d-flex flex-column align-items-center mt-4">
+                            <h5>Mặt sau</h5>
+                            <img
+                                src={citizenIdBack[currentImageIndex]}
+                                alt="Căn cước công dân mặt sau"
+                                style={{
+                                    maxWidth: '100%',
+                                    maxHeight: '80vh',
+                                    objectFit: 'contain',
+                                    borderRadius: '8px'
+                                }}
+                            />
+                        </div>
+                    )}
+
                     <FaArrowCircleRight
                         size={40}
                         className="position-absolute end-0 me-3"

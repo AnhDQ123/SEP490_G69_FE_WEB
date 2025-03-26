@@ -16,6 +16,8 @@ import ShipperActive from "../page/shipper/ShipperActive.jsx";
 import ShipperInactive from "../page/shipper/ShipperInactive.jsx";
 import NotificationsList from "../page/notification/NotificationsList.jsx";
 import CategoriesList from "../page/category/CategoriesList.jsx";
+import OrderDetail from "../page/order/OrderDetail.jsx";
+// import Dashboard from "../page/dashboard/Dashboard.jsx";
 
 // const Dashboard = React.lazy(() => import('../views/dashboard/Dashboard'))
 
@@ -38,6 +40,8 @@ const routes = [
   { path: '/shipper-inactive/:id', name: 'ShipperInactive', element: ShipperInactive },
   { path: '/notifications-list', name: 'NotificationsList', element: NotificationsList },
   { path: '/categories-list', name: 'CategoriesList', element: CategoriesList },
+  { path: '/order/:id', name: 'OrderDetail', element: OrderDetail },
+  // { path: '/dashboard', name: 'Dashboard', element: Dashboard },
 
   { path: '/login', name: 'Login', element: Login },
 

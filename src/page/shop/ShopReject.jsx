@@ -67,10 +67,6 @@ const ShopReject = () => {
                         <label>Tên cửa hàng</label>
                         <CFormInput disabled value={shop.name} />
                     </CCol>
-                </CRow>
-
-                {/* Hàng thứ hai */}
-                <CRow className="mb-3">
                     <CCol md={6}>
                         <label>Chủ cửa hàng</label>
                         <CFormInput disabled value={shop.owner.username} />

@@ -76,17 +76,15 @@ const ShopInactive = () => {
             <CCardBody>
                 <h4 className="mb-3">Danh sách cửa hàng {'>'} Cửa hàng ngừng hoạt động</h4>
                 <CRow className="mb-3">
-                    <CCol md={6}>
+                    <CCol>
                         <label>Tên cửa hàng</label>
                         <CFormInput disabled value={shop.name} />
                     </CCol>
-                </CRow>
-                <CRow className="mb-3">
-                    <CCol md={6}>
+                    <CCol>
                         <label>Chủ cửa hàng</label>
                         <CFormInput disabled value={shop.owner.username} />
                     </CCol>
-                    <CCol md={6}>
+                    <CCol>
                         <label>Số điện thoại</label>
                         <CFormInput disabled value={shop.phone} />
                     </CCol>
