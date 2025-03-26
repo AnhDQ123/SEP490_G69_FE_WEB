@@ -130,7 +130,7 @@ const OrderManagement = () => {
                                     <CTableRow
                                         key={index}
                                         style={{ cursor: 'pointer' }}
-                                        onClick={() => navigate(`/orders/${order.id}`)}
+                                        onClick={() => navigate(`/order/${order.id}`)}
                                     >
                                     <CTableDataCell>{order.code || order.id}</CTableDataCell>
                                         <CTableDataCell>{order.ownerName}</CTableDataCell>

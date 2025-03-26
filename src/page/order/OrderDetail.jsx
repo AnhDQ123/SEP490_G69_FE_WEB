@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     CCard,
     CCardBody,
@@ -7,17 +7,22 @@ import {
     CCol,
     CSpinner
 } from '@coreui/react';
-import { useParams } from 'react-router-dom';
-import { useGetOrderByIdQuery } from '../../service/orderService';
+import {useParams} from 'react-router-dom';
+import {useGetOrderByIdQuery} from '../../service/orderService';
 
 const OrderDetail = () => {
-    const { id } = useParams();
-    const { data: order, isLoading } = useGetOrderByIdQuery(id);
-
+    const {id} = useParams();
+    const [order, setOrder] = useState({});
+    const {data, isLoading} = useGetOrderByIdQuery(id);
+    useEffect(() => {
+        if (data) {
+            setOrder(data);
+        }
+    }, [data]);
     if (isLoading) {
         return (
             <div className="text-center mt-5">
-                <CSpinner color="primary" />
+                <CSpinner color="primary"/>
             </div>
         );
     }
