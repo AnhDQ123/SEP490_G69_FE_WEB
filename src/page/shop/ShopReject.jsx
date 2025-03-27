@@ -1,32 +1,32 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
     CRow,
     CCol,
     CCard,
     CCardBody,
     CFormInput,
-    CFormSelect,
     CButton,
     CImage,
     CModal,
     CModalBody,
     CModalFooter,
     CModalHeader,
-    CModalTitle
+    CModalTitle,
+    CFormTextarea
 } from '@coreui/react';
-import { useGetShopByIdQuery, useUpdateShopStatusMutation } from '../../service/shopService.js';
+import { FaArrowRight } from 'react-icons/fa';
+import { useGetShopByIdQuery} from '../../service/shopService.js';
 
 const ShopReject = () => {
     const [shop, setShop] = useState(null);
-    const { id } = useParams(); // Lấy shop_id từ URL
-    const navigate = useNavigate();
+    const { id } = useParams();
 
-    // Call API
     const { data, error, isLoading } = useGetShopByIdQuery(id);
-    const [updateShopStatus] = useUpdateShopStatusMutation();
-
-    const [showModal, setShowModal] = useState(false); // State cho Modal Popup
+    const [showImageBackground, setShowImageBackground] = useState(false);
+    const [showImageRegistrationCertificate, setShowImageRegistrationCertificate] = useState(false);
+    const [showFoodSafetyCertificate, setShowFoodSafetyCertificate] = useState(false);
+    const [showCitizenId, setShowCitizenId] = useState(false);
 
     useEffect(() => {
         if (data) {
@@ -38,46 +38,28 @@ const ShopReject = () => {
     if (error) return <p>Có lỗi xảy ra khi lấy dữ liệu cửa hàng</p>;
     if (!shop) return <p>Không tìm thấy thông tin cửa hàng</p>;
 
-    // Update status
-    const handleApproveShop = async () => {
-        try {
-            await updateShopStatus({ shopId: id, status: "PENDING" }).unwrap();
-            setShop({ ...shop, isActive: "PENDING" }); // Cập nhật UI
-            setShowModal(true); // Hiển thị modal sau khi cập nhật thành công
-        } catch (error) {
-            console.error("Lỗi cập nhật trạng thái:", error);
-            alert("Cập nhật thất bại!");
-        }
-    };
-
-    // Hàm xử lý khi bấm nút "OK" trong modal
-    const handleModalClose = () => {
-        setShowModal(false);
-        navigate('/shop-list'); // Điều hướng về màn ShopList
-    };
 
     return (
         <CCard className="p-4">
             <CCardBody>
                 <h4 className="mb-3">Danh sách cửa hàng {'>'} Cửa hàng bị từ chối</h4>
 
-                {/* Hàng đầu tiên */}
+                {/* Shop Details */}
                 <CRow className="mb-3">
-                    <CCol md={6}>
+                    <CCol>
                         <label>Tên cửa hàng</label>
                         <CFormInput disabled value={shop.name} />
                     </CCol>
-                    <CCol md={6}>
+                    <CCol>
                         <label>Chủ cửa hàng</label>
                         <CFormInput disabled value={shop.owner.username} />
                     </CCol>
-                    <CCol md={6}>
+                    <CCol>
                         <label>Số điện thoại</label>
                         <CFormInput disabled value={shop.phone} />
                     </CCol>
                 </CRow>
 
-                {/* Hàng thứ ba */}
                 <CRow className="mb-3">
                     <CCol md={12}>
                         <label>Địa chỉ</label>
@@ -85,11 +67,10 @@ const ShopReject = () => {
                     </CCol>
                 </CRow>
 
-                {/* Hàng thứ tư */}
                 <CRow className="mb-3">
                     <CCol md={6}>
                         <label>Loại cửa hàng</label>
-                        <CFormInput disabled value={shop.sellType}/>
+                        <CFormInput disabled value={shop.sellType} />
                     </CCol>
                     <CCol md={6}>
                         <label>Giờ hoạt động</label>
@@ -97,7 +78,6 @@ const ShopReject = () => {
                     </CCol>
                 </CRow>
 
-                {/* Hàng thứ năm */}
                 <CRow className="mb-3">
                     <CCol md={6}>
                         <label>Mã số thuế</label>
@@ -105,64 +85,119 @@ const ShopReject = () => {
                     </CCol>
                     <CCol md={6}>
                         <label>Trạng thái</label>
-                        <CFormSelect disabled value={shop.isActive}>
-                            <option value="REJECTED">Bị từ chối</option>
-                            <option value="PENDING">Chờ duyệt</option>
-                        </CFormSelect>
+                        <CFormInput disabled value={shop.isActive} />
                     </CCol>
                 </CRow>
 
-                {/* Hàng thứ sáu */}
                 <CRow className="mb-3">
-                    <CCol md={6}>
+                    <CCol md={12}>
+                        <label>Lí do từ chối</label>
+                        <CFormInput disabled value={shop.address} />
+                    </CCol>
+                </CRow>
+
+                {/* Images */}
+                <CRow className="mb-3">
+                    <CCol md={6} className="d-flex align-items-center">
                         <label>Ảnh cửa hàng</label>
-                        <CImage
-                            src={shop.backgroundImage}
-                            className="border rounded mt-2"
-                            width={200}
-                            height={150}
-                            alt="Ảnh cửa hàng"
+                        <FaArrowRight
+                            className="ms-3"
+                            size={24}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => setShowImageBackground(true)}
                         />
                     </CCol>
-                    <CCol md={6}>
+                </CRow>
+                <CRow className="mb-3">
+                    <CCol md={6} className="d-flex align-items-center">
                         <label>Giấy phép kinh doanh</label>
-                        <CImage
-                            src={shop.registration_certificate}
-                            className="border rounded mt-2"
-                            width={200}
-                            height={150}
-                            alt="Giấy phép kinh doanh"
+                        <FaArrowRight
+                            className="ms-3"
+                            size={24}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => setShowImageRegistrationCertificate(true)}
+                        />
+                    </CCol>
+                </CRow>
+                <CRow className="mb-3">
+                    <CCol md={6} className="d-flex align-items-center">
+                        <label>Giấy phép vệ sinh an toàn thực phẩm</label>
+                        <FaArrowRight
+                            className="ms-3"
+                            size={24}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => setShowFoodSafetyCertificate(true)}
+                        />
+                    </CCol>
+                </CRow>
+                <CRow className="mb-3">
+                    <CCol md={6} className="d-flex align-items-center">
+                        <label>Căn cước công dân</label>
+                        <FaArrowRight
+                            className="ms-3"
+                            size={24}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => setShowCitizenId(true)}
                         />
                     </CCol>
                 </CRow>
 
-                {/* Nút chức năng */}
-                <CRow className="text-center mt-4">
-                    <CCol md={4}>
-                        <CButton color="warning" className="w-100" onClick={handleApproveShop}>
-                            Duyệt lại cửa hàng
-                        </CButton>
-                    </CCol>
-                    <CCol md={4}>
-                        <CButton color="secondary" className="w-100" onClick={() => navigate('/shop-list')}>
-                            Quay lại
-                        </CButton>
-                    </CCol>
-                </CRow>
             </CCardBody>
 
-            {/* Modal Popup xác nhận */}
-            <CModal visible={showModal} onClose={handleModalClose}>
-                <CModalHeader>
-                    <CModalTitle>Xác nhận</CModalTitle>
-                </CModalHeader>
-                <CModalBody>
-                    Cửa hàng đã được duyệt lại và đang trong trạng thái chờ duyệt!
+
+            {/* Modal for Image: Shop's Background */}
+            <CModal visible={showImageBackground} onClose={() => setShowImageBackground(false)} size="lg" centered>
+                <CModalBody className="d-flex justify-content-center align-items-center">
+                    <img
+                        src={shop.backgroundImage}
+                        alt="Ảnh cửa hàng"
+                        style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' }}
+                    />
                 </CModalBody>
                 <CModalFooter>
-                    <CButton color="primary" onClick={handleModalClose}>
-                        OK
-                    </CButton>
+                    <CButton color="secondary" onClick={() => setShowImageBackground(false)}>Đóng</CButton>
+                </CModalFooter>
+            </CModal>
+
+            {/* Modal for Image: Shop's Registration Certificate */}
+            <CModal visible={showImageRegistrationCertificate} onClose={() => setShowImageRegistrationCertificate(false)} size="lg" centered>
+                <CModalBody className="d-flex justify-content-center align-items-center">
+                    <img
+                        src={shop.registrationCertificate}
+                        alt="Giấy phép kinh doanh"
+                        style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' }}
+                    />
+                </CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={() => setShowImageRegistrationCertificate(false)}>Đóng</CButton>
+                </CModalFooter>
+            </CModal>
+
+            {/* Modal for Image: Food Safety Certificate */}
+            <CModal visible={showFoodSafetyCertificate} onClose={() => setShowFoodSafetyCertificate(false)} size="lg" centered>
+                <CModalBody className="d-flex justify-content-center align-items-center">
+                    <img
+                        src={shop.foodSafetyCertificate}
+                        alt="Giấy phép vệ sinh an toàn thực phẩm"
+                        style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' }}
+                    />
+                </CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={() => setShowFoodSafetyCertificate(false)}>Đóng</CButton>
+                </CModalFooter>
+            </CModal>
+
+            {/* Modal for Image: Citizen ID */}
+            <CModal visible={showCitizenId} onClose={() => setShowCitizenId(false)} size="lg" centered>
+                <CModalBody className="d-flex justify-content-center align-items-center">
+                    <img
+                        src={shop.citizenIDCardFront}
+                        alt="Căn cước công dân"
+                        style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' }}
+                    />
+                </CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={() => setShowCitizenId(false)}>Đóng</CButton>
                 </CModalFooter>
             </CModal>
         </CCard>

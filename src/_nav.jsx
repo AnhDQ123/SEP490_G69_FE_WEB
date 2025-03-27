@@ -31,7 +31,7 @@ const _nav = [
     {
         component: CNavItem,
         name: 'Blog',
-        to: '/nav4',
+        to: '/blog-list',
         icon: <CIcon icon={freeSet.cilBook} customClassName="nav-icon"/>,
     },
     {

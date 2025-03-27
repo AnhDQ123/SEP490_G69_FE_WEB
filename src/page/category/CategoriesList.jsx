@@ -177,17 +177,19 @@ const CategoriesList = () => {
                 </CTable>
 
                 {totalPages > 1 && (
-                    <CRow className="mt-4 d-flex justify-content-center">
-                        <CPagination>
-                            <CPaginationItem disabled={page === 1}
-                                             onClick={() => setPage(p => p - 1)}>Trước</CPaginationItem>
-                            {Array.from({length: totalPages}, (_, i) => (
-                                <CPaginationItem key={i} active={i + 1 === page} onClick={() => setPage(i + 1)}>
-                                    {i + 1}
+                    <CRow className="mt-3 d-flex justify-content-center">
+                        <CPagination align="center">
+                            <CPaginationItem disabled={page === 1} onClick={() => setPage(prev => Math.max(prev - 1, 1))}>
+                                Trước
+                            </CPaginationItem>
+                            {Array.from({ length: data?.totalPages || 1 }, (_, i) => i + 1).map((pageNumber) => (
+                                <CPaginationItem key={pageNumber} active={pageNumber === page} onClick={() => setPage(pageNumber)}>
+                                    {pageNumber}
                                 </CPaginationItem>
                             ))}
-                            <CPaginationItem disabled={page === totalPages}
-                                             onClick={() => setPage(p => p + 1)}>Sau</CPaginationItem>
+                            <CPaginationItem disabled={page === data?.totalPages} onClick={() => setPage(prev => prev + 1)}>
+                                Sau
+                            </CPaginationItem>
                         </CPagination>
                     </CRow>
                 )}

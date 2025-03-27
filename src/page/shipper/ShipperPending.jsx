@@ -1,161 +1,275 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-    CRow,
-    CCol,
-    CCard,
-    CCardBody,
-    CFormInput,
-    CButton,
-    CModal,
-    CModalBody,
-    CModalFooter,
-    CModalHeader,
-    CModalTitle,
-    CImage,
+    CRow, CCol, CCard, CCardBody, CFormInput, CButton, CModal, CModalBody, CModalFooter,
+    CModalHeader, CModalTitle, CFormTextarea, CFormCheck
 } from '@coreui/react';
-import {
-    useGetShipperByIdQuery,
-    useApproveShipperMutation,
-    useRejectShipperMutation,
-} from '../../service/shipperService';
+import { FaArrowRight, FaArrowCircleRight, FaArrowCircleLeft } from 'react-icons/fa';
+import { useGetShipperByIdQuery, useRejectShipperMutation, useApproveShipperMutation } from '../../service/shipperService.js';
 
 const ShipperPending = () => {
-    const { id } = useParams();  // Get the ID from the URL params
-    const navigate = useNavigate();  // For navigating back to the list
+    const [shipper, setShipper] = useState(null);
+    const { id } = useParams();
+    const navigate = useNavigate();
 
-    const { data: shipper, error, isLoading } = useGetShipperByIdQuery(id);
-    const [approveShipper] = useApproveShipperMutation();  // Hook to approve shipper
-    const [rejectShipper] = useRejectShipperMutation();  // Hook to reject shipper
+    const { data, error, isLoading } = useGetShipperByIdQuery(id);
+    const [approveShipper] = useApproveShipperMutation();
+    const [rejectShipper] = useRejectShipperMutation();
 
+    const [showShipperImage, setShowShipperImage] = useState(false);
+    const [showCitizenId, setShowCitizenId] = useState(false);
+    const [showDrivingLicense, setShowDrivingLicense] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [confirmStatus, setConfirmStatus] = useState('');
-    const [showRejectModal, setShowRejectModal] = useState(false);  // State to show the reject reason modal
-    const [rejectReason, setRejectReason] = useState('');  // State to hold the reject reason
+    const [rejectionReason, setRejectionReason] = useState('');
+    const [showRejectionReasonModal, setShowRejectionReasonModal] = useState(false);
+    const [currentSide, setCurrentSide] = useState('front');
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    const [isChecked, setIsChecked] = useState(false); // State for the checkbox
+
+    useEffect(() => {
+        if (data) {
+            setShipper(data);
+        }
+    }, [data]);
+
+    if (isLoading) return <p>Đang tải dữ liệu...</p>;
+    if (error) return <p>Có lỗi xảy ra khi lấy dữ liệu shipper</p>;
+    if (!shipper) return <p>Không tìm thấy thông tin shipper</p>;
 
     const handleOpenConfirmModal = (status) => {
         setConfirmStatus(status);
-        setShowConfirmModal(true);
-    };
-
-    const handleOpenRejectModal = () => {
-        setShowRejectModal(true);  // Open the modal to ask for the reason when rejecting
-    };
-
-    const handleConfirmUpdateStatus = async () => {
-        try {
-            if (confirmStatus === 'ACTIVE') {
-                // Call the approve API to change status to ACTIVE
-                await approveShipper(id).unwrap();
-                alert('✅ Duyệt thành công!');
-            } else {
-                if (!rejectReason.trim()) {
-                    alert('❌ Bạn phải nhập lý do từ chối!');
-                    return;
-                }
-                // Call the reject API to change status to REJECTED with reason
-                await rejectShipper({ userId: id, reason: rejectReason }).unwrap();
-                alert('❌ Đã từ chối shipper!');
-            }
-            navigate('/shipper-list');
-        } catch (error) {
-            console.error('Lỗi cập nhật trạng thái:', error);
-            alert('Cập nhật thất bại!');
-        } finally {
-            setShowConfirmModal(false);
-            setShowRejectModal(false);  // Close the reject modal after action
+        if (status === 'REJECTED') {
+            setShowRejectionReasonModal(true);
+        } else {
+            setShowConfirmModal(true);
         }
     };
 
-    if (isLoading) return <p>🔄 Đang tải dữ liệu shipper...</p>;
-    if (error) return <p>❌ Lỗi khi lấy dữ liệu shipper</p>;
-    if (!shipper) return <p>⚠️ Không tìm thấy thông tin shipper</p>;
+    const handleRejectShipper = async () => {
+        try {
+            await rejectShipper({ userId: id, reason: rejectionReason }).unwrap();
+            alert('Shipper đã bị từ chối');
+            navigate('/shipper-list');
+        } catch (error) {
+            alert('Không thể từ chối shipper!');
+        } finally {
+            setShowRejectionReasonModal(false);
+        }
+    };
+
+    const handleApproveShipper = async () => {
+        if (!isChecked) {
+            alert('Vui lòng xác nhận trước khi duyệt shipper!');
+            return;
+        }
+
+        try {
+            await approveShipper(id).unwrap();
+            alert('Shipper đã được duyệt');
+            navigate('/shipper-list');
+        } catch (error) {
+            alert('Không thể duyệt shipper!');
+        } finally {
+            setShowConfirmModal(false);
+        }
+    };
+
+    const shipperImage = shipper?.images || [shipper.profileImage];
+    const citizenIdFront = shipper?.citizenIDCardFront ? [shipper.citizenIDCardFront] : [];
+    const citizenIdBack = shipper?.citizenIDCardBack ? [shipper.citizenIDCardBack] : [];
+    const drivingLicenseFront = shipper?.drivingLicenseFront ? [shipper.drivingLicenseFront] : [];
+    const drivingLicenseBack = shipper?.drivingLicenseBack ? [shipper.drivingLicenseBack] : [];
+
+    const handleNextImage = () => {
+        setCurrentSide(currentSide === 'front' ? 'back' : 'front');
+    };
+
+    const handlePrevImage = () => {
+        if (currentSide === 'front') {
+            setCurrentImageIndex((prevIndex) => (prevIndex - 1 + citizenIdFront.length) % citizenIdFront.length);
+        } else {
+            setCurrentImageIndex((prevIndex) => (prevIndex - 1 + citizenIdBack.length) % citizenIdBack.length);
+        }
+    };
 
     return (
         <CCard className="p-4">
             <CCardBody>
-                <h4 className="mb-3">📦 Danh sách shipper {'>'} Thông tin chờ duyệt</h4>
-
+                <h4 className="mb-3">Danh sách shipper {'>'} Shipper chờ duyệt</h4>
                 <CRow className="mb-3">
-                    <CCol md={6}><label>Tài khoản</label><CFormInput disabled value={shipper.username} /></CCol>
-                    <CCol md={6}><label>Họ tên</label><CFormInput disabled value={shipper.name} /></CCol>
+                    <CCol md={6}><label>Tên shipper</label><CFormInput disabled value={shipper.name} /></CCol>
+                    <CCol md={6}><label>Giới tính</label><CFormInput disabled value={shipper.gender} /></CCol>
                 </CRow>
-
                 <CRow className="mb-3">
-                    <CCol md={6}><label>SĐT</label><CFormInput disabled value={shipper.phone} /></CCol>
+                    <CCol md={6}><label>Số điện thoại</label><CFormInput disabled value={shipper.phone} /></CCol>
                     <CCol md={6}><label>Email</label><CFormInput disabled value={shipper.email} /></CCol>
                 </CRow>
-
                 <CRow className="mb-3">
-                    <CCol md={6}><label>Ngày sinh</label><CFormInput disabled value={shipper.birthDate} /></CCol>
+                    <CCol md={6}><label>Ngày sinh</label><CFormInput disabled value={shipper.dob} /></CCol>
                     <CCol md={6}><label>Ngày đăng ký</label><CFormInput disabled value={shipper.registrationDate} /></CCol>
                 </CRow>
-
                 <CRow className="mb-3">
                     <CCol md={6}><label>Trạng thái</label><CFormInput disabled value={shipper.shipperStatus} /></CCol>
                 </CRow>
 
-                <CRow>
-                    <CCol md={6}><label>Ảnh CCCD (Mặt trước)</label><CImage src={shipper.citizenIDCardFront} width={200} /></CCol>
-                    <CCol md={6}><label>Mặt sau</label><CImage src={shipper.citizenIDCardBack} width={200} /></CCol>
+                <CRow className="mb-3">
+                    <CCol md={6} className="d-flex align-items-center">
+                        <label>Căn cước công dân</label>
+                        <FaArrowRight
+                            size={24}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => setShowCitizenId(true)}
+                        />
+                    </CCol>
+                    <CCol md={6} className="d-flex align-items-center">
+                        <label>Giấy phép lái xe</label>
+                        <FaArrowRight
+                            size={24}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => setShowDrivingLicense(true)}
+                        />
+                    </CCol>
                 </CRow>
 
-                <CRow className="mt-3 mb-3">
-                    <CCol md={6}><label>GPLX (Mặt trước)</label><CImage src={shipper.drivingLicenseFront} width={200} /></CCol>
-                    <CCol md={6}><label>Mặt sau</label><CImage src={shipper.drivingLicenseBack} width={200} /></CCol>
+                <CRow className="mb-3">
+                    <CCol md={6} className="d-flex align-items-center">
+                        <label>Ảnh profile</label>
+                        <FaArrowRight
+                            size={24}
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => setShowShipperImage(true)}
+                        />
+                    </CCol>
                 </CRow>
 
-                <CRow className="text-center mt-4">
+                <CRow className="mb-3">
                     <CCol md={4}>
-                        <CButton color="danger" className="w-100" onClick={handleOpenRejectModal}>
-                            ❌ Từ chối
+                        <CButton color="danger" className="w-100" onClick={() => handleOpenConfirmModal('REJECTED')}>
+                            Từ chối đăng ký
                         </CButton>
                     </CCol>
                     <CCol md={4}>
                         <CButton color="secondary" className="w-100" onClick={() => navigate('/shipper-list')}>
-                            ⬅️ Quay lại
+                            Quay lại
                         </CButton>
                     </CCol>
                     <CCol md={4}>
                         <CButton color="success" className="w-100" onClick={() => handleOpenConfirmModal('ACTIVE')}>
-                            ✅ Duyệt
+                            Duyệt shipper
                         </CButton>
+                    </CCol>
+                </CRow>
+
+                {/* Checkbox for confirmation */}
+                <CRow className="mb-3">
+                    <CCol md={12}>
+                        <CFormCheck
+                            type="checkbox"
+                            label="Tôi xác nhận rằng shipper này đủ điều kiện để duyệt."
+                            checked={isChecked}
+                            onChange={(e) => setIsChecked(e.target.checked)}
+                        />
                     </CCol>
                 </CRow>
             </CCardBody>
 
-            {/* Modal for confirming action */}
+            {/* Confirmation Modal */}
             <CModal visible={showConfirmModal} onClose={() => setShowConfirmModal(false)} centered>
-                <CModalHeader><CModalTitle>Xác nhận hành động</CModalTitle></CModalHeader>
+                <CModalHeader><CModalTitle>Xác nhận</CModalTitle></CModalHeader>
                 <CModalBody>
-                    {confirmStatus === 'ACTIVE'
-                        ? 'Bạn có chắc chắn muốn duyệt shipper này?'
-                        : 'Bạn có chắc chắn muốn từ chối shipper này?'}
+                    {confirmStatus === 'ACTIVE' ? 'Bạn có chắc chắn muốn duyệt shipper này?' : 'Bạn có chắc chắn muốn từ chối shipper này?'}
                 </CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" onClick={() => setShowConfirmModal(false)}>Hủy</CButton>
-                    <CButton color={confirmStatus === 'ACTIVE' ? 'success' : 'danger'} onClick={handleConfirmUpdateStatus}>
+                    <CButton color={confirmStatus === 'ACTIVE' ? 'success' : 'danger'} onClick={confirmStatus === 'ACTIVE' ? handleApproveShipper : handleRejectShipper}>
                         {confirmStatus === 'ACTIVE' ? 'Duyệt' : 'Từ chối'}
                     </CButton>
                 </CModalFooter>
             </CModal>
 
-            {/* Modal for entering reject reason */}
-            <CModal visible={showRejectModal} onClose={() => setShowRejectModal(false)} centered>
+            {/* Rejection Reason Modal */}
+            <CModal visible={showRejectionReasonModal} onClose={() => setShowRejectionReasonModal(false)} centered>
                 <CModalHeader><CModalTitle>Nhập lý do từ chối</CModalTitle></CModalHeader>
                 <CModalBody>
-                    <CFormInput
-                        type="text"
-                        placeholder="Lý do từ chối"
-                        value={rejectReason}
-                        onChange={(e) => setRejectReason(e.target.value)}
+                    <CFormTextarea
+                        rows={4}
+                        placeholder="Vui lòng nhập lý do từ chối shipper này"
+                        value={rejectionReason}
+                        onChange={(e) => setRejectionReason(e.target.value)}
                     />
                 </CModalBody>
                 <CModalFooter>
-                    <CButton color="secondary" onClick={() => setShowRejectModal(false)}>Hủy</CButton>
-                    <CButton color="danger" onClick={handleConfirmUpdateStatus}>
-                        Từ chối
-                    </CButton>
+                    <CButton color="secondary" onClick={() => setShowRejectionReasonModal(false)}>Hủy</CButton>
+                    <CButton color="danger" onClick={handleRejectShipper}>Từ chối</CButton>
+                </CModalFooter>
+            </CModal>
+
+            {/* Modal for Shipper's Profile Image */}
+            <CModal visible={showShipperImage} onClose={() => setShowShipperImage(false)} size="lg" centered>
+                <CModalBody className="d-flex justify-content-center align-items-center bg-white position-relative">
+                    {shipperImage.length > 0 && (
+                        <img
+                            src={shipperImage[currentImageIndex]}
+                            alt="Ảnh profile"
+                            style={{
+                                maxWidth: '100%',
+                                maxHeight: '80vh',
+                                objectFit: 'contain',
+                                borderRadius: '8px'
+                            }}
+                        />
+                    )}
+                </CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={() => setShowShipperImage(false)}>Đóng</CButton>
+                </CModalFooter>
+            </CModal>
+
+            {/* Modal for Citizen ID */}
+            <CModal visible={showCitizenId} onClose={() => setShowCitizenId(false)} size="lg" centered>
+                <CModalBody className="d-flex justify-content-center align-items-center bg-white position-relative">
+                    <FaArrowCircleLeft size={40} className="position-absolute start-0 ms-3" onClick={handlePrevImage} />
+                    {currentSide === 'front' && citizenIdFront.length > 0 && (
+                        <div className="d-flex flex-column align-items-center">
+                            <h5>Mặt trước</h5>
+                            <img src={citizenIdFront[currentImageIndex]} alt="Căn cước công dân mặt trước" style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' }} />
+                        </div>
+                    )}
+                    {currentSide === 'back' && citizenIdBack.length > 0 && (
+                        <div className="d-flex flex-column align-items-center mt-4">
+                            <h5>Mặt sau</h5>
+                            <img src={citizenIdBack[currentImageIndex]} alt="Căn cước công dân mặt sau" style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' }} />
+                        </div>
+                    )}
+                    <FaArrowCircleRight size={40} className="position-absolute end-0 me-3" onClick={handleNextImage} />
+                </CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={() => setShowCitizenId(false)}>Đóng</CButton>
+                </CModalFooter>
+            </CModal>
+
+            {/* Modal for Driving License ID */}
+            <CModal visible={showDrivingLicense} onClose={() => setShowDrivingLicense(false)} size="lg" centered>
+                <CModalBody className="d-flex justify-content-center align-items-center bg-white position-relative">
+                    <FaArrowCircleLeft size={40} className="position-absolute start-0 ms-3" onClick={handlePrevImage} />
+                    {currentSide === 'front' && drivingLicenseFront.length > 0 && (
+                        <div className="d-flex flex-column align-items-center">
+                            <h5>Mặt trước</h5>
+                            <img src={drivingLicenseFront[currentImageIndex]} alt="Giấy phép lái xe mặt trước" style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' }} />
+                        </div>
+                    )}
+                    {currentSide === 'back' && drivingLicenseBack.length > 0 && (
+                        <div className="d-flex flex-column align-items-center mt-4">
+                            <h5>Mặt sau</h5>
+                            <img src={drivingLicenseBack[currentImageIndex]} alt="Giấy phép lái xe mặt sau" style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' }} />
+                        </div>
+                    )}
+                    <FaArrowCircleRight size={40} className="position-absolute end-0 me-3" onClick={handleNextImage} />
+                </CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={() => setShowDrivingLicense(false)}>Đóng</CButton>
                 </CModalFooter>
             </CModal>
         </CCard>

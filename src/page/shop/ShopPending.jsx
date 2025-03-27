@@ -11,10 +11,11 @@ import {
     CModalBody,
     CModalFooter,
     CModalHeader,
-    CModalTitle, CFormTextarea
+    CModalTitle,
+    CFormTextarea, CFormCheck
 } from '@coreui/react';
 import { FaArrowRight, FaArrowCircleRight, FaArrowCircleLeft } from 'react-icons/fa';
-import { useGetShopByIdQuery, useUpdateShopStatusMutation } from '../../service/shopService.js';
+import { useGetShopByIdQuery, useRejectShopMutation, useApproveShopMutation} from '../../service/shopService.js';
 
 const ShopPending = () => {
     const [shop, setShop] = useState(null);
@@ -22,7 +23,8 @@ const ShopPending = () => {
     const navigate = useNavigate();
 
     const { data, error, isLoading } = useGetShopByIdQuery(id);
-    const [updateShopStatus] = useUpdateShopStatusMutation();
+    const [rejectShop] = useRejectShopMutation();
+    const [approveShop] = useApproveShopMutation(); // Thêm approveShop mutation
 
     const [showImageBackground, setShowImageBackground] = useState(false);
     const [showImageRegistrationCertificate, setShowImageRegistrationCertificate] = useState(false);
@@ -32,10 +34,10 @@ const ShopPending = () => {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [confirmStatus, setConfirmStatus] = useState('');
     const [rejectionReason, setRejectionReason] = useState('');
-    const [showRejectionReasonModal, setShowRejectionReasonModal] = useState(false); // Modal nhập lý do từ chối
-    const [currentSide, setCurrentSide] = useState('front'); // Mặt hiện tại (mặt trước hoặc mặt sau)
+    const [showRejectionReasonModal, setShowRejectionReasonModal] = useState(false);
+    const [currentSide, setCurrentSide] = useState('front');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-
+    const [isChecked, setIsChecked] = useState(false);
     useEffect(() => {
         if (data) {
             setShop(data);
@@ -56,25 +58,42 @@ const ShopPending = () => {
         }
     };
 
-    // Update status
-    const handleConfirmUpdateStatus = async () => {
+    const handleRejectShop = async () => {
         try {
-            const updateData = { shopId: id, status: confirmStatus };
-            if (confirmStatus === 'REJECTED' && rejectionReason) {
-                updateData.rejectionReason = rejectionReason; // Thêm lý do từ chối vào
-            }
-            await updateShopStatus(updateData).unwrap();
-            setShop({ ...shop, isActive: confirmStatus });
-            alert(`Cửa hàng đã được cập nhật trạng thái: ${confirmStatus}`);
+            await rejectShop({ shopId: id, reason: rejectionReason }).unwrap();
+            alert('Cửa hàng đã bị từ chối');
             navigate('/shop-list');
+        } catch (error) {
+            console.error('Lỗi từ chối cửa hàng:', error);
+            alert('Không thể từ chối cửa hàng!');
+        } finally {
+            setShowRejectionReasonModal(false);
+        }
+    };
+
+    const handleConfirmUpdateStatus = async () => {
+        if (!isChecked) {
+            alert("Bạn chưa duyệt thông tin cửa hàng");
+            return; // Do not proceed if checkbox is not checked
+        }
+
+        try {
+            if (confirmStatus === 'ACTIVE') {
+                await approveShop(id).unwrap(); // Duyệt cửa hàng
+                alert('Cửa hàng đã được duyệt và chuyển sang trạng thái hoạt động');
+            } else if (confirmStatus === 'REJECTED') {
+                await handleRejectShop(); // Reject shop if the status is REJECTED
+            }
+
+            navigate('/shop-list'); // Navigate back to the shop list after update
         } catch (error) {
             console.error('Lỗi cập nhật trạng thái:', error);
             alert('Cập nhật thất bại!');
         } finally {
-            setShowConfirmModal(false);
-            setShowRejectionReasonModal(false);
+            setShowConfirmModal(false); // Close the modal after processing
         }
     };
+
 
     const imagesBackground = shop?.images || [shop.backgroundImage];
     const imageRegistrationCertificate = shop?.images || [shop.registrationCertificate];
@@ -141,7 +160,7 @@ const ShopPending = () => {
                     </CCol>
                     <CCol md={6}>
                         <label>Trạng thái</label>
-                        <CFormInput disabled value={shop.isActive} />
+                        <CFormInput disabled value={shop.isActive ? 'Hoạt động' : 'Chờ duyệt'} />
                     </CCol>
                 </CRow>
 
@@ -207,6 +226,17 @@ const ShopPending = () => {
                         <CButton color="success" className="w-100" onClick={() => handleOpenConfirmModal('ACTIVE')}>
                             Duyệt cửa hàng
                         </CButton>
+                    </CCol>
+                </CRow>
+                {/* Checkbox for confirmation */}
+                <CRow className="mb-3">
+                    <CCol md={12}>
+                        <CFormCheck
+                            type="checkbox"
+                            label="Đã xem đủ thông tin cửa hàng"
+                            checked={isChecked}
+                            onChange={(e) => setIsChecked(e.target.checked)}
+                        />
                     </CCol>
                 </CRow>
             </CCardBody>

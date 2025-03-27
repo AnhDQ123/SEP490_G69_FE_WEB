@@ -30,23 +30,7 @@ export const usersService = createApi({
             }),
             invalidatesTags: ["user"],
         }),
-        updateUser: builder.mutation({
-            query: ({ user, avatar }) => {
-                const formData = new FormData();
-                Object.keys(user).forEach((key) => {
-                    formData.append(key, user[key]);
-                });
-                if (avatar) {
-                    formData.append("avatar", avatar);
-                }
-                return {
-                    url: "api/users/update",
-                    method: "PUT",
-                    body: formData,
-                };
-            },
-            invalidatesTags: ["user"],
-        }),
+
         inactiveUser: builder.mutation({
             query: (id) => ({
                 url: "api/users/inactive",
@@ -73,7 +57,6 @@ export const {
     useSearchAndPaginationQuery,
     useGetUserByIdQuery,
     useAddUserMutation,
-    useUpdateUserMutation,
     useInactiveUserMutation,
     useActiveUserMutation,
 } = usersService;

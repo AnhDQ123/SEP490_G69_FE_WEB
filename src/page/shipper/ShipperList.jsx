@@ -54,9 +54,6 @@ const ShipperList = () => {
             case 'INACTIVE':
                 navigate(`/shipper-inactive/${id}`);
                 break;
-            case 'REJECTED':
-                navigate(`/shipper-rjected/${id}`);
-                break;
             default:
                 alert('⚠️ Trạng thái người giao hàng không hợp lệ!');
         }
@@ -92,8 +89,7 @@ const ShipperList = () => {
                                 }}>
                                     <option value="PENDING">Chờ duyệt</option>
                                     <option value="ACTIVE">Hoạt động</option>
-                                    <option value="INACTIVE">Tạm dừng</option>
-                                    <option value="REJECTED">Từ chối</option>
+                                    <option value="INACTIVE">Dừng hoạt động</option>
                                 </CFormSelect>
                             </CTableDataCell>
                             <CTableDataCell>
