@@ -138,7 +138,6 @@ const ShopList = () => {
             </CRow>
 
             {/* Phân trang */}
-            {/* Phân trang */}
             <CRow className="mt-3 d-flex justify-content-center">
                 <CPagination align="center">
                     <CPaginationItem disabled={page === 1} onClick={() => setPage(prev => Math.max(prev - 1, 1))}>
