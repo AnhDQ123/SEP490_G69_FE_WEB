@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     CRow,
     CCol,
@@ -23,13 +23,14 @@ import { useGetOrdersByFilterQuery } from '../../service/orderService';
 import { useNavigate } from 'react-router-dom';
 
 const OrderManagement = () => {
+    const [page, setPage] = useState(1); // Start with page 1
     const [searchParams, setSearchParams] = useState({
         startDate: '',
         endDate: '',
         status: 'all',
         orderCode: '',
-        page: 0,
-        size: 10,
+        page: 0, // Default starting page is 0 (API page starts at 0)
+        size: 10, // Default records per page set to 10
     });
 
     const handleInputChange = (e) => {
@@ -40,16 +41,15 @@ const OrderManagement = () => {
     const handleSearch = () => {
         setSearchParams(prev => ({
             ...prev,
-            page: 0 // reset về trang đầu mỗi khi tìm kiếm
+            page: 0 // reset to first page on search
         }));
     };
 
-    // Tạo params chỉ chứa field có giá trị
+    // Adjust query parameters based on the current state
     const queryParams = {
         page: searchParams.page,
         size: searchParams.size,
     };
-
 
     if (searchParams.status !== 'all') {
         queryParams.status = searchParams.status;
@@ -69,14 +69,18 @@ const OrderManagement = () => {
     const orders = data?.content || [];
     const totalPages = data?.totalPages || 1;
 
+    // Handle page change based on user interaction
     const handlePageChange = (newPage) => {
-        if (newPage >= 0 && newPage < totalPages) {
-            setSearchParams(prev => ({ ...prev, page: newPage }));
+        if (newPage >= 1 && newPage <= totalPages) {
+            setPage(newPage); // Set the new page number
+            setSearchParams(prev => ({
+                ...prev,
+                page: newPage - 1 // API expects the page to be 0-based
+            }));
         }
     };
 
     const navigate = useNavigate();
-
 
     return (
         <CCard>
@@ -101,6 +105,18 @@ const OrderManagement = () => {
                                 <option value="RETURNED">Đã trả</option>
                                 <option value="REJECTED">Đã từ chối</option>
                                 <option value="RETURN_REJECTED">Từ chối trả hàng</option>
+                            </CFormSelect>
+                        </CCol>
+                        <CCol>
+                            <CFormSelect
+                                name="size"
+                                label="Số lượng hiển thị"
+                                value={searchParams.size}
+                                onChange={handleInputChange}
+                            >
+                                <option value="10">Hiển thị 10</option>
+                                <option value="20">Hiển thị 20</option>
+                                <option value="50">Hiển thị 50</option>
                             </CFormSelect>
                         </CCol>
                         <CCol className="d-flex align-items-end">
@@ -132,7 +148,7 @@ const OrderManagement = () => {
                                         style={{ cursor: 'pointer' }}
                                         onClick={() => navigate(`/order/${order.id}`)}
                                     >
-                                    <CTableDataCell>{order.code || order.id}</CTableDataCell>
+                                        <CTableDataCell>{order.orderCode}</CTableDataCell>
                                         <CTableDataCell>{order.ownerName}</CTableDataCell>
                                         <CTableDataCell>{order.shopName}</CTableDataCell>
                                         <CTableDataCell>{order.createdAt?.slice(0, 10)}</CTableDataCell>
@@ -143,23 +159,21 @@ const OrderManagement = () => {
                         </CTable>
 
                         {/* Pagination */}
-                        <div className="d-flex justify-content-center mt-4">
-                            <CPagination>
-                                <CPaginationItem
-                                    disabled={searchParams.page === 0}
-                                    onClick={() => handlePageChange(searchParams.page - 1)}
-                                >
+                        <CRow className="mt-3 d-flex justify-content-center">
+                            <CPagination align="center">
+                                <CPaginationItem disabled={page === 1} onClick={() => handlePageChange(page - 1)}>
                                     Trước
                                 </CPaginationItem>
-                                <CPaginationItem active>{searchParams.page + 1}</CPaginationItem>
-                                <CPaginationItem
-                                    disabled={searchParams.page + 1 >= totalPages}
-                                    onClick={() => handlePageChange(searchParams.page + 1)}
-                                >
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
+                                    <CPaginationItem key={pageNumber} active={pageNumber === page} onClick={() => handlePageChange(pageNumber)}>
+                                        {pageNumber}
+                                    </CPaginationItem>
+                                ))}
+                                <CPaginationItem disabled={page === totalPages} onClick={() => handlePageChange(page + 1)}>
                                     Sau
                                 </CPaginationItem>
                             </CPagination>
-                        </div>
+                        </CRow>
                     </>
                 )}
             </CCardBody>
