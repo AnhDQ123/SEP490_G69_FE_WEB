@@ -176,7 +176,7 @@ const ShopDashboard = () => {
             <CRow className="mt-4">
                 <CCol>
                     <CCard>
-                        <CCardHeader className="text-center">Traffic (January - July 2023)</CCardHeader>
+                        <CCardHeader className="text-center">Thống kê cửa hàng/quán ăn</CCardHeader>
                         <CCardBody>
                             <Line data={trafficData} options={options}/>
                         </CCardBody>

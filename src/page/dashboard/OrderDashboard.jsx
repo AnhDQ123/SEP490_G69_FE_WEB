@@ -157,7 +157,7 @@ const OrderDashboard = () => {
             <CRow className="mt-4">
                 <CCol sm="12" md="12">
                     <CCard>
-                        <CCardHeader className="text-center">Order Traffic (January - December 2023)</CCardHeader>
+                        <CCardHeader className="text-center">Thống kê đơn hàng</CCardHeader>
                         <CCardBody>
                             <Line data={trafficData} options={options} />
                         </CCardBody>

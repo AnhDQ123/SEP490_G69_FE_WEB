@@ -183,7 +183,7 @@ const UserDashboard = () => {
             <CRow className="mt-4">
                 <CCol sm="12" md="12">
                     <CCard>
-                        <CCardHeader className="text-center">Người dùng</CCardHeader>
+                        <CCardHeader className="text-center">Thống kê người dùng</CCardHeader>
                         <CCardBody>
                             <Line data={trafficData} options={options} />
                         </CCardBody>
