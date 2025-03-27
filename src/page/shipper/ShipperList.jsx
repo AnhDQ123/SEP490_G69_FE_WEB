@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import {
     CFormSelect, CRow, CTable, CTableBody, CTableDataCell,
     CTableHead, CTableHeaderCell, CTableRow,
-    CPagination, CPaginationItem, CButton
+    CPagination, CPaginationItem, CButton, CFormInput
 } from '@coreui/react';
 import { useGetShippersByStatusQuery } from '../../service/shipperService';
 
 const ShipperList = () => {
     const navigate = useNavigate();
+    const [searchTerm, setSearchTerm] = useState('');
+
     const [status, setStatus] = useState('ACTIVE');  // Default to 'ACTIVE'
     const [page, setPage] = useState(0);  // Pagination
     const [size, setSize] = useState(10);  // Number of items per page
@@ -70,12 +72,17 @@ const ShipperList = () => {
                     <CTableBody>
                         <CTableRow>
                             <CTableDataCell>
-                                <input
+                                <CFormInput
                                     type="text"
                                     className="form-control"
-                                    placeholder="🔍 Tìm kiếm theo tên hoặc số điện thoại..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
+                                    placeholder="Nhập tên hoặc thông tin cần tìm kiếm..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                            setSearch(searchTerm);
+                                        }
+                                    }}
                                 />
                             </CTableDataCell>
                             <CTableDataCell>
