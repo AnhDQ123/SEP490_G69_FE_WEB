@@ -16,7 +16,7 @@ import {
     CModalHeader,
     CModalTitle,
     CModalBody,
-    CModalFooter
+    CModalFooter, CFormInput
 } from '@coreui/react';
 import { useSearchAndPaginationQuery, useAddUserMutation } from "../../service/userService.js";
 import { useGetRolesQuery } from "../../service/roleService.js";
@@ -24,6 +24,7 @@ import { userValidationSchema } from "../../utils/validation.js";
 
 const UserList = () => {
     const [users, setUsers] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
     const [size, setSize] = useState(10);
@@ -115,12 +116,17 @@ const UserList = () => {
                     <CTableBody>
                         <CTableRow>
                             <CTableDataCell>
-                                <input
+                                <CFormInput
                                     type="text"
                                     className="form-control"
-                                    placeholder="Tìm kiếm theo email..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
+                                    placeholder="Nhập tên hoặc thông tin cần tìm kiếm..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                            setSearch(searchTerm);
+                                        }
+                                    }}
                                 />
                             </CTableDataCell>
                             <CTableDataCell>
