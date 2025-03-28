@@ -66,8 +66,8 @@ const _nav = [
     },
     {
         component: CNavItem,
-        name: 'Cài đặt',
-        to: 'nav',
+        name: 'Cấu hình',
+        to: '/config',
         icon: <CIcon icon={freeSet.cilSettings} customClassName="nav-icon"/>,
     },
 ]

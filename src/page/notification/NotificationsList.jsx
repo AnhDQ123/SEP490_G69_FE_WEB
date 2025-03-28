@@ -16,9 +16,9 @@ import {
 
 const NotificationsList = () => {
     const [notifications, setNotifications] = useState([
-        { id: 1, title: 'Đơn hàng mới', message: 'Bạn có một đơn hàng mới từ Nguyễn Văn A.', date: '2024-03-01', status: 'Chưa đọc' },
-        { id: 2, title: 'Thanh toán thành công', message: 'Thanh toán cho đơn hàng ORD002 đã hoàn tất.', date: '2024-03-02', status: 'Đã đọc' },
-        { id: 3, title: 'Vận chuyển đơn hàng', message: 'Đơn hàng ORD003 đang được giao.', date: '2024-03-03', status: 'Chưa đọc' }
+        { id: 1, orderCode: 'ORD001', seller: 'Nguyễn Văn A', buyer: 'Trần Thị B', deliveryPerson: 'Lê Văn C', time: '2024-03-01', status: 'Chưa đọc' },
+        { id: 2, orderCode: 'ORD002', seller: 'Hoàng Minh D', buyer: 'Phan Thị E', deliveryPerson: 'Trần Văn F', time: '2024-03-02', status: 'Đã đọc' },
+        { id: 3, orderCode: 'ORD003', seller: 'Lê Minh G', buyer: 'Nguyễn Thị H', deliveryPerson: 'Đoàn Văn I', time: '2024-03-03', status: 'Chưa đọc' }
     ]);
 
     const markAsRead = (id) => {
@@ -32,16 +32,18 @@ const NotificationsList = () => {
     return (
         <CCard>
             <CCardHeader>
-                <h3>Danh sách Thông báo</h3>
+                <h3>Danh sách Đơn hàng</h3>
             </CCardHeader>
             <CCardBody>
                 <CTable striped hover>
                     <CTableHead>
                         <CTableRow>
                             <CTableHeaderCell>#</CTableHeaderCell>
-                            <CTableHeaderCell>Tiêu đề</CTableHeaderCell>
-                            <CTableHeaderCell>Nội dung</CTableHeaderCell>
-                            <CTableHeaderCell>Ngày</CTableHeaderCell>
+                            <CTableHeaderCell>Mã đơn hàng</CTableHeaderCell>
+                            <CTableHeaderCell>Người bán</CTableHeaderCell>
+                            <CTableHeaderCell>Người mua</CTableHeaderCell>
+                            <CTableHeaderCell>Người giao hàng</CTableHeaderCell>
+                            <CTableHeaderCell>Thời gian</CTableHeaderCell>
                             <CTableHeaderCell>Trạng thái</CTableHeaderCell>
                             <CTableHeaderCell>Hành động</CTableHeaderCell>
                         </CTableRow>
@@ -50,9 +52,11 @@ const NotificationsList = () => {
                         {notifications.map(notification => (
                             <CTableRow key={notification.id}>
                                 <CTableDataCell>{notification.id}</CTableDataCell>
-                                <CTableDataCell>{notification.title}</CTableDataCell>
-                                <CTableDataCell>{notification.message}</CTableDataCell>
-                                <CTableDataCell>{notification.date}</CTableDataCell>
+                                <CTableDataCell>{notification.orderCode}</CTableDataCell>
+                                <CTableDataCell>{notification.seller}</CTableDataCell>
+                                <CTableDataCell>{notification.buyer}</CTableDataCell>
+                                <CTableDataCell>{notification.deliveryPerson}</CTableDataCell>
+                                <CTableDataCell>{notification.time}</CTableDataCell>
                                 <CTableDataCell>{notification.status}</CTableDataCell>
                                 <CTableDataCell>
                                     {notification.status === 'Chưa đọc' && (
