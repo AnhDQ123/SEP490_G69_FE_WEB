@@ -48,6 +48,11 @@ const ShipperPending = () => {
     };
 
     const handleRejectShipper = async () => {
+        if (!rejectionReason.trim()) {
+            alert('Vui lòng nhập lý do từ chối!');
+            return;
+        }
+
         try {
             await rejectShipper({ userId: id, reason: rejectionReason }).unwrap();
             alert('Shipper đã bị từ chối');
@@ -144,9 +149,26 @@ const ShipperPending = () => {
                     </CCol>
                 </CRow>
 
+                {/* Checkbox for confirmation */}
+                <CRow className="mb-3">
+                    <CCol md={12}>
+                        <CFormCheck
+                            type="checkbox"
+                            label="Đã xem đủ thông tin."
+                            checked={isChecked}
+                            onChange={(e) => setIsChecked(e.target.checked)}
+                        />
+                    </CCol>
+                </CRow>
+
                 <CRow className="mb-3">
                     <CCol md={4}>
-                        <CButton color="danger" className="w-100" onClick={() => handleOpenConfirmModal('REJECTED')}>
+                        <CButton
+                            color="danger"
+                            className="w-100"
+                            onClick={() => handleOpenConfirmModal('REJECTED')}
+                            disabled={!isChecked}
+                        >
                             Từ chối đăng ký
                         </CButton>
                     </CCol>
@@ -156,23 +178,17 @@ const ShipperPending = () => {
                         </CButton>
                     </CCol>
                     <CCol md={4}>
-                        <CButton color="success" className="w-100" onClick={() => handleOpenConfirmModal('ACTIVE')}>
+                        <CButton
+                            color="success"
+                            className="w-100"
+                            onClick={() => handleOpenConfirmModal('ACTIVE')}
+                            disabled={!isChecked}
+                        >
                             Duyệt shipper
                         </CButton>
                     </CCol>
                 </CRow>
 
-                {/* Checkbox for confirmation */}
-                <CRow className="mb-3">
-                    <CCol md={12}>
-                        <CFormCheck
-                            type="checkbox"
-                            label="Tôi xác nhận rằng shipper này đủ điều kiện để duyệt."
-                            checked={isChecked}
-                            onChange={(e) => setIsChecked(e.target.checked)}
-                        />
-                    </CCol>
-                </CRow>
             </CCardBody>
 
             {/* Confirmation Modal */}
@@ -197,7 +213,7 @@ const ShipperPending = () => {
                         rows={4}
                         placeholder="Vui lòng nhập lý do từ chối shipper này"
                         value={rejectionReason}
-                        onChange={(e) => setRejectionReason(e.target.value)}
+                        onChange={(e) => setRejectionReason(e.target.value)} // Cập nhật lý do từ chối
                     />
                 </CModalBody>
                 <CModalFooter>
@@ -205,6 +221,7 @@ const ShipperPending = () => {
                     <CButton color="danger" onClick={handleRejectShipper}>Từ chối</CButton>
                 </CModalFooter>
             </CModal>
+
 
             {/* Modal for Shipper's Profile Image */}
             <CModal visible={showShipperImage} onClose={() => setShowShipperImage(false)} size="lg" centered>

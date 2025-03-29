@@ -14,7 +14,7 @@ import {
     CModalTitle
 } from '@coreui/react';
 import { FaArrowCircleLeft, FaArrowCircleRight } from 'react-icons/fa';
-import { useGetShipperByIdQuery, useActivateShipperMutation, useDeactivateShipperMutation } from "../../service/shipperService.js";
+import { useGetShipperByIdQuery, useShipperActiveMutation, useShipperInactiveMutation } from "../../service/shipperService.js";
 
 const ShipperInactive = () => {
     const { id } = useParams();  // Get the ID from the URL params
@@ -22,8 +22,8 @@ const ShipperInactive = () => {
 
     // Fetch shipper data using the id from the URL
     const { data, error, isLoading } = useGetShipperByIdQuery(id);
-    const [activateShipper] = useActivateShipperMutation();  // Hook to activate shipper
-    const [deactivateShipper] = useDeactivateShipperMutation();  // Hook to deactivate shipper
+    const [activateShipper] = useShipperActiveMutation();  // Hook to activate shipper
+    const [inactivateShipper] = useShipperInactiveMutation();  // Hook to inactivate shipper
 
     const [shipper, setShipper] = useState(null);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -59,7 +59,7 @@ const ShipperInactive = () => {
                 navigate('/shipper-list');  // Redirect back to the shipper list
             } else {
                 // Call the deactivate API to change status to INACTIVE
-                await deactivateShipper(id).unwrap();
+                await inactivateShipper(id).unwrap();
                 setShipper({ ...shipper, status: 'INACTIVE' });
                 alert('Trạng thái shipper cập nhật thành công: INACTIVE');
                 navigate('/shipper-list');  // Redirect back to the shipper list

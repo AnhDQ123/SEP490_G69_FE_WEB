@@ -83,6 +83,13 @@ const ShipperList = () => {
                                 />
                             </CTableDataCell>
                             <CTableDataCell>
+                                <CFormSelect value={size} onChange={(e) => setSize(Number(e.target.value))}>
+                                    <option value="10">Hiển thị 10</option>
+                                    <option value="20">Hiển thị 20</option>
+                                    <option value="50">Hiển thị 50</option>
+                                </CFormSelect>
+                            </CTableDataCell>
+                            <CTableDataCell>
                                 <CFormSelect value={status} onChange={(e) => {
                                     setStatus(e.target.value);
                                     setPage(0);
@@ -90,13 +97,6 @@ const ShipperList = () => {
                                     <option value="PENDING">Chờ duyệt</option>
                                     <option value="ACTIVE">Hoạt động</option>
                                     <option value="INACTIVE">Dừng hoạt động</option>
-                                </CFormSelect>
-                            </CTableDataCell>
-                            <CTableDataCell>
-                                <CFormSelect value={size} onChange={(e) => setSize(Number(e.target.value))}>
-                                    <option value="10">Hiển thị 10</option>
-                                    <option value="20">Hiển thị 20</option>
-                                    <option value="50">Hiển thị 50</option>
                                 </CFormSelect>
                             </CTableDataCell>
                         </CTableRow>

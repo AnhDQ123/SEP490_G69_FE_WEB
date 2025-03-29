@@ -5,14 +5,14 @@ import {
     CModalHeader, CModalTitle
 } from '@coreui/react';
 import { FaArrowCircleLeft, FaArrowCircleRight } from 'react-icons/fa';
-import { useGetShipperByIdQuery, useDeactivateShipperMutation } from "../../service/shipperService.js";
+import { useGetShipperByIdQuery, useShipperInactiveMutation } from "../../service/shipperService.js";
 
 const ShipperActive = () => {
     const { id } = useParams();
     const navigate = useNavigate();
 
     const { data, error, isLoading } = useGetShipperByIdQuery(id);
-    const [deactivateShipper] = useDeactivateShipperMutation();  // Mutation to deactivate shipper
+    const [deactivateShipper] = useShipperInactiveMutation();  // Mutation to deactivate shipper
 
     const [shipper, setShipper] = useState(null);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -20,6 +20,7 @@ const ShipperActive = () => {
     const [showCitizenIdModal, setShowCitizenIdModal] = useState(false);
     const [showDrivingLicenseModal, setShowDrivingLicenseModal] = useState(false);
     const [currentSide, setCurrentSide] = useState('front'); // 'front' or 'back'
+    const [reason, setReason] = useState('');  // Store the reason for deactivating the shipper
 
     useEffect(() => {
         if (data) {
@@ -31,30 +32,26 @@ const ShipperActive = () => {
     if (error) return <p>Lỗi khi lấy dữ liệu shipper</p>;
     if (!shipper) return <p>Không tìm thấy thông tin shipper</p>;
 
-    // Open the confirmation modal to update status
-    const handleOpenConfirmModal = (status) => {
-        setConfirmStatus(status);
+    // Open the confirmation modal to update status with reason
+    const handleOpenConfirmModal = () => {
         setShowConfirmModal(true);
     };
 
-    // Handle the status update (Deactivating Shipper)
+    // Handle the status update (Deactivating Shipper) with reason
     const handleConfirmUpdateStatus = async () => {
         try {
-            if (confirmStatus === 'INACTIVE') {
-                // Call the deactivate API to change status to INACTIVE
-                await deactivateShipper({ userId: id, reason: 'Chặn người dùng' }).unwrap();  // Adding a reason for the deactivation
+            if (reason.trim()) {
+                // Call the deactivate API to change status to INACTIVE with reason
+                await deactivateShipper({ userId: id, reason }).unwrap();  // Send reason to the API
                 setShipper({ ...shipper, status: 'INACTIVE' });
                 alert('Trạng thái shipper cập nhật thành công: INACTIVE');
                 navigate('/shipper-list');  // Redirect back to the shipper list
+            } else {
+                alert('Vui lòng nhập lý do!');
             }
         } catch (error) {
             console.error('Lỗi cập nhật trạng thái:', error);
             alert('Cập nhật thất bại!');  // Show general error message
-            if (error.response) {
-                console.log("Server Error:", error.response.data);
-            } else if (error.message) {
-                console.log("Error message:", error.message);
-            }
         } finally {
             setShowConfirmModal(false);  // Close the modal
         }
@@ -123,14 +120,13 @@ const ShipperActive = () => {
                 </CRow>
 
                 <CRow className="text-center mt-4">
-                    <CCol><CButton color="danger" className="w-100" onClick={() => handleOpenConfirmModal('INACTIVE')}>Chặn người dùng</CButton></CCol>
+                    <CCol><CButton color="danger" className="w-100" onClick={handleOpenConfirmModal}>Chặn người dùng</CButton></CCol>
                     <CCol><CButton color="secondary" className="w-100" onClick={() => navigate('/shipper-list')}>Quay lại</CButton></CCol>
                 </CRow>
                 <CRow className="text-center mt-4">
                     <CCol><CButton color="success" className="w-100" onClick={() => navigate('/shipper-list')}>Danh sách đơn hàng</CButton></CCol>
                     <CCol><CButton color="dark" className="w-100" onClick={() => navigate('/shipper-list')}>Danh sách cáo buộc</CButton></CCol>
                 </CRow>
-
             </CCardBody>
 
             {/* Modal for confirming action */}
@@ -139,7 +135,17 @@ const ShipperActive = () => {
                     <CModalTitle>Xác nhận</CModalTitle>
                 </CModalHeader>
                 <CModalBody>
-                    {confirmStatus === 'INACTIVE' ? 'Bạn có chắc chắn muốn chặn shipper này?' : 'Bạn có chắc chắn muốn cập nhật trạng thái này?'}
+                    <div>
+                        Bạn có chắc chắn muốn chặn shipper này?
+                    </div>
+                    <div className="mt-3">
+                        <label>Lý do chặn:</label>
+                        <CFormInput
+                            value={reason}
+                            onChange={(e) => setReason(e.target.value)} // Update reason on change
+                            placeholder="Nhập lý do chặn"
+                        />
+                    </div>
                 </CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" onClick={() => setShowConfirmModal(false)}>Hủy</CButton>
