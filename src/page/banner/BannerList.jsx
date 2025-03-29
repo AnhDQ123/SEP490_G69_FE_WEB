@@ -12,7 +12,9 @@ import {
     CModalHeader,
     CModalBody,
     CModalFooter,
-    CSpinner
+    CSpinner,
+    CListGroup,
+    CListGroupItem
 } from '@coreui/react';
 import { FaArrowLeft, FaArrowRight, FaTrash, FaUpload } from 'react-icons/fa';
 import {
@@ -23,11 +25,9 @@ import {
 
 const BannerList = () => {
     const [showBanner, setShowBanner] = useState(true);
-    const [randomBanner, setRandomBanner] = useState(false);
-    const [randomInterval, setRandomInterval] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [selectedBanner, setSelectedBanner] = useState(null);
+    const [selectedBanner, setSelectedBanner] = useState(null); // Banner được chọn
     const [startIndex, setStartIndex] = useState(0);
 
     const { data, isLoading } = useGetBannersQuery({ page: 0, size: 10 });
@@ -48,24 +48,11 @@ const BannerList = () => {
 
     const handleUploadClick = (id) => {
         setSelectedBanner(id);
-        setShowModal(true);
-    };
-
-    const handleFileChange = async (event) => {
-        const file = event.target.files[0];
-        if (file && selectedBanner) {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('name', 'Updated Banner');
-            formData.append('description', 'Banner updated via UI');
-
-            await updateBanner({ bannerId: selectedBanner, formData });
-        }
-        setShowModal(false);
+        setShowModal(true); // Mở modal để chọn banner
     };
 
     const handleSave = () => {
-        console.log({ showBanner, randomBanner, randomInterval });
+        console.log({ showBanner });
     };
 
     const banners = data?.content || [];
@@ -121,11 +108,34 @@ const BannerList = () => {
                 </CForm>
             </CCardBody>
 
-            {/* Modal Upload */}
+            {/* Modal Upload (Danh sách Banner) */}
             <CModal visible={showModal} onClose={() => setShowModal(false)}>
-                <CModalHeader>Upload Ảnh</CModalHeader>
+                <CModalHeader>Chọn Banner để Upload</CModalHeader>
                 <CModalBody>
-                    <input type="file" accept="image/*" onChange={handleFileChange} />
+                    {/* Hiển thị danh sách các banner */}
+                    <CListGroup>
+                        {banners.map((banner) => (
+                            <CListGroupItem
+                                key={banner.imageId}
+                                onClick={() => setSelectedBanner(banner.imageId)} // Cập nhật banner đã chọn
+                                style={{
+                                    cursor: 'pointer',
+                                    backgroundColor: selectedBanner === banner.imageId ? '#d3d3d3' : 'transparent', // Làm nổi bật banner đã chọn
+                                    transition: 'background-color 0.3s', // Thêm hiệu ứng chuyển màu nền
+                                }}
+                                className={selectedBanner === banner.imageId ? 'border-primary' : ''}
+                            >
+                                <div>
+                                    <div className="d-flex justify-content-between">
+                                        <div>Banner #{banner.imageId}</div>
+                                        <div>
+                                            <img src={banner.url} alt={`Banner ${banner.imageId}`} width="50" height="50" style={{ objectFit: 'cover' }} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </CListGroupItem>
+                        ))}
+                    </CListGroup>
                 </CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" onClick={() => setShowModal(false)}>Đóng</CButton>

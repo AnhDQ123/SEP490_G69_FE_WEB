@@ -1,156 +1,169 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     CRow,
     CCol,
-    CCard,
-    CCardBody,
-    CCardHeader,
-    CFormCheck,
-    CButton,
-    CForm,
-    CModal,
-    CModalHeader,
-    CModalBody,
-    CModalFooter,
-    CSpinner,
-    CListGroup,
-    CListGroupItem
+    CTable,
+    CTableHead,
+    CTableHeaderCell,
+    CTableRow,
+    CTableBody,
+    CTableDataCell,
+    CFormSelect,
 } from '@coreui/react';
-import { FaArrowLeft, FaArrowRight, FaTrash, FaUpload } from 'react-icons/fa';
-import {
-    useGetBannersQuery,
-    useDeleteBannerMutation,
-    useUpdateBannerMutation
-} from '../../service/bannerService';
+import { useGetBlogsQuery } from '../../service/blogService';
+import { useNavigate } from 'react-router-dom';
 
-const BannerList = () => {
-    const [showBanner, setShowBanner] = useState(true);
-    const [showModal, setShowModal] = useState(false);
-    const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [selectedBanner, setSelectedBanner] = useState(null); // Banner được chọn
-    const [startIndex, setStartIndex] = useState(0);
+const BlogList = () => {
+    const [search, setSearch] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(20);
+    const [blogs, setBlogs] = useState([]);
+    const [totalBlogs, setTotalBlogs] = useState(0);
+    const navigate = useNavigate();
 
-    const { data, isLoading } = useGetBannersQuery({ page: 0, size: 10 });
-    const [deleteBanner] = useDeleteBannerMutation();
-    const [updateBanner] = useUpdateBannerMutation();
+    const { data, error, isLoading } = useGetBlogsQuery({
+        search,
+        page: currentPage,
+        size: pageSize,
+    });
 
-    const handleDeleteImage = async () => {
-        if (selectedBanner) {
-            await deleteBanner(selectedBanner);
+    useEffect(() => {
+        console.log('Fetched data:', data);
+        if (data && Array.isArray(data.content)) {
+            const normalizedBlogs = data.content.map((blog, index) => ({
+                ...blog,
+                title: blog.title || `Blog ${index + 1}`,
+                author: blog.author || 'Admin',
+                status: blog.status || 'active',
+                date: blog.createdAt
+                    ? new Date(blog.createdAt).toLocaleDateString()
+                    : '',
+            }));
+            setBlogs(normalizedBlogs);
+            setTotalBlogs(data.totalElements || data.content.length);
         }
-        setShowDeleteModal(false);
-    };
+    }, [data]);
 
-    const confirmDelete = (id) => {
-        setSelectedBanner(id);
-        setShowDeleteModal(true);
-    };
-
-    const handleUploadClick = (id) => {
-        setSelectedBanner(id);
-        setShowModal(true); // Mở modal để chọn banner
-    };
-
-    const handleSave = () => {
-        console.log({ showBanner });
-    };
-
-    const banners = data?.content || [];
-
-    if (isLoading) return <CSpinner color="primary" />;
-
-    const handleNext = () => {
-        if (startIndex + 2 < banners.length) {
-            setStartIndex(startIndex + 1);
+    const handlePageChange = (page) => {
+        if (page > 0 && page <= Math.ceil(totalBlogs / pageSize)) {
+            setCurrentPage(page);
         }
     };
 
-    const handlePrev = () => {
-        if (startIndex > 0) {
-            setStartIndex(startIndex - 1);
-        }
+    const handlePageSizeChange = (size) => {
+        setPageSize(Number(size));
+        setCurrentPage(1);
     };
+
+    if (isLoading) return <p>Loading...</p>;
+    if (error) return <p>Error fetching blogs</p>;
 
     return (
-        <CCard>
-            <CCardHeader>
-                <h3>Cài đặt Banner</h3>
-            </CCardHeader>
-            <CCardBody>
-                <CForm>
-                    <CFormCheck
-                        label="Hiển thị Banner"
-                        checked={showBanner}
-                        onChange={() => setShowBanner(!showBanner)}
-                    />
-                    <h5 className="mt-3">Các Banner đang hiển thị</h5>
-                    <div className="d-flex justify-content-center align-items-center position-relative">
-                        <FaArrowLeft className="position-absolute start-0" size={32} style={{ cursor: 'pointer' }} onClick={handlePrev} />
-                        <CRow className="flex-nowrap overflow-hidden justify-content-center" style={{ width: '80%' }}>
-                            {banners.slice(startIndex, startIndex + 2).map((banner) => (
-                                <CCol key={banner.imageId} md={6} className="text-center">
-                                    <div className="banner-box p-3 border rounded d-flex flex-column align-items-center justify-content-center" style={{ height: '300px', width: '100%' }}>
-                                        <div className="banner-image" style={{ width: '100%', height: '150px', background: banner.url ? `url(${banner.url})` : '#ccc', backgroundSize: 'cover' }}></div>
-                                        <p className="mt-2">Banner #{banner.imageId}</p>
-                                        <div className="d-flex gap-2 mt-2">
-                                            <FaUpload size={20} style={{ cursor: 'pointer' }} onClick={() => handleUploadClick(banner.imageId)} />
-                                            <FaTrash size={20} style={{ cursor: 'pointer', color: 'red' }} onClick={() => confirmDelete(banner.imageId)} />
-                                        </div>
-                                    </div>
-                                </CCol>
-                            ))}
-                        </CRow>
-                        <FaArrowRight className="position-absolute end-0" size={32} style={{ cursor: 'pointer' }} onClick={handleNext} />
-                    </div>
-                    <div className="mt-4 d-flex justify-content-center">
-                        <CButton color="primary" onClick={handleSave}>Lưu</CButton>
-                    </div>
-                </CForm>
-            </CCardBody>
+        <>
+            <CRow className="mb-4">
+                <CTable>
+                    <CTableBody>
+                        <CTableRow>
+                            <CTableDataCell>
+                                <h5>Tìm kiếm</h5>
+                            </CTableDataCell>
+                            <CTableDataCell>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Nhập tên blog"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                />
+                            </CTableDataCell>
+                            <CTableDataCell>
+                                <CFormSelect>
+                                    <option value="0">Sắp xếp theo</option>
+                                    <option value="1">Ngày đăng</option>
+                                    <option value="2">Trạng thái</option>
+                                </CFormSelect>
+                            </CTableDataCell>
+                        </CTableRow>
+                    </CTableBody>
+                </CTable>
+            </CRow>
 
-            {/* Modal Upload (Danh sách Banner) */}
-            <CModal visible={showModal} onClose={() => setShowModal(false)}>
-                <CModalHeader>Chọn Banner để Upload</CModalHeader>
-                <CModalBody>
-                    {/* Hiển thị danh sách các banner */}
-                    <CListGroup>
-                        {banners.map((banner) => (
-                            <CListGroupItem
-                                key={banner.imageId}
-                                onClick={() => setSelectedBanner(banner.imageId)} // Cập nhật banner đã chọn
-                                style={{
-                                    cursor: 'pointer',
-                                    backgroundColor: selectedBanner === banner.imageId ? '#d3d3d3' : 'transparent' // Làm nổi bật banner đã chọn
-                                }}
-                            >
-                                <div>
-                                    <div className="d-flex justify-content-between">
-                                        <div>Banner #{banner.imageId}</div>
-                                        <div>
-                                            <img src={banner.url} alt={`Banner ${banner.imageId}`} width="50" height="50" style={{ objectFit: 'cover' }} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </CListGroupItem>
-                        ))}
-                    </CListGroup>
-                </CModalBody>
-                <CModalFooter>
-                    <CButton color="secondary" onClick={() => setShowModal(false)}>Đóng</CButton>
-                </CModalFooter>
-            </CModal>
+            <CRow>
+                <CTable striped hover>
+                    <CTableHead>
+                        <CTableRow>
+                            <CTableHeaderCell>Tiêu đề</CTableHeaderCell>
+                            <CTableHeaderCell>Tác giả</CTableHeaderCell>
+                            <CTableHeaderCell>Ngày đăng</CTableHeaderCell>
+                            <CTableHeaderCell>Trạng thái</CTableHeaderCell>
+                            <CTableHeaderCell>Hành động</CTableHeaderCell>
+                        </CTableRow>
+                    </CTableHead>
+                    <CTableBody>
+                        {blogs.length > 0 ? (
+                            blogs.map((blog) => (
+                                <CTableRow
+                                    key={blog.id}
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => navigate(`/blog/${blog.id}`)}
+                                >
+                                    <CTableDataCell>{blog.title}</CTableDataCell>
+                                    <CTableDataCell>{blog.author}</CTableDataCell>
+                                    <CTableDataCell>{blog.date}</CTableDataCell>
+                                    <CTableDataCell>
+                                        {blog.status === 'active' ? 'Hoạt động' : 'Bị chặn'}
+                                    </CTableDataCell>
+                                    <CTableDataCell>
+                                        <button type="button" className="btn btn-info mb-3">
+                                            Xem chi tiết
+                                        </button>
+                                    </CTableDataCell>
+                                </CTableRow>
+                            ))
+                        ) : (
+                            <CTableRow>
+                                <CTableDataCell colSpan="5" className="text-center">
+                                    Không có blog nào.
+                                </CTableDataCell>
+                            </CTableRow>
+                        )}
+                    </CTableBody>
+                </CTable>
+            </CRow>
 
-            {/* Modal Confirm Delete */}
-            <CModal visible={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
-                <CModalHeader>Xác nhận xóa</CModalHeader>
-                <CModalBody>Bạn có chắc chắn muốn xóa ảnh này không?</CModalBody>
-                <CModalFooter>
-                    <CButton color="danger" onClick={handleDeleteImage}>Xóa</CButton>
-                    <CButton color="secondary" onClick={() => setShowDeleteModal(false)}>Hủy</CButton>
-                </CModalFooter>
-            </CModal>
-        </CCard>
+            {/* ✅ Pagination Section - MỚI: Đưa ra ngoài bảng */}
+            <CRow className="px-3 py-4 justify-content-between align-items-center">
+                <CCol md="auto">
+                    <button
+                        className="btn btn-primary me-2"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                    >
+                        Previous
+                    </button>
+                    <span className="mx-2">{currentPage}</span>
+                    <button
+                        className="btn btn-primary"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage * pageSize >= totalBlogs}
+                    >
+                        Next
+                    </button>
+                </CCol>
+                <CCol md="auto">
+                    <CFormSelect
+                        value={pageSize}
+                        onChange={(e) => handlePageSizeChange(e.target.value)}
+                        className="w-auto"
+                    >
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </CFormSelect>
+                </CCol>
+            </CRow>
+        </>
     );
 };
 
-export default BannerList;
+export default BlogList;
