@@ -14,7 +14,7 @@ import {
     CModalTitle,
 } from '@coreui/react';
 import { FaArrowCircleRight, FaArrowCircleLeft } from 'react-icons/fa';
-import { useGetShopByIdQuery, useUpdateShopStatusMutation } from '../../service/shopService.js';
+import { useGetShopByIdQuery, useInactivateShopMutation } from '../../service/shopService.js';
 
 const ShopActive = () => {
     const [shop, setShop] = useState(null);
@@ -22,12 +22,14 @@ const ShopActive = () => {
     const navigate = useNavigate();
 
     const { data, error, isLoading } = useGetShopByIdQuery(id);
-    const [updateShopStatus] = useUpdateShopStatusMutation();
+    const [inactivateShop] = useInactivateShopMutation();
     const [showImageBackground, setShowImageBackground] = useState(false);
     const [showImageRegistrationCertificate, setShowImageRegistrationCertificate] = useState(false);
     const [showFoodSafetyCertificate, setShowFoodSafetyCertificate] = useState(false);
     const [showCitizenId, setShowCitizenId] = useState(false); // New state for Citizen ID
     const [showBlockModal, setShowBlockModal] = useState(false);
+    const [blockReason, setBlockReason] = useState('');
+
 
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -41,18 +43,26 @@ const ShopActive = () => {
     if (error) return <p>Có lỗi xảy ra khi lấy dữ liệu cửa hàng</p>;
     if (!shop) return <p>Không tìm thấy thông tin cửa hàng</p>;
 
-    // Update status
+    // Inactive shop
     const handleBlockShop = async () => {
+        if (!blockReason.trim()) {
+            alert("Vui lòng nhập lý do chặn cửa hàng.");
+            return;
+        }
+
         try {
-            await updateShopStatus({ shopId: id, status: 'INACTIVE' }).unwrap();
+            // Gửi lý do về backend khi gọi mutation
+            await inactivateShop({ shopId: id, reason: blockReason }).unwrap();
             setShop({ ...shop, isActive: 'INACTIVE' });
-            alert('Cửa hàng đã được kích hoạt lại!');
+            alert('Cửa hàng đã bị chặn');
             navigate('/shop-list');
         } catch (error) {
             console.error('Lỗi cập nhật trạng thái:', error);
             alert('Cập nhật thất bại!');
         }
     };
+
+
 
     const handleConfirmBlock = () => {
         setShowBlockModal(true);
@@ -369,16 +379,25 @@ const ShopActive = () => {
                 </CModalFooter>
             </CModal>
 
+            {/* Modal inactive */}
             {/* Modal thông báo chặn cửa hàng */}
             <CModal visible={showBlockModal} onClose={() => setShowBlockModal(false)} centered>
                 <CModalHeader>
-                    <CModalTitle>Bạn có muốn dừng hoạt động cửa hàng này không</CModalTitle>
+                    <CModalTitle>Lý do chặn cửa hàng</CModalTitle>
                 </CModalHeader>
+                <CModalBody>
+                    <CFormInput
+                        placeholder="Nhập lý do chặn cửa hàng"
+                        value={blockReason}
+                        onChange={(e) => setBlockReason(e.target.value)} // Cập nhật lý do khi nhập
+                    />
+                </CModalBody>
                 <CModalFooter>
                     <CButton color="danger" onClick={() => setShowBlockModal(false)}>Hủy</CButton>
                     <CButton color="success" onClick={handleBlockShop}>Xác nhận</CButton>
                 </CModalFooter>
             </CModal>
+
         </CCard>
     );
 };

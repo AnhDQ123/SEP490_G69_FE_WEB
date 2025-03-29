@@ -62,6 +62,33 @@ export const shopService = createApi({
             }),
             providesTags: ["shops"],
         }),
+
+        // ✅ Mới: Active shop (không cần lý do)
+        activateShop: builder.mutation({
+            query: (shopId) => ({
+                url: `api/shops/${shopId}/active`,
+                method: "PUT",
+            }),
+            invalidatesTags: (result, error, shopId) => [
+                { type: "shops" },
+                { type: "shops", shopId },
+            ],
+        }),
+
+        // ✅ Mới: Inactive shop (có lý do)
+        inactivateShop: builder.mutation({
+            query: ({ shopId, reason }) => ({
+                url: `api/shops/${shopId}/inactive`,
+                method: "PUT",
+                params: { reason }, // Đảm bảo lý do được gửi qua query params
+            }),
+            invalidatesTags: (result, error, shopId) => [
+                { type: "shops" },
+                { type: "shops", shopId },
+            ],
+        }),
+
+
     }),
 });
 
@@ -72,4 +99,6 @@ export const {
     useApproveShopMutation,
     useUpdateShopStatusMutation,
     useSearchAndPaginateShopsQuery,
+    useActivateShopMutation,
+    useInactivateShopMutation,
 } = shopService;

@@ -96,15 +96,20 @@ const ShopInactive = () => {
                     </CCol>
                 </CRow>
                 <CRow className="mb-3">
-                    <CCol md={6}>
+                    <CCol md={4}>
                         <label>Loại cửa hàng</label>
                         <CFormInput disabled value={shop.sellType} />
                     </CCol>
-                    <CCol md={6}>
+                    <CCol md={4}>
                         <label>Giờ hoạt động</label>
-                        <CFormInput disabled value={shop.open_time} />
+                        <CFormInput disabled value={shop.openTime} />
+                    </CCol>
+                    <CCol md={4}>
+                        <label>Giờ đóng cửa</label>
+                        <CFormInput disabled value={shop.closeTime} />
                     </CCol>
                 </CRow>
+
                 <CRow className="mb-3">
                     <CCol md={6}>
                         <label>Mã số thuế</label>

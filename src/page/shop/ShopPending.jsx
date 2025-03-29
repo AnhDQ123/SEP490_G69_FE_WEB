@@ -144,13 +144,17 @@ const ShopPending = () => {
                     </CCol>
                 </CRow>
                 <CRow className="mb-3">
-                    <CCol md={6}>
+                    <CCol md={4}>
                         <label>Loại cửa hàng</label>
                         <CFormInput disabled value={shop.sellType} />
                     </CCol>
-                    <CCol md={6}>
+                    <CCol md={4}>
                         <label>Giờ hoạt động</label>
-                        <CFormInput disabled value={shop.open_time} />
+                        <CFormInput disabled value={shop.openTime} />
+                    </CCol>
+                    <CCol md={4}>
+                        <label>Giờ đóng cửa</label>
+                        <CFormInput disabled value={shop.closeTime} />
                     </CCol>
                 </CRow>
                 <CRow className="mb-3">
@@ -211,24 +215,6 @@ const ShopPending = () => {
                     </CCol>
                 </CRow>
 
-                <CRow className="text-center mt-4">
-                    <CCol md={4}>
-                        <CButton color="danger" className="w-100" onClick={() => handleOpenConfirmModal('REJECTED')}>
-                            Từ chối đăng ký
-                        </CButton>
-                    </CCol>
-                    <CCol md={4}>
-                        <CButton color="secondary" className="w-100" onClick={() => navigate('/shop-list')}>
-                            Quay lại
-                        </CButton>
-                    </CCol>
-                    <CCol md={4}>
-                        <CButton color="success" className="w-100" onClick={() => handleOpenConfirmModal('ACTIVE')}>
-                            Duyệt cửa hàng
-                        </CButton>
-                    </CCol>
-                </CRow>
-                {/* Checkbox for confirmation */}
                 <CRow className="mb-3">
                     <CCol md={12}>
                         <CFormCheck
@@ -239,6 +225,36 @@ const ShopPending = () => {
                         />
                     </CCol>
                 </CRow>
+
+                <CRow className="text-center mt-4">
+                    <CCol md={4}>
+                        <CButton
+                            color="danger"
+                            className="w-100"
+                            onClick={() => handleOpenConfirmModal('REJECTED')}
+                            disabled={!isChecked}
+                        >
+                            Từ chối đăng ký
+                        </CButton>
+                    </CCol>
+                    <CCol md={4}>
+                        <CButton color="secondary" className="w-100" onClick={() => navigate('/shop-list')}>
+                            Quay lại
+                        </CButton>
+                    </CCol>
+                    <CCol md={4}>
+                        <CButton
+                            color="success"
+                            className="w-100"
+                            onClick={() => handleOpenConfirmModal('ACTIVE')}
+                            disabled={!isChecked}
+                        >
+                            Duyệt cửa hàng
+                        </CButton>
+                    </CCol>
+                </CRow>
+                {/* Checkbox for confirmation */}
+
             </CCardBody>
 
             {/* Modal xác nhận */}
