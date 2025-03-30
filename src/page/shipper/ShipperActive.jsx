@@ -124,8 +124,8 @@ const ShipperActive = () => {
                     <CCol><CButton color="secondary" className="w-100" onClick={() => navigate('/shipper-list')}>Quay lại</CButton></CCol>
                 </CRow>
                 <CRow className="text-center mt-4">
-                    <CCol><CButton color="success" className="w-100" onClick={() => navigate('/shipper-list')}>Danh sách đơn hàng</CButton></CCol>
-                    <CCol><CButton color="dark" className="w-100" onClick={() => navigate('/shipper-list')}>Danh sách cáo buộc</CButton></CCol>
+                    <CCol><CButton color="success" className="w-100" onClick={() => navigate('/orders-list')}>Danh sách đơn hàng</CButton></CCol>
+                    <CCol><CButton color="dark" className="w-100" onClick={() => navigate('/reports-list')}>Danh sách cáo buộc</CButton></CCol>
                 </CRow>
             </CCardBody>
 

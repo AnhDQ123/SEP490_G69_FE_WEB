@@ -57,8 +57,9 @@ const ShipperPending = () => {
             await rejectShipper({ userId: id, reason: rejectionReason }).unwrap();
             alert('Shipper đã bị từ chối');
             navigate('/shipper-list');
-        } catch (error) {
+        } catch (e) {
             alert('Không thể từ chối shipper!');
+            console.error(e);
         } finally {
             setShowRejectionReasonModal(false);
         }
