@@ -29,8 +29,8 @@ const BlogList = () => {
 
     useEffect(() => {
         console.log('Fetched data:', data);
-        if (data && Array.isArray(data.content)) {
-            const normalizedBlogs = data.content.map((blog, index) => ({
+        if (data && Array.isArray(data)) {
+            const normalizedBlogs = data.map((blog, index) => ({
                 ...blog,
                 title: blog.title || `Blog ${index + 1}`,
                 author: blog.author || 'Admin',
@@ -40,7 +40,7 @@ const BlogList = () => {
                     : '',
             }));
             setBlogs(normalizedBlogs);
-            setTotalBlogs(data.totalElements || data.content.length);
+            setTotalBlogs(data.totalElements || data.length);
         }
     }, [data]);
 
