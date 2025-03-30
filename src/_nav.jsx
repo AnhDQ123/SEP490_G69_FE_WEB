@@ -7,7 +7,7 @@ const _nav = [
     {
         component: CNavItem,
         name: 'Dashboard',
-        to: '/user-dashboard',
+        to: '/dashboard',
         icon: <CIcon icon={freeSet.cilSpeedometer} customClassName="nav-icon" />,
         badge: {
             color: 'info',
@@ -47,7 +47,7 @@ const _nav = [
             },
             {
                 component: CNavItem,
-                name: 'Category',
+                name: 'Danh mục',
                 to: '/categories-list',
             },
             {
@@ -57,7 +57,7 @@ const _nav = [
             },
             {
                 component: CNavItem,
-                name: 'Order',
+                name: 'Đơn hàng',
                 to: '/order-management',
             },
             {
@@ -75,18 +75,18 @@ const _nav = [
         items: [
             {
                 component: CNavItem,
-                name: 'Config',
+                name: 'Hoàn hàng và khiếu nại',
                 to: '/reason-config',
             },
             {
                 component: CNavItem,
-                name: 'Delivery Method',
-                to: '/delivery-method',
+                name: 'Phương thức giao hàng',
+                to: '/delivery-config',
             },
             {
                 component: CNavItem,
-                name: 'Payment Method',
-                to: '/payment-method',
+                name: 'Phương thức thanh toán',
+                to: '/payment-config',
             },
         ],
     },
