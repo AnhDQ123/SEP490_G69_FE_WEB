@@ -14,7 +14,7 @@ import {
     CModalTitle,
 } from '@coreui/react';
 import { FaArrowCircleRight, FaArrowCircleLeft } from 'react-icons/fa';
-import { useGetShopByIdQuery, useUpdateShopStatusMutation } from '../../service/shopService.js';
+import { useGetShopByIdQuery, useActivateShopMutation } from '../../service/shopService.js';
 
 const ShopInactive = () => {
     const [shop, setShop] = useState(null);
@@ -22,7 +22,7 @@ const ShopInactive = () => {
     const navigate = useNavigate();
 
     const { data, error, isLoading } = useGetShopByIdQuery(id);
-    const [updateShopStatus] = useUpdateShopStatusMutation();
+    const [updateShopStatus] = useActivateShopMutation();
     const [showImageBackground, setShowImageBackground] = useState(false);
     const [showImageRegistrationCertificate, setShowImageRegistrationCertificate] = useState(false);
     const [showFoodSafetyCertificate, setShowFoodSafetyCertificate] = useState(false);
@@ -43,7 +43,8 @@ const ShopInactive = () => {
     // Update status
     const handleUnblockShop = async () => {
         try {
-            await updateShopStatus({ shopId: id, status: 'ACTIVE' }).unwrap();
+            console.log(id);
+            await updateShopStatus({ shopId: id}).unwrap();
             setShop({ ...shop, isActive: 'ACTIVE' });
             alert('Cửa hàng đã được kích hoạt lại!');
             navigate('/shop-list');
@@ -113,7 +114,7 @@ const ShopInactive = () => {
                 <CRow className="mb-3">
                     <CCol md={6}>
                         <label>Mã số thuế</label>
-                        <CFormInput disabled value={shop.tax_code} />
+                        <CFormInput disabled value={shop.taxCode} />
                     </CCol>
                     <CCol md={6}>
                         <label>Trạng thái</label>
@@ -178,16 +179,6 @@ const ShopInactive = () => {
                     <CCol md={6}>
                         <CButton color="secondary" className="w-100" onClick={() => navigate('/shop-list')}>
                             Quay lại
-                        </CButton>
-                    </CCol>
-                    <CCol md={6} className="mt-3">
-                        <CButton color="primary" className="w-100" onClick={() => navigate(`/products-list/${id}`)}>
-                            Xem danh sách sản phẩm
-                        </CButton>
-                    </CCol>
-                    <CCol md={6} className="mt-3">
-                        <CButton color="info" className="w-100" onClick={() => navigate(`/accusation-list/${id}`)}>
-                            Xem danh sách cáo buộc
                         </CButton>
                     </CCol>
                 </CRow>

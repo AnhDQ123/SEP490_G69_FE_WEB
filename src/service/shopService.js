@@ -65,7 +65,7 @@ export const shopService = createApi({
 
         // ✅ Mới: Active shop (không cần lý do)
         activateShop: builder.mutation({
-            query: (shopId) => ({
+            query: ({shopId = ''}) => ({
                 url: `api/shops/${shopId}/active`,
                 method: "PUT",
             }),
