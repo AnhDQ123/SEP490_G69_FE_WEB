@@ -2,54 +2,54 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { BASE_URL } from '../utils/constant.js';
 
 export const paymentMethodService = createApi({
-    reducerPath: 'paymentMethod', // Đặt tên cho API slice
-    baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }), // Cấu hình URL gốc
-    tagTypes: ['PaymentMethods'], // Các tag để invalidates các cache
+    reducerPath: 'paymentMethod',
+    baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
+    tagTypes: ['PaymentMethods'],
     endpoints: (builder) => ({
-        // Lấy danh sách các phương thức thanh toán
+        // Lấy tất cả phương thức thanh toán (có phân trang)
         getAllPaymentMethods: builder.query({
-            query: ({ page = 0, size = 10, search = '' }) =>
-                `api/payment?page=${page}&size=${size}&search=${search}`, // Thêm tham số tìm kiếm
-            providesTags: ['PaymentMethods'], // Tag để thông báo invalidation
+            query: ({ page = 0, size = 10 }) =>
+                `api/payment?page=${page}&size=${size}`,
+            providesTags: ['PaymentMethods'],
         }),
 
-        // Lấy phương thức thanh toán theo ID
+        // Lấy một phương thức theo ID
         getPaymentMethodById: builder.query({
-            query: (id) => `api/payment/${id}`, // Lấy theo ID
+            query: (id) => `api/payment/${id}`,
             providesTags: (result, error, id) => [
                 { type: 'PaymentMethods', id },
             ],
         }),
 
-        // Tạo mới phương thức thanh toán
+        // Tạo mới phương thức
         createPaymentMethod: builder.mutation({
             query: (paymentMethod) => ({
-                url: 'api/payment', // API endpoint cho tạo mới
+                url: 'api/payment',
                 method: 'POST',
-                body: paymentMethod, // Dữ liệu gửi đi
+                body: paymentMethod,
             }),
-            invalidatesTags: ['PaymentMethods'], // Invalidate khi có thay đổi
+            invalidatesTags: ['PaymentMethods'],
         }),
 
-        // Cập nhật phương thức thanh toán
+        // Cập nhật phương thức
         updatePaymentMethod: builder.mutation({
             query: ({ id, ...paymentMethod }) => ({
-                url: `api/payment/${id}`, // Endpoint cho cập nhật
+                url: `api/payment/${id}`,
                 method: 'PUT',
-                body: paymentMethod, // Cập nhật dữ liệu
+                body: paymentMethod,
             }),
             invalidatesTags: (result, error, { id }) => [
                 { type: 'PaymentMethods', id },
             ],
         }),
 
-        // Xóa phương thức thanh toán
+        // Xóa phương thức
         deletePaymentMethod: builder.mutation({
             query: (id) => ({
-                url: `api/payment/${id}`, // Endpoint xóa
+                url: `api/payment/${id}`,
                 method: 'DELETE',
             }),
-            invalidatesTags: ['PaymentMethods'], // Invalidate khi xóa thành công
+            invalidatesTags: ['PaymentMethods'],
         }),
     }),
 });

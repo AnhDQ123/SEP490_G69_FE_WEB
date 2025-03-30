@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
     CCard,
     CCardBody,
@@ -27,8 +26,7 @@ import {
 import { useGetConfigsByCategoryQuery, useCreateConfigMutation, useDeleteConfigMutation, useUpdateConfigMutation } from '../../service/reasonConfigService'; // Import hooks
 
 const ReasonConfig = () => {
-    const navigate = useNavigate();
-    const [configOptions, setConfigOptions] = useState([
+    const [configOptions] = useState([
         { value: 'ORDER_DECLINE_REASON', label: 'Lý do từ chối nhận đơn' },
         { value: 'RETURN_REASON', label: 'Lý do từ chối trả hàng' },
         { value: 'ORDER_CANCEL_REASON', label: 'Lý do hủy đơn' },
@@ -36,10 +34,13 @@ const ReasonConfig = () => {
     ]);
     const [configType, setConfigType] = useState('ORDER_DECLINE_REASON'); // Default value should match API
     const [page, setPage] = useState(0);
-    const [size, setSize] = useState(10);
-    const [searchTerm, setSearchTerm] = useState(''); // For search input
+    const [size] = useState(10);
+    const [searchTerm] = useState(''); // For search input
     const [debouncedSearch, setDebouncedSearch] = useState(''); // For debounced search
-
+    const [successModal, setSuccessModal] = useState({
+        visible: false,
+        message: ''
+    });
     // Debouncing search input
     useEffect(() => {
         const delay = setTimeout(() => {
@@ -70,41 +71,44 @@ const ReasonConfig = () => {
     const [deleteConfig] = useDeleteConfigMutation();
     const [updateConfig] = useUpdateConfigMutation();
 
+    const showSuccessModal = (message) => {
+        setSuccessModal({ visible: true, message });
+
+        setTimeout(() => {
+            setSuccessModal({ visible: false, message: '' });
+            refetch(); // hoặc window.location.reload()
+        }, 2000); // 2 giây sau tự ẩn + refetch
+    };
+
     const handleAddModal = async () => {
         if (!newItemName || !newItemValue) return;
 
-        const newItem = {
-            name: newItemName,
-            value: newItemValue,
-            published: newItemPublished,
-        };
+        try {
+            await createConfig({
+                category: configType,
+                key: newItemName,
+                value: newItemValue,
+            }).unwrap(); // unwrap giúp bắt lỗi dễ hơn
 
-        // Call API to create new config
-        await createConfig({ category: configType, ...newItem });
-
-        // Reset form
-        setNewItemName('');
-        setNewItemValue('');
-        setNewItemPublished(true);
-        setShowAddModal(false);
-        refetch(); // Refetch the data after adding
-    };
-
-    const handleDeleteConfig = async () => {
-        if (configToDelete) {
-            // Update the config status to "DELETED"
-            await updateConfig({ id: configToDelete.id, value: configToDelete.value, published: false }); // assuming "published" is used as status
-            setShowDeleteModal(false);
-            refetch(); // Refetch the data after deleting
+            setNewItemName('');
+            setNewItemValue('');
+            setNewItemPublished(true);
+            setShowAddModal(false);
+            showSuccessModal('Thêm cấu hình thành công!');
+        } catch (err) {
+            console.error('Tạo cấu hình thất bại:', err);
+            alert('Không thể tạo cấu hình mới. Vui lòng kiểm tra lại.');
         }
     };
 
-    const handleUpdateConfig = async (id, updatedValue) => {
-        await updateConfig({ id, value: updatedValue });
-        refetch(); // Refetch the data after update
+    const handleDeleteConfig = async () => {
+        if (configToDelete?.id) {
+            await deleteConfig(configToDelete.id);
+            setShowDeleteModal(false);
+            showSuccessModal('Xóa cấu hình thành công!');
+        }
     };
 
-    // Handle opening the edit modal with the current config data
     const handleEditModal = (config) => {
         setEditingConfig(config); // Set the config being edited
         setNewItemName(config.name); // Set the current name value
@@ -114,24 +118,15 @@ const ReasonConfig = () => {
     };
 
     const handleSaveEdit = async () => {
-        if (!newItemName || !newItemValue) return;
+        if (!newItemValue || !editingConfig?.id) return;
 
-        const updatedItem = {
-            id: editingConfig.id,
-            name: newItemName,
-            value: newItemValue,
-            published: newItemPublished,
-        };
+        await updateConfig({ id: editingConfig.id, value: newItemValue });
 
-        // Update the config in the DB
-        await updateConfig(updatedItem);
-
-        // Reset form and close modal
         setNewItemName('');
         setNewItemValue('');
         setNewItemPublished(true);
         setShowEditModal(false);
-        refetch(); // Refetch the data after updating
+        showSuccessModal('Cập nhật cấu hình thành công!');
     };
 
     const renderTable = () => {
@@ -168,9 +163,11 @@ const ReasonConfig = () => {
                         ) : (
                             configData?.content?.map((item) => (
                                 <CTableRow key={item.id}>
-                                    <CTableDataCell>{item.name}</CTableDataCell>
                                     <CTableDataCell>{item.value}</CTableDataCell>
-                                    <CTableDataCell>{item.status}</CTableDataCell>
+                                    <CTableDataCell>{item.key}</CTableDataCell>
+                                    <CTableDataCell>
+                                        {item.status === 'ACTIVE' ? 'Hiển thị' : 'Không hiển thị'}
+                                    </CTableDataCell>
                                     <CTableDataCell>
                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                             <CButton
@@ -248,7 +245,7 @@ const ReasonConfig = () => {
                 {renderTable()}
             </CCardBody>
 
-            {/* Modal Thêm nội dung cấu hình */}
+            {/* Modal Add */}
             <CModal visible={showAddModal} onClose={() => setShowAddModal(false)}>
                 <CModalHeader closeButton>
                     <strong>Thêm cấu hình mới</strong>
@@ -262,21 +259,19 @@ const ReasonConfig = () => {
                         className="mb-3"
                     />
                     <CFormLabel>Giá trị / Nội dung</CFormLabel>
-                    <CFormInput
-                        value={newItemValue}
-                        onChange={(e) => setNewItemValue(e.target.value)}
-                        placeholder="Nhập giá trị..."
-                        className="mb-3"
-                    />
                     <CFormCheck
+                        type="radio"
+                        name="ACTIVE"
                         label="Hiển thị"
-                        checked={newItemPublished}
-                        onChange={(e) => setNewItemPublished(e.target.checked)}
+                        checked={newItemPublished === true}
+                        onChange={() => setNewItemPublished(true)}
                     />
                     <CFormCheck
+                        type="radio"
+                        name="INACTIVE"
                         label="Không hiển thị"
-                        checked={!newItemPublished}
-                        onChange={(e) => setNewItemPublished(!e.target.checked)}
+                        checked={newItemPublished === false}
+                        onChange={() => setNewItemPublished(false)}
                     />
                 </CModalBody>
                 <CModalFooter>
@@ -285,20 +280,13 @@ const ReasonConfig = () => {
                 </CModalFooter>
             </CModal>
 
-            {/* Modal Chỉnh sửa nội dung cấu hình */}
+            {/* Modal edit */}
             <CModal visible={showEditModal} onClose={() => setShowEditModal(false)}>
                 <CModalHeader closeButton>
                     <strong>Chỉnh sửa cấu hình</strong>
                 </CModalHeader>
                 <CModalBody>
                     <CFormLabel>Tên cấu hình</CFormLabel>
-                    <CFormInput
-                        value={newItemName}
-                        onChange={(e) => setNewItemName(e.target.value)}
-                        placeholder="Nhập tên cấu hình..."
-                        className="mb-3"
-                    />
-                    <CFormLabel>Giá trị / Nội dung</CFormLabel>
                     <CFormInput
                         value={newItemValue}
                         onChange={(e) => setNewItemValue(e.target.value)}
@@ -322,7 +310,7 @@ const ReasonConfig = () => {
                 </CModalFooter>
             </CModal>
 
-            {/* Modal Xác nhận xóa */}
+            {/* Modal confirm */}
             <CModal visible={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
                 <CModalHeader closeButton>
                     <strong>Xác nhận xóa</strong>
@@ -335,6 +323,15 @@ const ReasonConfig = () => {
                     <CButton color="danger" onClick={handleDeleteConfig}>Xóa</CButton>
                 </CModalFooter>
             </CModal>
+
+            {/* Modal message */}
+            <CModal visible={successModal.visible} onClose={() => setSuccessModal({ visible: false, message: '' })}>
+                <CModalHeader closeButton>Thành công</CModalHeader>
+                <CModalBody>
+                    {successModal.message}
+                </CModalBody>
+            </CModal>
+
         </CCard>
     );
 };
