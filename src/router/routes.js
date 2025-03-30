@@ -17,12 +17,13 @@ import ShipperInactive from "../page/shipper/ShipperInactive.jsx";
 import NotificationsList from "../page/notification/NotificationsList.jsx";
 import CategoriesList from "../page/category/CategoriesList.jsx";
 import OrderDetail from "../page/order/OrderDetail.jsx";
-import UserDashboard from "../page/dashboard/UserDashboard.jsx";
-import ShopDashboard from "../page/dashboard/ShopDashboard.jsx";
-import ShipperDashboard from "../page/dashboard/ShipperDashboard.jsx";
-import OrderDashboard from "../page/dashboard/OrderDashboard.jsx";
-import ReportDashboard from "../page/dashboard/ReportDashboard.jsx";
 import BlogList from "../page/blog/BlogList.jsx";
+import ReasonConfig from "../page/config/ReasonConfig.jsx";
+import DeliveryConfig from "../page/config/DeliveryConfig.jsx";
+import Dashboard from "../page/dashboard/Dashboard.jsx";
+import ReportList from "../page/report/ReportList.jsx";
+import ReportDetail from "../page/report/ReportDetail.jsx";
+import PaymentConfig from "../page/config/PaymentConfig.jsx";
 
 
 const routes = [
@@ -44,12 +45,15 @@ const routes = [
   { path: '/notifications-list', name: 'NotificationsList', element: NotificationsList },
   { path: '/categories-list', name: 'CategoriesList', element: CategoriesList },
   { path: '/order/:id', name: 'OrderDetail', element: OrderDetail },
-  { path: '/user-dashboard', name: 'UserDashboard', element: UserDashboard },
-  { path: '/shop-dashboard', name: 'ShopDashboard', element: ShopDashboard },
-  { path: '/shipper-dashboard', name: 'ShipperDashboard', element: ShipperDashboard },
-  { path: '/order-dashboard', name: 'OrderDashboard', element: OrderDashboard },
-  { path: '/report-dashboard', name: 'ReportDashboard', element: ReportDashboard },
   { path: '/blog-list', name: 'BlogList', element: BlogList },
+  { path: '/reason-config', name: 'ReasonConfig', element: ReasonConfig },
+  { path: '/delivery-config', name: 'DeliveryConfig', element: DeliveryConfig },
+  { path: '/delivery-config', name: 'DeliveryConfig', element: DeliveryConfig },
+  { path: '/dashboard', name: 'Dashboard', element: Dashboard },
+  { path: '/reports-list', name: 'ReportList', element: ReportList },
+  { path: '/report-detail', name: 'ReportDetail', element: ReportDetail },
+  { path: '/payment-config', name: 'PaymentConfig', element: PaymentConfig },
+
   { path: '/login', name: 'Login', element: Login },
 ]
 

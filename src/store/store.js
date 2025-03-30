@@ -9,6 +9,9 @@ import {categoryService} from "../service/categoryService.js";
 import {bannerService} from "../service/bannerService.js";
 import {orderService} from "../service/orderService.js";
 import {blogService} from "../service/blogService.js";
+import {reasonConfigService} from "../service/reasonConfigService.js";
+import {deliveryMethodService} from "../service/deliveryMethodService.js";
+import {paymentMethodService} from "../service/paymentMethodService.js";
 
 export const store = configureStore({
     reducer: {
@@ -22,6 +25,10 @@ export const store = configureStore({
         [bannerService.reducerPath]: bannerService.reducer,
         [orderService.reducerPath]: orderService.reducer,
         [blogService.reducerPath]: blogService.reducer,
+        [reasonConfigService.reducerPath]: reasonConfigService.reducer,
+        [deliveryMethodService.reducerPath]: deliveryMethodService.reducer,
+        [paymentMethodService.reducerPath]: paymentMethodService.reducer,
+
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(
@@ -33,5 +40,9 @@ export const store = configureStore({
             categoryService.middleware,
             bannerService.middleware,
             blogService.middleware,
+            reasonConfigService.middleware,
+            reasonConfigService.middleware,
+            deliveryMethodService.middleware,
+            paymentMethodService.middleware,
             orderService.middleware,),
 })
