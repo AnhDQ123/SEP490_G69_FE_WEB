@@ -1,50 +1,67 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { BASE_URL } from '../utils/constant'; // Đảm bảo BASE_URL đúng với URL API của bạn
+import { BASE_URL } from '../utils/constant'; // Đảm bảo BASE_URL đúng
 
 export const deliveryMethodService = createApi({
     reducerPath: 'deliveryMethods',
-    baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }), // Base URL cho API
-    tagTypes: ['DeliveryMethods'], // Để xác định các tag cho invalidate hoặc refetch
+    baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
+    tagTypes: ['DeliveryMethods'],
+
     endpoints: (builder) => ({
-        // Lấy tất cả phương thức giao hàng với phân trang
+        // GET: Lấy tất cả phương thức giao hàng (phân trang + tìm kiếm nếu cần)
         getAllDeliveryMethods: builder.query({
-            query: (page = 0, size = 10) => `/api/delivery?page=${page}&size=${size}`, // Gọi API với phân trang
-            providesTags: ['DeliveryMethods'],
+            query: ({ page = 0, size = 10, search = '' }) =>
+                `/api/delivery?page=${page}&size=${size}&search=${search}`,
+            providesTags: (result) =>
+                result?.content
+                    ? [
+                        ...result.content.map(({ id }) => ({
+                            type: 'DeliveryMethods',
+                            id,
+                        })),
+                        { type: 'DeliveryMethods', id: 'LIST' },
+                    ]
+                    : [{ type: 'DeliveryMethods', id: 'LIST' }],
         }),
 
-        // Lấy phương thức giao hàng theo ID
+        // GET: Lấy 1 phương thức theo ID
         getDeliveryMethodById: builder.query({
-            query: (id) => `/api/delivery/${id}`, // Gọi API với ID
+            query: (id) => `/api/delivery/${id}`,
             providesTags: (result, error, id) => [{ type: 'DeliveryMethods', id }],
         }),
 
-        // Tạo phương thức giao hàng mới
+        // POST: Tạo phương thức mới
         createDeliveryMethod: builder.mutation({
             query: (deliveryMethod) => ({
                 url: '/api/delivery',
                 method: 'POST',
-                body: deliveryMethod, // Dữ liệu để gửi lên API
+                body: deliveryMethod,
             }),
-            invalidatesTags: ['DeliveryMethods'], // Khi tạo thành công, làm mới danh sách
+            invalidatesTags: [{ type: 'DeliveryMethods', id: 'LIST' }],
         }),
 
-        // Cập nhật phương thức giao hàng
+        // PUT: Cập nhật
         updateDeliveryMethod: builder.mutation({
-            query: ({ id, deliveryMethod }) => ({
+            query: ({ id, ...deliveryMethod }) => ({
                 url: `/api/delivery/${id}`,
                 method: 'PUT',
-                body: deliveryMethod, // Dữ liệu cần cập nhật
+                body: deliveryMethod,
             }),
-            invalidatesTags: (result, error, { id }) => [{ type: 'DeliveryMethods', id }],
+            invalidatesTags: (result, error, { id }) => [
+                { type: 'DeliveryMethods', id },
+                { type: 'DeliveryMethods', id: 'LIST' },
+            ],
         }),
 
-        // Xóa phương thức giao hàng
+        // DELETE: Xóa
         deleteDeliveryMethod: builder.mutation({
             query: (id) => ({
                 url: `/api/delivery/${id}`,
                 method: 'DELETE',
             }),
-            invalidatesTags: ['DeliveryMethods'], // Khi xóa thành công, làm mới danh sách
+            invalidatesTags: (result, error, id) => [
+                { type: 'DeliveryMethods', id },
+                { type: 'DeliveryMethods', id: 'LIST' },
+            ],
         }),
     }),
 });

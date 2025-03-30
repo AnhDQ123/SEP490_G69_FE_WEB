@@ -1,26 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-    CCard,
-    CCardBody,
-    CCardHeader,
-    CTable,
-    CTableHead,
-    CTableRow,
-    CTableHeaderCell,
-    CTableBody,
-    CTableDataCell,
-    CButton,
-    CRow,
-    CCol,
-    CFormInput,
-    CModalFooter,
-    CFormCheck,
-    CModalHeader,
-    CModal,
-    CModalBody,
-    CPagination,
-    CPaginationItem,
-    CFormLabel,
+    CCard, CCardBody, CCardHeader,
+    CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell,
+    CButton, CRow, CCol, CFormInput, CModalFooter, CFormCheck, CModalHeader,
+    CModal, CModalBody, CPagination, CPaginationItem, CFormLabel
 } from '@coreui/react';
 import {
     useGetAllDeliveryMethodsQuery,
@@ -34,25 +17,24 @@ const DeliveryConfig = () => {
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [page, setPage] = useState(0);
     const [size, setSize] = useState(10);
+
     const [newItemName, setNewItemName] = useState('');
-    const [newItemValue, setNewItemValue] = useState('');
+    const [newItemFee, setNewItemFee] = useState('');
+    const [newItemDescription, setNewItemDescription] = useState('');
+
     const [newItemPublished, setNewItemPublished] = useState(true);
+
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [editingDeliveryMethod, setEditingDeliveryMethod] = useState(null);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deliveryMethodToDelete, setDeliveryMethodToDelete] = useState(null);
 
-    // Debounced search effect
-    useEffect(() => {
-        const delay = setTimeout(() => {
-            setDebouncedSearch(searchTerm);
-            setPage(0); // Reset page when search changes
-        }, 400); // Delay for debounced search
-        return () => clearTimeout(delay); // Cleanup timeout when search term changes
-    }, [searchTerm]);
+    const [successModal, setSuccessModal] = useState({
+        visible: false,
+        message: ''
+    });
 
-    // Fetch data using the API hook with the debounced search term
     const { data, error, isLoading, refetch } = useGetAllDeliveryMethodsQuery(
         { page, size, search: debouncedSearch }
     );
@@ -61,56 +43,79 @@ const DeliveryConfig = () => {
     const [deleteDeliveryMethod] = useDeleteDeliveryMethodMutation();
     const [updateDeliveryMethod] = useUpdateDeliveryMethodMutation();
 
-    const handleAddModal = async () => {
-        if (!newItemName || !newItemValue) return;
+    // Debounced search
+    useEffect(() => {
+        const delay = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+            setPage(0);
+        }, 400);
+        return () => clearTimeout(delay);
+    }, [searchTerm]);
 
+    const showSuccessModal = (message) => {
+        setSuccessModal({ visible: true, message });
+        setTimeout(() => {
+            setSuccessModal({ visible: false, message: '' });
+            refetch();
+        }, 2000);
+    };
+
+    const handleAddModal = async () => {
+        if (!newItemName || !newItemFee) return;
         const newItem = {
             name: newItemName,
-            value: newItemValue,
-            published: newItemPublished,
+            description: newItemDescription,
+            fee: parseFloat(newItemFee),
+            status: newItemPublished ? 'ACTIVE' : 'INACTIVE'
         };
 
         await createDeliveryMethod(newItem);
         setNewItemName('');
-        setNewItemValue('');
+        setNewItemDescription('');
+        setNewItemFee('');
         setNewItemPublished(true);
         setShowAddModal(false);
-        refetch();
+        showSuccessModal('Thêm phương thức giao hàng thành công!');
     };
 
     const handleDeleteDeliveryMethod = async () => {
         if (deliveryMethodToDelete) {
             await deleteDeliveryMethod(deliveryMethodToDelete.id);
             setShowDeleteModal(false);
-            refetch();
+            showSuccessModal('Xóa phương thức giao hàng thành công!');
         }
     };
 
     const handleEditModal = (deliveryMethod) => {
         setEditingDeliveryMethod(deliveryMethod);
         setNewItemName(deliveryMethod.name);
-        setNewItemValue(deliveryMethod.value);
-        setNewItemPublished(deliveryMethod.published);
+        setNewItemDescription(deliveryMethod.description);
+        setNewItemFee(deliveryMethod.fee);
+        setNewItemPublished(deliveryMethod.status === 'ACTIVE');
         setShowEditModal(true);
     };
 
     const handleSaveEdit = async () => {
-        if (!newItemName || !newItemValue) return;
+        if (!newItemName || !newItemFee || !editingDeliveryMethod?.id) return;
 
         const updatedItem = {
             id: editingDeliveryMethod.id,
             name: newItemName,
-            value: newItemValue,
-            published: newItemPublished,
+            description: newItemDescription,
+            fee: parseFloat(newItemFee),
+            status: newItemPublished ? 'ACTIVE' : 'INACTIVE'
         };
 
-        await updateDeliveryMethod(updatedItem);
+        await updateDeliveryMethod(updatedItem); // id đi vào URL, phần còn lại đi vào body
         setNewItemName('');
-        setNewItemValue('');
+        setNewItemDescription('');
+        setNewItemFee('');
         setNewItemPublished(true);
         setShowEditModal(false);
-        refetch();
+        showSuccessModal('Cập nhật phương thức giao hàng thành công!');
     };
+
+
 
     const renderTable = () => {
         if (isLoading) return <div>🔄 Đang tải dữ liệu...</div>;
@@ -133,7 +138,8 @@ const DeliveryConfig = () => {
                     <CTableHead>
                         <CTableRow>
                             <CTableHeaderCell>Tên phương thức</CTableHeaderCell>
-                            <CTableHeaderCell>Giá trị</CTableHeaderCell>
+                            <CTableHeaderCell>Mô tả</CTableHeaderCell>
+                            <CTableHeaderCell>Giá</CTableHeaderCell>
                             <CTableHeaderCell>Trạng thái</CTableHeaderCell>
                             <CTableHeaderCell>Hành động</CTableHeaderCell>
                         </CTableRow>
@@ -149,8 +155,9 @@ const DeliveryConfig = () => {
                             data?.content?.map((item) => (
                                 <CTableRow key={item.id}>
                                     <CTableDataCell>{item.name}</CTableDataCell>
-                                    <CTableDataCell>{item.value}</CTableDataCell>
-                                    <CTableDataCell>{item.published ? '✔️' : '❌'}</CTableDataCell>
+                                    <CTableDataCell>{item.description}</CTableDataCell>
+                                    <CTableDataCell>{item.fee}</CTableDataCell>
+                                    <CTableDataCell>{item.status}</CTableDataCell>
                                     <CTableDataCell>
                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                             <CButton
@@ -164,7 +171,10 @@ const DeliveryConfig = () => {
                                             <CButton
                                                 size="sm"
                                                 color="danger"
-                                                onClick={() => { setDeliveryMethodToDelete(item); setShowDeleteModal(true); }}
+                                                onClick={() => {
+                                                    setDeliveryMethodToDelete(item);
+                                                    setShowDeleteModal(true);
+                                                }}
                                                 style={{ width: '45%' }}
                                             >
                                                 Xóa
@@ -177,28 +187,17 @@ const DeliveryConfig = () => {
                     </CTableBody>
                 </CTable>
 
-                {/* Pagination Controls */}
                 <CRow className="justify-content-center mt-3">
                     <CPagination>
-                        <CPaginationItem
-                            disabled={page === 0}
-                            onClick={() => setPage(page - 1)}
-                        >
+                        <CPaginationItem disabled={page === 0} onClick={() => setPage(page - 1)}>
                             Trước
                         </CPaginationItem>
-                        {Array.from({ length: data?.totalPages }, (_, i) => (
-                            <CPaginationItem
-                                key={i}
-                                active={i === page}
-                                onClick={() => setPage(i)}
-                            >
+                        {Array.from({ length: data?.totalPages || 1 }, (_, i) => (
+                            <CPaginationItem key={i} active={i === page} onClick={() => setPage(i)}>
                                 {i + 1}
                             </CPaginationItem>
                         ))}
-                        <CPaginationItem
-                            disabled={page + 1 === data?.totalPages}
-                            onClick={() => setPage(page + 1)}
-                        >
+                        <CPaginationItem disabled={page + 1 === data?.totalPages} onClick={() => setPage(page + 1)}>
                             Sau
                         </CPaginationItem>
                     </CPagination>
@@ -217,9 +216,78 @@ const DeliveryConfig = () => {
                 </CRow>
             </CCardHeader>
 
-            <CCardBody>
-                {renderTable()}
-            </CCardBody>
+            <CCardBody>{renderTable()}</CCardBody>
+
+            {/* Modal create */}
+            <CModal visible={showAddModal} onClose={() => setShowAddModal(false)}>
+                <CModalHeader closeButton>Thêm phương thức giao hàng</CModalHeader>
+                <CModalBody>
+                    <CFormInput className="mb-3" placeholder="Tên phương thức" value={newItemName} onChange={(e) => setNewItemName(e.target.value)} />
+                    <CFormInput className="mb-3" placeholder="Mô tả" value={newItemDescription} onChange={(e) => setNewItemDescription(e.target.value)} />
+                    <CFormInput className="mb-3" placeholder="Giá" value={newItemFee} onChange={(e) => setNewItemFee(e.target.value)} />
+
+                    <CFormCheck
+                        type="radio"
+                        name="ACTIVE"
+                        label="Hiển thị"
+                        checked={newItemPublished === true}
+                        onChange={() => setNewItemPublished(true)}
+                    />
+                    <CFormCheck
+                        type="radio"
+                        name="INACTIVE"
+                        label="Không hiển thị"
+                        checked={newItemPublished === false}
+                        onChange={() => setNewItemPublished(false)}
+                    />                </CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={() => setShowAddModal(false)}>Hủy</CButton>
+                    <CButton color="primary" onClick={handleAddModal}>Lưu</CButton>
+                </CModalFooter>
+            </CModal>
+
+            {/* Modal Edit */}
+            <CModal visible={showEditModal} onClose={() => setShowEditModal(false)}>
+                <CModalHeader closeButton>Chỉnh sửa phương thức giao hàng</CModalHeader>
+                <CModalBody>
+                    <CFormInput className="mb-3" placeholder="Tên phương thức" value={newItemName} onChange={(e) => setNewItemName(e.target.value)} />
+                    <CFormInput className="mb-3" placeholder="Mô tả" value={newItemDescription} onChange={(e) => setNewItemDescription(e.target.value)} />
+                    <CFormInput className="mb-3" placeholder="Giá" value={newItemFee} onChange={(e) => setNewItemFee(e.target.value)} />
+                    <CFormCheck
+                        type="radio"
+                        name="ACTIVE"
+                        label="Hiển thị"
+                        checked={newItemPublished === true}
+                        onChange={() => setNewItemPublished(true)}
+                    />
+                    <CFormCheck
+                        type="radio"
+                        name="INACTIVE"
+                        label="Không hiển thị"
+                        checked={newItemPublished === false}
+                        onChange={() => setNewItemPublished(false)}
+                    />                </CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={() => setShowEditModal(false)}>Hủy</CButton>
+                    <CButton color="primary" onClick={handleSaveEdit}>Lưu</CButton>
+                </CModalFooter>
+            </CModal>
+
+            {/* Modal Delete */}
+            <CModal visible={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
+                <CModalHeader closeButton>Xác nhận xóa</CModalHeader>
+                <CModalBody>Bạn có chắc chắn muốn xóa phương thức này không?</CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={() => setShowDeleteModal(false)}>Hủy</CButton>
+                    <CButton color="danger" onClick={handleDeleteDeliveryMethod}>Xóa</CButton>
+                </CModalFooter>
+            </CModal>
+
+            {/* Modal message */}
+            <CModal visible={successModal.visible} onClose={() => setSuccessModal({ visible: false, message: '' })}>
+                <CModalHeader closeButton>Thành công</CModalHeader>
+                <CModalBody>{successModal.message}</CModalBody>
+            </CModal>
         </CCard>
     );
 };
