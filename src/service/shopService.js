@@ -6,16 +6,20 @@ export const shopService = createApi({
     baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
     tagTypes: ["shops"],
     endpoints: (builder) => ({
+
+        // List shop
         getShop: builder.query({
             query: () => "api/shops",
             providesTags: ["shops"],
         }),
+
+        // Get shop by id
         getShopById: builder.query({
             query: (id) => `api/shops/${id}`,
             providesTags: (result, error, shopId) => [{ type: "shops", shopId: shopId }],
         }),
 
-        // Mutation for rejecting a shop
+        // Rejecting a shop
         rejectShop: builder.mutation({
             query: ({ shopId, reason }) => ({
                 url: `api/shops/${shopId}/reject`,
@@ -25,7 +29,7 @@ export const shopService = createApi({
             invalidatesTags: ["shops"], // Invalidate shop data after rejection
         }),
 
-        // Mutation for approving a shop
+        // Approving a shop
         approveShop: builder.mutation({
             query: (shopId) => ({
                 url: `api/shops/${shopId}/approve`,
@@ -44,7 +48,7 @@ export const shopService = createApi({
             invalidatesTags: [{ type: "shops", shopId: "LIST" }], // Invalidate list of shops
         }),
 
-        // Mutation to update the shop's status
+        // Update shop status
         updateShopStatus: builder.mutation({
             query: ({ shopId, status }) => ({
                 url: `api/shops/${shopId}/status`,
@@ -63,7 +67,7 @@ export const shopService = createApi({
             providesTags: ["shops"],
         }),
 
-        // ✅ Mới: Active shop (không cần lý do)
+        // Active shop
         activateShop: builder.mutation({
             query: ({shopId = ''}) => ({
                 url: `api/shops/${shopId}/active`,
@@ -75,7 +79,7 @@ export const shopService = createApi({
             ],
         }),
 
-        // ✅ Mới: Inactive shop (có lý do)
+        // Inactive shop (with reason)
         inactivateShop: builder.mutation({
             query: ({ shopId, reason }) => ({
                 url: `api/shops/${shopId}/inactive`,
@@ -88,6 +92,38 @@ export const shopService = createApi({
             ],
         }),
 
+        // Counting shops by day
+        getShopCountByDay: builder.query({
+            query: ({ status, startDate, endDate }) => ({
+                url: 'api/shops/count/day',
+                params: { status, startDate, endDate },
+            }),
+            providesTags: ["shops"],
+        }),
+
+        // Counting shops by month
+        getShopCountByMonth: builder.query({
+            query: ({ status, startDate, endDate }) => ({
+                url: 'api/shops/count/month',
+                params: { status, startDate, endDate },
+            }),
+            providesTags: ["shops"],
+        }),
+
+        // Counting shops by year
+        getShopCountByYear: builder.query({
+            query: ({ status, startDate, endDate }) => ({
+                url: 'api/shops/count/year',
+                params: { status, startDate, endDate },
+            }),
+            providesTags: ["shops"],
+        }),
+
+        // Counting pending shops
+        getShopPendingCount: builder.query({
+            query: () => 'api/shops/count/pending',  // This will call the `getShopPending` backend API
+            providesTags: ["shops"],
+        }),
 
     }),
 });
@@ -101,4 +137,8 @@ export const {
     useSearchAndPaginateShopsQuery,
     useActivateShopMutation,
     useInactivateShopMutation,
+    useGetShopCountByDayQuery,
+    useGetShopCountByMonthQuery,
+    useGetShopCountByYearQuery,
+    useGetShopPendingCountQuery,
 } = shopService;

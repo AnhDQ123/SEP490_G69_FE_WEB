@@ -6,6 +6,7 @@ export const rolesService = createApi({
     baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
     tagTypes: ["role"],
     endpoints: (builder) => ({
+        // get all
         getRoles: builder.query({
             query: () => "api/role",
             providesTags: ["role"],

@@ -6,50 +6,56 @@ export const reasonConfigService = createApi({
     baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
     tagTypes: ["config"],
     endpoints: (builder) => ({
-        // Lấy cấu hình theo danh mục
+
+        // List category
         getConfigsByCategory: builder.query({
             query: ({ category, page = 0, size = 10 }) =>
                 `api/config/${category}?page=${page}&size=${size}`,
-            providesTags: ["config"],
+            providesTags: (result) =>
+                result?.content
+                    ? [
+                        ...result.content.map(({ id }) => ({ type: "config", id })),
+                        { type: "config", id: "LIST" },
+                    ]
+                    : [{ type: "config", id: "LIST" }],
         }),
 
-        // Lấy cấu hình theo ID
+        // get by id
         getConfigById: builder.query({
             query: (id) => `api/config/detail/${id}`,
-            providesTags: (result, error, id) => [
-                { type: "config", id },
-            ],
+            providesTags: (result, error, id) => [{ type: "config", id }],
         }),
 
-        // Tạo cấu hình mới
+        // create config
         createConfig: builder.mutation({
             query: (request) => ({
                 url: `api/config/create`,
                 method: "POST",
                 body: request,
             }),
-            invalidatesTags: ["config"],
+            invalidatesTags: [{ type: "config", id: "LIST" }],
         }),
 
-        // Cập nhật cấu hình
+        // update config
         updateConfig: builder.mutation({
             query: ({ id, value }) => ({
                 url: `api/config/update/${id}`,
                 method: "PUT",
-                body: { value },
+                body: { value }, // backend chỉ nhận value mới
             }),
             invalidatesTags: (result, error, { id }) => [
                 { type: "config", id },
+                { type: "config", id: "LIST" },
             ],
         }),
 
-        // Xóa cấu hình
+        // delete config
         deleteConfig: builder.mutation({
             query: (id) => ({
                 url: `api/config/delete/${id}`,
                 method: "DELETE",
             }),
-            invalidatesTags: ["config"],
+            invalidatesTags: [{ type: "config", id: "LIST" }],
         }),
     }),
 });

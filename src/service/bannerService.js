@@ -7,7 +7,7 @@ export const bannerService = createApi({
     tagTypes: ["banner"],
     endpoints: (builder) => ({
 
-        // 📥 Lấy danh sách banner (có phân trang)
+        // get all
         getBanners: builder.query({
             query: ({ page = 0, size = 10 }) => ({
                 url: `api/banners`,
@@ -16,13 +16,13 @@ export const bannerService = createApi({
             providesTags: ["banner"],
         }),
 
-        // 🔍 Lấy chi tiết banner theo ID
+        // get by id
         getBannerById: builder.query({
             query: (bannerId) => `api/banners/${bannerId}`,
             providesTags: (result, error, bannerId) => [{ type: "banner", id: bannerId }],
         }),
 
-        // ➕ Tạo mới banner (FormData)
+        // create
         createBanner: builder.mutation({
             query: (formData) => ({
                 url: `api/banners/create`,
@@ -32,7 +32,7 @@ export const bannerService = createApi({
             invalidatesTags: ["banner"],
         }),
 
-        // ✏️ Cập nhật banner (FormData)
+        // update
         updateBanner: builder.mutation({
             query: ({ bannerId, formData }) => ({
                 url: `api/banners/update/${bannerId}`,
@@ -42,7 +42,7 @@ export const bannerService = createApi({
             invalidatesTags: ["banner"],
         }),
 
-        // 🗑️ Xóa banner
+        // delete
         deleteBanner: builder.mutation({
             query: (bannerId) => ({
                 url: `api/banners/delete/${bannerId}`,

@@ -6,7 +6,7 @@ export const productService = createApi({
     baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
     tagTypes: ["products"],
     endpoints: (builder) => ({
-        // Lấy tất cả sản phẩm của một cửa hàng
+        // get all
         getProductsByShop: builder.query({
             query: ({ id, page = 1, size = 20 }) =>
                 `api/product/shop/${id}?page=${page}&size=${size}`,
@@ -16,6 +16,8 @@ export const productService = createApi({
             query: () => "api/product/all",
             providesTags: ["products"],
         }),
+
+        // get by id
         getProductById: builder.query({
             query: (id) => `api/product/${id}`,
             providesTags: (result, error, productId) => [

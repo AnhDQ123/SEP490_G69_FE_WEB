@@ -6,7 +6,7 @@ export const shipperService = createApi({
     baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
     tagTypes: ["shipper"],
     endpoints: (builder) => ({
-        // Lấy danh sách shipper theo trạng thái
+        // get list
         getShippersByStatus: builder.query({
             query: ({ status, page = 0, size = 10, search = "" }) => ({
                 url: `api/shippers`,
@@ -15,13 +15,13 @@ export const shipperService = createApi({
             providesTags: ["shipper"],
         }),
 
-        // Lấy thông tin chi tiết shipper
+        // get by id
         getShipperById: builder.query({
             query: (userId) => `api/shippers/${userId}`,
             providesTags: (result, error, userId) => [{ type: "shipper", id: userId }],
         }),
 
-        // Kích hoạt shipper (shipperActive)
+        // active
         shipperActive: builder.mutation({
             query: (userId) => ({
                 url: `api/shippers/${userId}/active`, // URL kích hoạt shipper
@@ -30,7 +30,7 @@ export const shipperService = createApi({
             invalidatesTags: ["shipper"], // Invalidates cache khi kích hoạt shipper
         }),
 
-        // Vô hiệu hóa shipper (shipperInactive)
+        // inactive
         shipperInactive: builder.mutation({
             query: ({ userId, reason }) => ({
                 url: `api/shippers/${userId}/inactive`,
@@ -40,8 +40,7 @@ export const shipperService = createApi({
             invalidatesTags: ["shipper"],  // Invalidates cache khi vô hiệu hóa shipper
         }),
 
-
-        // Phê duyệt shipper
+        // approve
         approveShipper: builder.mutation({
             query: (userId) => ({
                 url: `api/shippers/approve/${userId}`,
@@ -50,7 +49,7 @@ export const shipperService = createApi({
             invalidatesTags: ["shipper"],
         }),
 
-        // Từ chối shipper
+        // reject
         rejectShipper: builder.mutation({
             query: ({ userId, reason }) => ({
                 url: `api/shippers/${userId}/reject`,
@@ -60,7 +59,7 @@ export const shipperService = createApi({
             invalidatesTags: ["shipper"],
         }),
 
-        // Cập nhật thông tin shipper
+        // update
         updateShipper: builder.mutation({
             query: ({ userId, shipperData }) => {
                 return {

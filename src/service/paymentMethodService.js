@@ -6,14 +6,14 @@ export const paymentMethodService = createApi({
     baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
     tagTypes: ['PaymentMethods'],
     endpoints: (builder) => ({
-        // Lấy tất cả phương thức thanh toán (có phân trang)
+        // get all
         getAllPaymentMethods: builder.query({
             query: ({ page = 0, size = 10 }) =>
                 `api/payment?page=${page}&size=${size}`,
             providesTags: ['PaymentMethods'],
         }),
 
-        // Lấy một phương thức theo ID
+        // get by id
         getPaymentMethodById: builder.query({
             query: (id) => `api/payment/${id}`,
             providesTags: (result, error, id) => [
@@ -21,7 +21,7 @@ export const paymentMethodService = createApi({
             ],
         }),
 
-        // Tạo mới phương thức
+        // create
         createPaymentMethod: builder.mutation({
             query: (paymentMethod) => ({
                 url: 'api/payment',
@@ -31,7 +31,7 @@ export const paymentMethodService = createApi({
             invalidatesTags: ['PaymentMethods'],
         }),
 
-        // Cập nhật phương thức
+        // update
         updatePaymentMethod: builder.mutation({
             query: ({ id, ...paymentMethod }) => ({
                 url: `api/payment/${id}`,
@@ -43,7 +43,7 @@ export const paymentMethodService = createApi({
             ],
         }),
 
-        // Xóa phương thức
+        // delete
         deletePaymentMethod: builder.mutation({
             query: (id) => ({
                 url: `api/payment/${id}`,

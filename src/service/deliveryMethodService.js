@@ -7,7 +7,7 @@ export const deliveryMethodService = createApi({
     tagTypes: ['DeliveryMethods'],
 
     endpoints: (builder) => ({
-        // GET: Lấy tất cả phương thức giao hàng (phân trang + tìm kiếm nếu cần)
+        // get all
         getAllDeliveryMethods: builder.query({
             query: ({ page = 0, size = 10, search = '' }) =>
                 `/api/delivery?page=${page}&size=${size}&search=${search}`,
@@ -23,13 +23,13 @@ export const deliveryMethodService = createApi({
                     : [{ type: 'DeliveryMethods', id: 'LIST' }],
         }),
 
-        // GET: Lấy 1 phương thức theo ID
+        // get by id
         getDeliveryMethodById: builder.query({
             query: (id) => `/api/delivery/${id}`,
             providesTags: (result, error, id) => [{ type: 'DeliveryMethods', id }],
         }),
 
-        // POST: Tạo phương thức mới
+        // Create
         createDeliveryMethod: builder.mutation({
             query: (deliveryMethod) => ({
                 url: '/api/delivery',
@@ -39,7 +39,7 @@ export const deliveryMethodService = createApi({
             invalidatesTags: [{ type: 'DeliveryMethods', id: 'LIST' }],
         }),
 
-        // PUT: Cập nhật
+        // Update
         updateDeliveryMethod: builder.mutation({
             query: ({ id, ...deliveryMethod }) => ({
                 url: `/api/delivery/${id}`,
@@ -52,7 +52,7 @@ export const deliveryMethodService = createApi({
             ],
         }),
 
-        // DELETE: Xóa
+        // delete
         deleteDeliveryMethod: builder.mutation({
             query: (id) => ({
                 url: `/api/delivery/${id}`,

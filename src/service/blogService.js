@@ -15,11 +15,13 @@ export const blogService = createApi({
             providesTags: ["blog"],
         }),
 
+        // get by id
         getBlogById: builder.query({
             query: (id) => `api/blogs/${id}`,
             providesTags: (result, error, id) => [{ type: "blog", id: id }],
         }),
 
+        // update
         updateBlog: builder.mutation({
             query: ({ id, blogDTO, files }) => ({
                 url: `api/blogs/${id}`,
@@ -36,6 +38,7 @@ export const blogService = createApi({
             invalidatesTags: (result, error, { id }) => [{ type: "blog", id: id }],
         }),
 
+        // delete
         deleteBlog: builder.mutation({
             query: (id) => ({
                 url: `api/blogs/${id}`,

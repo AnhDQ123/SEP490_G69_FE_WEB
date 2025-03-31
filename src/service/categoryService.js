@@ -7,7 +7,7 @@ export const categoryService = createApi({
     baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
     tagTypes: ['Category'],
     endpoints: (builder) => ({
-        // GET all categories (with optional search + pagination)
+        // get all
         getAllCategories: builder.query({
             query: ({ search = '', page = 1, size = 10 } = {}) => ({
                 url: 'api/category',
@@ -16,13 +16,13 @@ export const categoryService = createApi({
             providesTags: ['Category'],
         }),
 
-        // GET 1 category by ID
+        // get by id
         getCategoryById: builder.query({
             query: (id) => `api/category/${id}`,
             providesTags: (result, error, id) => [{ type: 'Category', id }],
         }),
 
-        // CREATE category
+        // create
         createCategory: builder.mutation({
             query: ({ data, file }) => {
                 const formData = new FormData();
@@ -42,7 +42,7 @@ export const categoryService = createApi({
             invalidatesTags: ['Category'],
         }),
 
-        // UPDATE category
+        // update
         updateCategory: builder.mutation({
             query: ({ id, data, file }) => {
                 const formData = new FormData();
@@ -62,7 +62,7 @@ export const categoryService = createApi({
             invalidatesTags: ['Category'],
         }),
 
-        // DELETE category
+        // delete
         deleteCategory: builder.mutation({
             query: (id) => ({
                 url: `api/category/delete/${id}`,

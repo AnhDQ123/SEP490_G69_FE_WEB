@@ -26,8 +26,68 @@ export const orderService = createApi({
             providesTags: ['order'],
         }),
 
+        // Get order by id
         getOrderById: builder.query({
             query: (orderId) => `api/order/${orderId}`,
+            providesTags: ['order'],
+        }),
+
+        // Get order count by status and day
+        getOrderCountByStatusAndDay: builder.query({
+            query: ({ status, startDate, endDate }) => ({
+                url: "api/order/count/day",
+                params: { status, startDate, endDate },
+            }),
+            providesTags: ['order'],
+        }),
+
+        // Get order count by status and month
+        getOrderCountByStatusAndMonth: builder.query({
+            query: ({ status, startDate, endDate }) => ({
+                url: "api/order/count/month",
+                params: { status, startDate, endDate },
+            }),
+            providesTags: ['order'],
+        }),
+
+        // Get order count by status and year
+        getOrderCountByStatusAndYear: builder.query({
+            query: ({ status, startDate, endDate }) => ({
+                url: "api/order/count/year",
+                params: { status, startDate, endDate },
+            }),
+            providesTags: ['order'],
+        }),
+
+        // Get top-selling products today
+        getTopSellingProductsToday: builder.query({
+            query: () => ({
+                url: "api/order/top-selling/today",
+            }),
+            providesTags: ['order'],
+        }),
+
+        // Get top-selling products this month
+        getTopSellingProductsThisMonth: builder.query({
+            query: () => ({
+                url: "api/order/top-selling/month",
+            }),
+            providesTags: ['order'],
+        }),
+
+        // Get top-selling products this year
+        getTopSellingProductsThisYear: builder.query({
+            query: () => ({
+                url: "api/order/top-selling/year",
+            }),
+            providesTags: ['order'],
+        }),
+
+        // Get the total count of orders
+        countAllOrders: builder.query({
+            query: () => ({
+                url: "api/order/count/orders",
+            }),
             providesTags: ['order'],
         }),
     }),
@@ -36,4 +96,11 @@ export const orderService = createApi({
 export const {
     useGetOrdersByFilterQuery,
     useGetOrderByIdQuery,
+    useGetOrderCountByStatusAndDayQuery,
+    useGetOrderCountByStatusAndMonthQuery,
+    useGetOrderCountByStatusAndYearQuery,
+    useGetTopSellingProductsTodayQuery,
+    useGetTopSellingProductsThisMonthQuery,
+    useGetTopSellingProductsThisYearQuery,
+    useCountAllOrdersQuery,
 } = orderService;

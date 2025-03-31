@@ -12,6 +12,8 @@ import {blogService} from "../service/blogService.js";
 import {reasonConfigService} from "../service/reasonConfigService.js";
 import {deliveryMethodService} from "../service/deliveryMethodService.js";
 import {paymentMethodService} from "../service/paymentMethodService.js";
+import {commentService} from "../service/commentService.js";
+import {reportService} from "../service/reportService.js";
 
 export const store = configureStore({
     reducer: {
@@ -28,6 +30,8 @@ export const store = configureStore({
         [reasonConfigService.reducerPath]: reasonConfigService.reducer,
         [deliveryMethodService.reducerPath]: deliveryMethodService.reducer,
         [paymentMethodService.reducerPath]: paymentMethodService.reducer,
+        [commentService.reducerPath]: commentService.reducer,
+        [reportService.reducerPath]: reportService.reducer,
 
     },
     middleware: (getDefaultMiddleware) =>
@@ -44,5 +48,7 @@ export const store = configureStore({
             reasonConfigService.middleware,
             deliveryMethodService.middleware,
             paymentMethodService.middleware,
+            commentService.middleware,
+            reportService.middleware,
             orderService.middleware,),
 })
