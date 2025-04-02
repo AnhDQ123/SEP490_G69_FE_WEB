@@ -60,27 +60,27 @@ export const usersService = createApi({
 
         // Count by year
         getUserCountByYear: builder.query({
-            query: ({ startDate, endDate, status }) => ({
+            query: ({ status }) => ({
                 url: "api/users/count/year",
-                params: { startDate, endDate, status },
+                params: {  status },
             }),
             providesTags: ["user"],
         }),
 
         // Count by month
         getUserCountByMonth: builder.query({
-            query: ({ startDate, endDate, status }) => ({
+            query: ({ status }) => ({
                 url: "api/users/count/month",
-                params: { startDate, endDate, status },
+                params: { status },
             }),
             providesTags: ["user"],
         }),
 
         // Count by day
         getUserCountByDay: builder.query({
-            query: ({ startDate, endDate, status }) => ({
+            query: ({ status }) => ({
                 url: "api/users/count/day",
-                params: { startDate, endDate, status },
+                params: {  status },
             }),
             providesTags: ["user"],
         }),
@@ -102,6 +102,12 @@ export const usersService = createApi({
             query: () => "api/users/count/pendingshipper",
             providesTags: ["user"],
         }),
+
+        // Count all user
+        getAllUserCount: builder.query({
+            query: () => "api/users/count/all",
+            providesTags: ["user"],
+        }),
     }),
 });
 
@@ -118,4 +124,5 @@ export const {
     useGetUserHaveShopCountQuery,
     useGetUserAreShipperCountQuery,
     useGetPendingShipperQuery,
+    useGetAllUserCountQuery,
 } = usersService;

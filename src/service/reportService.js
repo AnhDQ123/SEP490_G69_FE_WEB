@@ -35,9 +35,9 @@ export const reportService = createApi({
 
         // Fetch all reports for a specific shop
         getAllReportsByShop: builder.query({
-            query: ({ id, page = 1, size = 20 }) => ({
-                url: `api/report/shop/${id}`,
-                params: { page, size },
+            query: ({ shopId, page = 1, size = 20 }) => ({
+                url: `api/report/shop/${shopId}`, // Make sure the endpoint supports filtering by userId
+                params: { shopId, page, size },
             }),
             providesTags: ["reports"],
         }),
@@ -53,34 +53,34 @@ export const reportService = createApi({
 
         // Get count of reports by day
         getReportCountByDay: builder.query({
-            query: ({ status, startDate, endDate, type }) => ({
+            query: ({ status, type }) => ({
                 url: "api/report/count/day",
-                params: { status, startDate, endDate, type },
+                params: { status, type },
             }),
             providesTags: ["reports"],
         }),
 
         // Get count of reports by month
         getReportCountByMonth: builder.query({
-            query: ({ status, startDate, endDate, type }) => ({
+            query: ({ status, type }) => ({
                 url: "api/report/count/month",
-                params: { status, startDate, endDate, type },
+                params: { status, type },
             }),
             providesTags: ["reports"],
         }),
 
         // Get count of reports by year
         getReportCountByYear: builder.query({
-            query: ({ status, startDate, endDate, type }) => ({
+            query: ({ status, type }) => ({
                 url: "api/report/count/year",
-                params: { status, startDate, endDate, type },
+                params: { status, type },
             }),
             providesTags: ["reports"],
         }),
 
-        // Get the total count of all reports
-        getReportCount: builder.query({
-            query: () => "api/report/count/reports",
+        // Get the total count of pending
+        getReportPendingCount: builder.query({
+            query: () => "api/report/count/pending",
             providesTags: ["reports"],
         }),
     }),
@@ -95,5 +95,5 @@ export const {
     useGetReportCountByDayQuery,
     useGetReportCountByMonthQuery,
     useGetReportCountByYearQuery,
-    useGetReportCountQuery,
+    useGetReportPendingCountQuery,
 } = reportService;
