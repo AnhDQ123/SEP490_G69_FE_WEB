@@ -21,9 +21,12 @@ import BlogList from "../page/blog/BlogList.jsx";
 import ReasonConfig from "../page/config/ReasonConfig.jsx";
 import DeliveryConfig from "../page/config/DeliveryConfig.jsx";
 import Dashboard from "../page/dashboard/Dashboard.jsx";
-import ReportList from "../page/report/ReportList.jsx";
+import ReportListById from "../page/report/ReportListById.jsx";
 import ReportDetail from "../page/report/ReportDetail.jsx";
 import PaymentConfig from "../page/config/PaymentConfig.jsx";
+import BlogDetail from "../page/blog/BlogDetail.jsx";
+import ReportList from "../page/report/ReportList.jsx";
+import ReportConfig from "../page/config/ReportConfig.jsx";
 
 
 const routes = [
@@ -47,12 +50,15 @@ const routes = [
   { path: '/order/:id', name: 'OrderDetail', element: OrderDetail },
   { path: '/blog-list', name: 'BlogList', element: BlogList },
   { path: '/reason-config', name: 'ReasonConfig', element: ReasonConfig },
+  { path: '/report-config', name: 'ReportConfig', element: ReportConfig },
   { path: '/delivery-config', name: 'DeliveryConfig', element: DeliveryConfig },
   { path: '/delivery-config', name: 'DeliveryConfig', element: DeliveryConfig },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
+  { path: '/reports-list/shop/:shopId', name: 'ReportListById', element: ReportListById },
+  { path: '/report-detail/:reportId', name: 'ReportDetail', element: ReportDetail },
   { path: '/reports-list', name: 'ReportList', element: ReportList },
-  { path: '/report-detail', name: 'ReportDetail', element: ReportDetail },
   { path: '/payment-config', name: 'PaymentConfig', element: PaymentConfig },
+  { path: '/blog-detail/:id', name: 'BlogDetail', element: BlogDetail },
 
   { path: '/login', name: 'Login', element: Login },
 ]

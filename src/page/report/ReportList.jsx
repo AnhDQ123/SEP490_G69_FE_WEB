@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-    CFormInput,
-    CFormSelect,
+    CForm,
     CRow,
     CTable,
     CTableBody,
@@ -10,42 +10,39 @@ import {
     CTableHeaderCell,
     CTableRow,
     CButton,
+    CFormInput,
+    CFormSelect,
     CPagination,
-    CPaginationItem,
-} from "@coreui/react";
-import { useNavigate } from "react-router-dom";
-
-// Dữ liệu mock cứng
-const mockReports = Array.from({ length: 35 }, (_, index) => ({
-    id: index + 1,
-    reporter: { username: `user${index + 1}` },
-    type: index % 2 === 0 ? "Spam" : "Báo cáo nội dung",
-    status: ["PENDING", "IN_PROGRESS", "COMPLETED", "CANCELLED"][index % 3],
-    createdAt: new Date(Date.now() - index * 86400000).toISOString(),
-}));
+    CPaginationItem
+} from '@coreui/react';
+import { useGetAllReportsQuery } from '../../service/reportService';
 
 const ReportList = () => {
-    const [search, setSearch] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
+    const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
-    const [size, setSize] = useState(10);
+    const [size, setSize] = useState(10);  // Mặc định là 10 báo cáo mỗi trang
     const [statusFilter, setStatusFilter] = useState('');
     const navigate = useNavigate();
 
-    // Lọc dữ liệu
-    const filteredReports = mockReports.filter((report) => {
-        const matchSearch = report.reporter.username.toLowerCase().includes(search.toLowerCase());
-        const matchStatus = statusFilter ? report.status === statusFilter : true;
-        return matchSearch && matchStatus;
+    // Gọi API lấy danh sách báo cáo theo tìm kiếm và trạng thái
+    const { data, error, isLoading } = useGetAllReportsQuery({
+        search,
+        status: statusFilter,
+        page: page - 1,  // API yêu cầu bắt đầu từ trang 0
+        size
     });
 
-    const totalPages = Math.ceil(filteredReports.length / size);
-    const paginatedReports = filteredReports.slice((page - 1) * size, page * size);
-
     useEffect(() => {
-        if (page > totalPages) setPage(1); // reset nếu page vượt giới hạn sau lọc
-    }, [totalPages, page]);
+        if (data) {
+            console.log("Report Data:", data);
+        }
+    }, [data]);
 
+    if (isLoading) return <p>Đang tải dữ liệu...</p>;
+    if (error) return <p>Có lỗi xảy ra khi lấy danh sách báo cáo.</p>;
+
+    // Xử lý điều hướng chi tiết báo cáo
     const handleViewDetail = (report) => {
         navigate(`/report-detail/${report.id}`);
     };
@@ -53,19 +50,19 @@ const ReportList = () => {
     return (
         <>
             {/* Bộ lọc tìm kiếm */}
-            <CRow>
+            <CRow className="mb-3">
                 <CTable>
                     <CTableBody>
                         <CTableRow>
                             <CTableDataCell>
                                 <CFormInput
-                                    placeholder="Tìm kiếm theo người báo cáo..."
+                                    type="text"
+                                    placeholder="Tìm kiếm theo tên báo cáo..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     onKeyDown={(e) => {
                                         if (e.key === "Enter") {
                                             setSearch(searchTerm);
-                                            setPage(1);
                                         }
                                     }}
                                 />
@@ -78,16 +75,12 @@ const ReportList = () => {
                                 </CFormSelect>
                             </CTableDataCell>
                             <CTableDataCell>
-                                <CFormSelect value={statusFilter} onChange={(e) => {
-                                    setStatusFilter(e.target.value);
-                                    setPage(1);
-                                }}>
+                                <CFormSelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                                     <option value="">Tất cả trạng thái</option>
-                                    <option value="PENDING">Chờ duyệt</option>
-                                    <option value="IN_PROGRESS">Đang xử lý</option>
+                                    <option value="PENDING">Chưa xử lý</option>
+                                    <option value="IN_PROGRESS">Đã xử lý</option>
                                     <option value="COMPLETED">Hoàn thành</option>
-                                    <option value="CANCELLED">Từ chối</option>
-
+                                    <option value="CANCELLED">Bị từ chối</option>
                                 </CFormSelect>
                             </CTableDataCell>
                         </CTableRow>
@@ -100,22 +93,20 @@ const ReportList = () => {
                 <CTable striped hover>
                     <CTableHead>
                         <CTableRow>
-                            <CTableHeaderCell>ID</CTableHeaderCell>
-                            <CTableHeaderCell>Người báo cáo</CTableHeaderCell>
                             <CTableHeaderCell>Loại báo cáo</CTableHeaderCell>
+                            <CTableHeaderCell>Người tạo</CTableHeaderCell>
                             <CTableHeaderCell>Trạng thái</CTableHeaderCell>
-                            <CTableHeaderCell>Ngày tạo</CTableHeaderCell>
+                            <CTableHeaderCell>Ngày</CTableHeaderCell>
                             <CTableHeaderCell>Hành động</CTableHeaderCell>
                         </CTableRow>
                     </CTableHead>
                     <CTableBody>
-                        {paginatedReports.map((report) => (
+                        {data?.content?.map((report) => (
                             <CTableRow key={report.id}>
-                                <CTableDataCell>{report.id}</CTableDataCell>
-                                <CTableDataCell>{report.reporter.username}</CTableDataCell>
-                                <CTableDataCell>{report.type}</CTableDataCell>
+                                <CTableDataCell>{report.reportType}</CTableDataCell>
+                                <CTableDataCell>{report.creator?.userId}</CTableDataCell>
                                 <CTableDataCell>{report.status}</CTableDataCell>
-                                <CTableDataCell>{new Date(report.createdAt).toLocaleDateString()}</CTableDataCell>
+                                <CTableDataCell>{report.createdAt}</CTableDataCell>
                                 <CTableDataCell>
                                     <CButton color="info" onClick={() => handleViewDetail(report)}>
                                         Xem chi tiết
@@ -130,15 +121,25 @@ const ReportList = () => {
             {/* Phân trang */}
             <CRow className="mt-3 d-flex justify-content-center">
                 <CPagination align="center">
-                    <CPaginationItem disabled={page === 1} onClick={() => setPage(prev => Math.max(prev - 1, 1))}>
+                    <CPaginationItem
+                        disabled={page === 1}
+                        onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                    >
                         Trước
                     </CPaginationItem>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNumber) => (
-                        <CPaginationItem key={pageNumber} active={pageNumber === page} onClick={() => setPage(pageNumber)}>
+                    {Array.from({ length: data?.totalPages || 1 }, (_, i) => i + 1).map((pageNumber) => (
+                        <CPaginationItem
+                            key={pageNumber}
+                            active={pageNumber === page}
+                            onClick={() => setPage(pageNumber)}
+                        >
                             {pageNumber}
                         </CPaginationItem>
                     ))}
-                    <CPaginationItem disabled={page === totalPages} onClick={() => setPage(prev => prev + 1)}>
+                    <CPaginationItem
+                        disabled={page === data?.totalPages}
+                        onClick={() => setPage((prev) => prev + 1)}
+                    >
                         Sau
                     </CPaginationItem>
                 </CPagination>
