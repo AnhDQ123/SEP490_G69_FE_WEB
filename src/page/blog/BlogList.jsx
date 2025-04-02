@@ -105,13 +105,13 @@ const BlogList = () => {
                                 <CTableRow
                                     key={blog.id}
                                     style={{ cursor: 'pointer' }}
-                                    onClick={() => navigate(`/blog/${blog.id}`)}
+                                    onClick={() => navigate(`/blog-detail/${blog.id}`)}
                                 >
                                     <CTableDataCell>{blog.title}</CTableDataCell>
                                     <CTableDataCell>{blog.author}</CTableDataCell>
                                     <CTableDataCell>{blog.date}</CTableDataCell>
                                     <CTableDataCell>
-                                        {blog.status === 'active' ? 'Hoạt động' : 'Bị chặn'}
+                                        {blog.status === 'ACTIVE' ? 'Hoạt động' : 'Bị chặn'}
                                     </CTableDataCell>
                                     <CTableDataCell>
                                         <button type="button" className="btn btn-info mb-3">
