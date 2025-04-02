@@ -130,10 +130,9 @@ const PaymentConfig = () => {
                 <CTable striped hover responsive bordered className="table-sm">
                     <CTableHead>
                         <CTableRow>
-                            <CTableHeaderCell>Tên</CTableHeaderCell>
+                            <CTableHeaderCell>Mã</CTableHeaderCell>
                             <CTableHeaderCell>Ngày tạo</CTableHeaderCell>
                             <CTableHeaderCell>Mô tả</CTableHeaderCell>
-                            <CTableHeaderCell>Trạng thái</CTableHeaderCell>
                             <CTableHeaderCell>Hành động</CTableHeaderCell>
                         </CTableRow>
                     </CTableHead>
@@ -150,7 +149,6 @@ const PaymentConfig = () => {
                                     <CTableDataCell>{item.name}</CTableDataCell>
                                     <CTableDataCell>{new Date(item.createdAt).toLocaleString()}</CTableDataCell>
                                     <CTableDataCell>{item.description}</CTableDataCell>
-                                    <CTableDataCell>{item.status}</CTableDataCell>
                                     <CTableDataCell>
                                         <CButton size="sm" color="secondary" onClick={() => {
                                             setEditingPayment(item);

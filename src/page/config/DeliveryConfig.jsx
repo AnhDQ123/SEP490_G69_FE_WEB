@@ -138,9 +138,9 @@ const DeliveryConfig = () => {
                     <CTableHead>
                         <CTableRow>
                             <CTableHeaderCell>Tên phương thức</CTableHeaderCell>
+                            <CTableHeaderCell>Ngày tạo</CTableHeaderCell>
                             <CTableHeaderCell>Mô tả</CTableHeaderCell>
                             <CTableHeaderCell>Giá</CTableHeaderCell>
-                            <CTableHeaderCell>Trạng thái</CTableHeaderCell>
                             <CTableHeaderCell>Hành động</CTableHeaderCell>
                         </CTableRow>
                     </CTableHead>
@@ -155,9 +155,9 @@ const DeliveryConfig = () => {
                             data?.content?.map((item) => (
                                 <CTableRow key={item.id}>
                                     <CTableDataCell>{item.name}</CTableDataCell>
+                                    <CTableDataCell>{new Date(item.createdAt).toLocaleString()}</CTableDataCell>
                                     <CTableDataCell>{item.description}</CTableDataCell>
                                     <CTableDataCell>{item.fee}</CTableDataCell>
-                                    <CTableDataCell>{item.status}</CTableDataCell>
                                     <CTableDataCell>
                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                             <CButton

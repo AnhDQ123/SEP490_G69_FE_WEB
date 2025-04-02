@@ -23,48 +23,47 @@ import {
     CPagination,
     CPaginationItem
 } from '@coreui/react';
-import { useGetConfigsByCategoryQuery, useCreateConfigMutation, useDeleteConfigMutation, useUpdateConfigMutation } from '../../service/reasonConfigService'; // Import hooks
+import { useGetConfigsByCategoryQuery, useCreateConfigMutation, useDeleteConfigMutation, useUpdateConfigMutation } from '../../service/reasonConfigService';
 
-const ReasonConfig = () => {
+const ReportConfig = () => {
     const [configOptions] = useState([
-        { value: 'ORDER_DECLINE_REASON', label: 'Lý do từ chối nhận đơn' },
-        { value: 'RETURN_REASON', label: 'Lý do từ chối trả hàng' },
-        { value: 'ORDER_CANCEL_REASON', label: 'Lý do hủy đơn' },
+        { value: 'REPORT_PRODUCT_REASON', label: 'Lý do báo cáo sản phẩm' },
+        { value: 'REPORT_SHOP_REASON', label: 'Lý do báo cáo cửa hàng' },
+        { value: 'REPORT_BLOG_REASON', label: 'Lý do báo cáo bài viết' },
     ]);
-    const [configType, setConfigType] = useState('ORDER_DECLINE_REASON'); // Default value should match API
+    const [configType, setConfigType] = useState('REPORT_PRODUCT_REASON');
     const [page, setPage] = useState(0);
     const [size] = useState(10);
-    const [searchTerm] = useState(''); // For search input
-    const [debouncedSearch, setDebouncedSearch] = useState(''); // For debounced search
+    const [searchTerm] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     const [successModal, setSuccessModal] = useState({
         visible: false,
         message: ''
     });
-    // Debouncing search input
+
     useEffect(() => {
         const delay = setTimeout(() => {
             setDebouncedSearch(searchTerm);
-            setPage(0); // Reset page when search changes
+            setPage(0);
         }, 400);
-        return () => clearTimeout(delay);  // Cleanup timeout
+        return () => clearTimeout(delay);
     }, [searchTerm]);
 
-    // Fetch data from API using useGetConfigsByCategoryQuery hook
     const { data: configData, isLoading, isError, refetch } = useGetConfigsByCategoryQuery({
-        category: configType,  // The category of config data
-        page,      // Current page
-        size,      // Items per page
-        search: debouncedSearch, // Debounced search term
+        category: configType,
+        page,
+        size,
+        search: debouncedSearch,
     });
 
     const [newItemName, setNewItemName] = useState('');
     const [newItemValue, setNewItemValue] = useState('');
-    const [newItemPublished, setNewItemPublished] = useState(true); // Default to "Hiển thị"
+    const [newItemPublished, setNewItemPublished] = useState(true);
     const [showAddModal, setShowAddModal] = useState(false);
-    const [showEditModal, setShowEditModal] = useState(false); // State to show edit modal
-    const [showDeleteModal, setShowDeleteModal] = useState(false); // State to show delete confirmation modal
-    const [editingConfig, setEditingConfig] = useState(null); // Store the config being edited
-    const [configToDelete, setConfigToDelete] = useState(null); // Store the config being deleted
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [editingConfig, setEditingConfig] = useState(null);
+    const [configToDelete, setConfigToDelete] = useState(null);
 
     const [createConfig] = useCreateConfigMutation();
     const [deleteConfig] = useDeleteConfigMutation();
@@ -72,11 +71,10 @@ const ReasonConfig = () => {
 
     const showSuccessModal = (message) => {
         setSuccessModal({ visible: true, message });
-
         setTimeout(() => {
             setSuccessModal({ visible: false, message: '' });
-            refetch(); // hoặc window.location.reload()
-        }, 2000); // 2 giây sau tự ẩn + refetch
+            refetch();
+        }, 2000);
     };
 
     const handleAddModal = async () => {
@@ -87,16 +85,17 @@ const ReasonConfig = () => {
                 category: configType,
                 key: newItemName,
                 value: newItemValue,
-            }).unwrap(); // unwrap giúp bắt lỗi dễ hơn
+                status: newItemPublished ? 'ACTIVE' : 'INACTIVE'
+            }).unwrap();
 
             setNewItemName('');
             setNewItemValue('');
             setNewItemPublished(true);
             setShowAddModal(false);
-            showSuccessModal('Thêm cấu hình thành công!');
+            showSuccessModal('Thêm lý do báo cáo thành công!');
         } catch (err) {
-            console.error('Tạo cấu hình thất bại:', err);
-            alert('Không thể tạo cấu hình mới. Vui lòng kiểm tra lại.');
+            console.error('Tạo lý do báo cáo thất bại:', err);
+            alert('Không thể tạo lý do mới. Vui lòng kiểm tra lại.');
         }
     };
 
@@ -104,38 +103,44 @@ const ReasonConfig = () => {
         if (configToDelete?.id) {
             await deleteConfig(configToDelete.id);
             setShowDeleteModal(false);
-            showSuccessModal('Xóa cấu hình thành công!');
+            showSuccessModal('Xóa lý do báo cáo thành công!');
         }
     };
 
     const handleEditModal = (config) => {
-        setEditingConfig(config); // Set the config being edited
-        setNewItemName(config.name); // Set the current name value
-        setNewItemValue(config.value); // Set the current value
-        setNewItemPublished(config.published); // Set the current published status
-        setShowEditModal(true); // Show the edit modal
+        setEditingConfig(config);
+        setNewItemName(config.key);
+        setNewItemValue(config.value);
+        setNewItemPublished(config.status === 'ACTIVE');
+        setShowEditModal(true);
     };
 
     const handleSaveEdit = async () => {
         if (!newItemValue || !editingConfig?.id) return;
 
-        await updateConfig({ id: editingConfig.id, value: newItemValue });
+        try {
+            await updateConfig({
+                id: editingConfig.id,
+                value: newItemValue,
+                status: newItemPublished ? 'ACTIVE' : 'INACTIVE'
+            }).unwrap();
 
-        setNewItemName('');
-        setNewItemValue('');
-        setNewItemPublished(true);
-        setShowEditModal(false);
-        showSuccessModal('Cập nhật cấu hình thành công!');
+            setShowEditModal(false);
+            showSuccessModal('Cập nhật lý do báo cáo thành công!');
+        } catch (err) {
+            console.error('Cập nhật thất bại:', err);
+            alert('Có lỗi xảy ra khi cập nhật lý do báo cáo');
+        }
     };
 
     const renderTable = () => {
         if (isLoading) return <div>🔄 Đang tải dữ liệu...</div>;
-        if (isError) return <div>❌ Lỗi khi lấy dữ liệu cấu hình!</div>;
+        if (isError) return <div>❌ Lỗi khi lấy dữ liệu lý do báo cáo!</div>;
 
         return (
             <>
                 <CRow className="justify-content-between mb-3">
-                    <CCol><h5>Danh sách cấu hình</h5></CCol>
+                    <CCol><h5>Danh sách lý do báo cáo</h5></CCol>
                     <CCol className="text-end">
                         <CButton size="sm" color="primary" onClick={() => setShowAddModal(true)}>
                             Thêm mới
@@ -146,9 +151,9 @@ const ReasonConfig = () => {
                 <CTable striped hover responsive bordered className="table-sm">
                     <CTableHead>
                         <CTableRow>
-                            <CTableHeaderCell>Tên cấu hình</CTableHeaderCell>
-                            <CTableHeaderCell>Giá trị</CTableHeaderCell>
-                            <CTableHeaderCell>Trạng thái</CTableHeaderCell>
+                            <CTableHeaderCell>Tên lý do</CTableHeaderCell>
+                            <CTableHeaderCell>Ngày tạo</CTableHeaderCell>
+                            <CTableHeaderCell>Mô tả</CTableHeaderCell>
                             <CTableHeaderCell>Hành động</CTableHeaderCell>
                         </CTableRow>
                     </CTableHead>
@@ -156,17 +161,15 @@ const ReasonConfig = () => {
                         {configData?.content?.length === 0 ? (
                             <CTableRow>
                                 <CTableDataCell colSpan={4} className="text-center text-muted">
-                                    Không có cấu hình nào phù hợp
+                                    Không có lý do báo cáo nào
                                 </CTableDataCell>
                             </CTableRow>
                         ) : (
                             configData?.content?.map((item) => (
                                 <CTableRow key={item.id}>
-                                    <CTableDataCell>{item.value}</CTableDataCell>
                                     <CTableDataCell>{item.key}</CTableDataCell>
-                                    <CTableDataCell>
-                                        {item.status === 'ACTIVE' ? 'Hiển thị' : 'Không hiển thị'}
-                                    </CTableDataCell>
+                                    <CTableDataCell>{new Date(item.createdAt).toLocaleString()}</CTableDataCell>
+                                    <CTableDataCell>{item.value}</CTableDataCell>
                                     <CTableDataCell>
                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                             <CButton
@@ -193,7 +196,6 @@ const ReasonConfig = () => {
                     </CTableBody>
                 </CTable>
 
-                {/* Pagination Controls */}
                 <CRow className="justify-content-center mt-3">
                     <CPagination>
                         <CPaginationItem
@@ -228,7 +230,7 @@ const ReasonConfig = () => {
             <CCardHeader>
                 <CRow className="align-items-end justify-content-between">
                     <CCol md={4}>
-                        <CFormLabel>Chọn loại cấu hình</CFormLabel>
+                        <CFormLabel>Chọn loại báo cáo</CFormLabel>
                         <CFormSelect value={configType} onChange={(e) => setConfigType(e.target.value)}>
                             {configOptions.map((option) => (
                                 <option key={option.value} value={option.value}>
@@ -244,17 +246,24 @@ const ReasonConfig = () => {
                 {renderTable()}
             </CCardBody>
 
-            {/* Modal Add */}
+            {/* Add Modal */}
             <CModal visible={showAddModal} onClose={() => setShowAddModal(false)}>
                 <CModalHeader closeButton>
-                    <strong>Thêm cấu hình mới</strong>
+                    <strong>Thêm lý do báo cáo mới</strong>
                 </CModalHeader>
                 <CModalBody>
-                    <CFormLabel>Tên cấu hình</CFormLabel>
+                    <CFormLabel>Tên lý do</CFormLabel>
                     <CFormInput
                         value={newItemName}
                         onChange={(e) => setNewItemName(e.target.value)}
-                        placeholder="Nhập tên cấu hình..."
+                        placeholder="Nhập tên lý do..."
+                        className="mb-3"
+                    />
+                    <CFormLabel>Mô tả chi tiết</CFormLabel>
+                    <CFormInput
+                        value={newItemValue}
+                        onChange={(e) => setNewItemValue(e.target.value)}
+                        placeholder="Nhập mô tả..."
                         className="mb-3"
                     />
                 </CModalBody>
@@ -264,17 +273,23 @@ const ReasonConfig = () => {
                 </CModalFooter>
             </CModal>
 
-            {/* Modal edit */}
+            {/* Edit Modal */}
             <CModal visible={showEditModal} onClose={() => setShowEditModal(false)}>
                 <CModalHeader closeButton>
-                    <strong>Chỉnh sửa cấu hình</strong>
+                    <strong>Chỉnh sửa lý do báo cáo</strong>
                 </CModalHeader>
                 <CModalBody>
-                    <CFormLabel>Tên cấu hình</CFormLabel>
+                    <CFormLabel>Tên lý do</CFormLabel>
+                    <CFormInput
+                        value={newItemName}
+                        onChange={(e) => setNewItemName(e.target.value)}
+                        className="mb-3"
+                        disabled
+                    />
+                    <CFormLabel>Mô tả chi tiết</CFormLabel>
                     <CFormInput
                         value={newItemValue}
                         onChange={(e) => setNewItemValue(e.target.value)}
-                        placeholder="Nhập giá trị..."
                         className="mb-3"
                     />
                 </CModalBody>
@@ -284,13 +299,13 @@ const ReasonConfig = () => {
                 </CModalFooter>
             </CModal>
 
-            {/* Modal confirm */}
+            {/* Delete Modal */}
             <CModal visible={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
                 <CModalHeader closeButton>
                     <strong>Xác nhận xóa</strong>
                 </CModalHeader>
                 <CModalBody>
-                    <p>Bạn có chắc chắn muốn xóa mục này không?</p>
+                    <p>Bạn có chắc chắn muốn xóa lý do báo cáo này không?</p>
                 </CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" onClick={() => setShowDeleteModal(false)}>Hủy</CButton>
@@ -298,16 +313,15 @@ const ReasonConfig = () => {
                 </CModalFooter>
             </CModal>
 
-            {/* Modal message */}
+            {/* Success Modal */}
             <CModal visible={successModal.visible} onClose={() => setSuccessModal({ visible: false, message: '' })}>
-                <CModalHeader closeButton>Thành công</CModalHeader>
+                <CModalHeader closeButton>Thông báo</CModalHeader>
                 <CModalBody>
                     {successModal.message}
                 </CModalBody>
             </CModal>
-
         </CCard>
     );
 };
 
-export default ReasonConfig;
+export default ReportConfig;
