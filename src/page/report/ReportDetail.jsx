@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useParams } from "react-router-dom"; // Để lấy reportId từ URL
 import {
     CRow,
     CCol,
@@ -14,34 +15,19 @@ import {
     CButton,
     CImage,
 } from "@coreui/react";
+import { useGetReportByIdQuery } from "../../service/reportService"; // Giả sử bạn đã tạo API này
 
 const ReportDetail = () => {
-    // Dữ liệu mock
-    const customerSide = {
-        username: "Nhat123",
-        solution: "Yêu cầu trả hàng",
-        reason: "Đồ ăn khi nhận được không giống như hình hay mô tả được đăng trên quán",
-        images: ["/img1.png", "/img2.png", "/img3.png"],
-    };
+    const { reportId } = useParams(); // Lấy reportId từ URL
+    const { data, error, isLoading } = useGetReportByIdQuery(reportId); // Gọi API với reportId
 
-    const shopSide = {
-        name: "Cơm rang 123",
-        solution: "Từ chối trả hàng",
-        reason: "Đồ ăn được chế biến đúng với thực đơn được đăng",
-        images: ["/img4.png", "/img5.png"],
-    };
+    if (isLoading) return <p>Đang tải dữ liệu...</p>;
+    if (error) return <p>Có lỗi xảy ra khi lấy chi tiết báo cáo.</p>;
 
-    const products = [
-        {
-            name: "Cơm rang thập cẩm",
-            price: 60000,
-            quantity: 1,
-            voucher: "N/A",
-            discount: 10000,
-            total: 50000,
-            image: "/food.png",
-        },
-    ];
+    // Giả sử data trả về có cấu trúc tương tự mock dữ liệu
+    const customerSide = data?.customerSide || {};
+    const shopSide = data?.shopSide || {};
+    const products = data?.products || [];
 
     return (
         <div>
@@ -60,7 +46,7 @@ const ReportDetail = () => {
                         <CTableBody>
                             <CTableRow>
                                 <CTableDataCell><strong>Tài khoản:</strong> {customerSide.username}</CTableDataCell>
-                                <CTableDataCell><strong>Quán:</strong> {shopSide.name}</CTableDataCell>
+                                <CTableDataCell><strong>Quán:</strong> {shopSide.reportName}</CTableDataCell>
                             </CTableRow>
                             <CTableRow>
                                 <CTableDataCell><strong>Hướng giải quyết:</strong> {customerSide.solution}</CTableDataCell>
@@ -74,7 +60,7 @@ const ReportDetail = () => {
                                 <CTableDataCell>
                                     <strong>Bằng chứng:</strong>
                                     <div className="d-flex gap-2 mt-2">
-                                        {customerSide.images.map((src, index) => (
+                                        {customerSide.images?.map((src, index) => (
                                             <CImage key={index} src={src} width={70} thumbnail />
                                         ))}
                                     </div>
@@ -82,7 +68,7 @@ const ReportDetail = () => {
                                 <CTableDataCell>
                                     <strong>Bằng chứng:</strong>
                                     <div className="d-flex gap-2 mt-2">
-                                        {shopSide.images.map((src, index) => (
+                                        {shopSide.images?.map((src, index) => (
                                             <CImage key={index} src={src} width={70} thumbnail />
                                         ))}
                                     </div>
@@ -117,17 +103,17 @@ const ReportDetail = () => {
                             </CTableRow>
                         </CTableHead>
                         <CTableBody>
-                            {products.map((item, index) => (
+                            {products?.map((item, index) => (
                                 <CTableRow key={index}>
                                     <CTableDataCell>
                                         <CImage src={item.image} width={60} thumbnail />
                                     </CTableDataCell>
                                     <CTableDataCell>{item.name}</CTableDataCell>
-                                    <CTableDataCell>{item.price.toLocaleString()}đ</CTableDataCell>
+                                    <CTableDataCell>{item.price?.toLocaleString()}đ</CTableDataCell>
                                     <CTableDataCell>{item.quantity}</CTableDataCell>
                                     <CTableDataCell>{item.voucher}</CTableDataCell>
-                                    <CTableDataCell>{item.discount.toLocaleString()}đ</CTableDataCell>
-                                    <CTableDataCell>{item.total.toLocaleString()}đ</CTableDataCell>
+                                    <CTableDataCell>{item.discount?.toLocaleString()}đ</CTableDataCell>
+                                    <CTableDataCell>{item.total?.toLocaleString()}đ</CTableDataCell>
                                 </CTableRow>
                             ))}
                         </CTableBody>
