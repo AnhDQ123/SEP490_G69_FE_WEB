@@ -107,19 +107,14 @@ const ProductDetail = () => {
 
                 {/* Nút chức năng */}
                 <CRow className="text-center mt-4">
-                    <CCol md={4}>
+                    <CCol md={6}>
                         <CButton color="danger" className="w-100 rounded-3 py-2 fw-semibold">
                             ❌ Xóa sản phẩm
                         </CButton>
                     </CCol>
-                    <CCol md={4}>
+                    <CCol md={6}>
                         <CButton color="secondary" className="w-100 rounded-3 py-2 fw-semibold" onClick={() => navigate(-1)}>
                             ⬅️ Quay lại
-                        </CButton>
-                    </CCol>
-                    <CCol md={4}>
-                        <CButton color="success" className="w-100 rounded-3 py-2 fw-semibold">
-                            💾 Lưu
                         </CButton>
                     </CCol>
                 </CRow>

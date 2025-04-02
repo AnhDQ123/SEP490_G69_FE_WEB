@@ -196,7 +196,7 @@ const ShopActive = () => {
                         </CButton>
                     </CCol>
                     <CCol md={6} className="mt-3">
-                        <CButton color="info" className="w-100" onClick={() => navigate(`/reports-list`)}>
+                        <CButton color="info" className="w-100" onClick={() => navigate(`/reports-list/shop/:shopId`)}>
                             Xem danh sách cáo buộc
                         </CButton>
                     </CCol>

@@ -29,10 +29,12 @@ const BannerList = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedBanner, setSelectedBanner] = useState(null); // Banner được chọn
     const [startIndex, setStartIndex] = useState(0);
+    const [selectedBannerUrl, setSelectedBannerUrl] = useState('');
 
     const { data, isLoading } = useGetBannersQuery({ page: 0, size: 10 });
     const [deleteBanner] = useDeleteBannerMutation();
     const [updateBanner] = useUpdateBannerMutation();
+
 
     const handleDeleteImage = async () => {
         if (selectedBanner) {
@@ -47,7 +49,6 @@ const BannerList = () => {
     };
 
     const handleUploadClick = (id) => {
-        setSelectedBanner(id);
         setShowModal(true); // Mở modal để chọn banner
     };
 
@@ -117,23 +118,36 @@ const BannerList = () => {
                         {banners.map((banner) => (
                             <CListGroupItem
                                 key={banner.imageId}
-                                onClick={() => setSelectedBanner(banner.imageId)} // Cập nhật banner đã chọn
+                                onClick={() => setSelectedBanner(banner.imageId)}
                                 style={{
                                     cursor: 'pointer',
-                                    backgroundColor: selectedBanner === banner.imageId ? '#d3d3d3' : 'transparent', // Làm nổi bật banner đã chọn
-                                    transition: 'background-color 0.3s', // Thêm hiệu ứng chuyển màu nền
+                                    backgroundColor: selectedBanner === banner.imageId ? '#d3d3d3' : 'transparent',
+                                    transition: 'background-color 0.3s',
                                 }}
                                 className={selectedBanner === banner.imageId ? 'border-primary' : ''}
                             >
                                 <div>
                                     <div className="d-flex justify-content-between">
                                         <div>Banner #{banner.imageId}</div>
-                                        <div>
-                                            <img src={banner.url} alt={`Banner ${banner.imageId}`} width="50" height="50" style={{ objectFit: 'cover' }} />
-                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation(); // Ngăn click lan ra CListGroupItem
+                                                setSelectedBannerUrl(banner.url); // Cập nhật URL vào state
+                                            }}
+                                        >
+                                            <img
+                                                src={banner.url}
+                                                alt={`Banner ${banner.imageId}`}
+                                                width="50"
+                                                height="50"
+                                                style={{ objectFit: 'cover' }}
+                                            />
+                                        </button>
                                     </div>
                                 </div>
                             </CListGroupItem>
+
                         ))}
                     </CListGroup>
                 </CModalBody>

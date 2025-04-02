@@ -75,8 +75,13 @@ const _nav = [
         items: [
             {
                 component: CNavItem,
-                name: 'Hoàn hàng và khiếu nại',
+                name: 'Đơn hàng',
                 to: '/reason-config',
+            },
+            {
+                component: CNavItem,
+                name: 'Khiếu nại',
+                to: '/report-config',
             },
             {
                 component: CNavItem,

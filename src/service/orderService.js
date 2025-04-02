@@ -6,6 +6,7 @@ export const orderService = createApi({
     baseQuery: fetchBaseQuery({ baseUrl: BASE_URL }),
     tagTypes: ['order'],
     endpoints: (builder) => ({
+
         getOrdersByFilter: builder.query({
             query: ({ status, startDate, endDate, orderCode, page = 0, size = 10 }) => {
                 const params = {
@@ -34,27 +35,27 @@ export const orderService = createApi({
 
         // Get order count by status and day
         getOrderCountByStatusAndDay: builder.query({
-            query: ({ status, startDate, endDate }) => ({
+            query: ({ status }) => ({
                 url: "api/order/count/day",
-                params: { status, startDate, endDate },
+                params: { status },
             }),
             providesTags: ['order'],
         }),
 
         // Get order count by status and month
         getOrderCountByStatusAndMonth: builder.query({
-            query: ({ status, startDate, endDate }) => ({
+            query: ({ status }) => ({
                 url: "api/order/count/month",
-                params: { status, startDate, endDate },
+                params: { status },
             }),
             providesTags: ['order'],
         }),
 
         // Get order count by status and year
         getOrderCountByStatusAndYear: builder.query({
-            query: ({ status, startDate, endDate }) => ({
+            query: ({ status }) => ({
                 url: "api/order/count/year",
-                params: { status, startDate, endDate },
+                params: { status },
             }),
             providesTags: ['order'],
         }),
