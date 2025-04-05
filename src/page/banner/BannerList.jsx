@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
     CRow,
     CCol,
@@ -16,27 +16,28 @@ import {
     CListGroup,
     CListGroupItem
 } from '@coreui/react';
-import { FaArrowLeft, FaArrowRight, FaTrash, FaUpload } from 'react-icons/fa';
+import {FaArrowLeft, FaArrowRight, FaPen, FaTrash, FaUpload} from 'react-icons/fa';
 import {
     useGetBannersQuery,
     useDeleteBannerMutation,
-    useUpdateBannerMutation
+    useUpdateBannerMutation, useGetAllBannersQuery
 } from '../../service/bannerService';
 
 const BannerList = () => {
     const [showBanner, setShowBanner] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [selectedBanner, setSelectedBanner] = useState(null); // Banner được chọn
+    const [selectedBanner, setSelectedBanner] = useState(null);
     const [startIndex, setStartIndex] = useState(0);
     const [selectedBannerUrl, setSelectedBannerUrl] = useState('');
 
-    const { data, isLoading } = useGetBannersQuery({ page: 0, size: 10 });
+    const {data, isLoading} = useGetBannersQuery({page: 0, size: 5});
+    const {allBannersData} = useGetAllBannersQuery();
     const [deleteBanner] = useDeleteBannerMutation();
     const [updateBanner] = useUpdateBannerMutation();
 
-
     const handleDeleteImage = async () => {
+        console.log(selectedBanner);
         if (selectedBanner) {
             await deleteBanner(selectedBanner);
         }
@@ -44,31 +45,43 @@ const BannerList = () => {
     };
 
     const confirmDelete = (id) => {
+        console.log(id);
         setSelectedBanner(id);
         setShowDeleteModal(true);
     };
 
     const handleUploadClick = (id) => {
+        setSelectedBanner(id);
         setShowModal(true); // Mở modal để chọn banner
     };
-
+    const handleCloseModal = async () => {
+        if (selectedBanner) {
+            const formData = data.content.map((item) => {item.id === selectedBanner;});
+            console.log(formData);
+            await updateBanner({selectedBanner, formData});
+        }
+        setShowModal(false);
+    }
     const handleSave = () => {
-        console.log({ showBanner });
+        console.log({showBanner});
     };
 
     const banners = data?.content || [];
+    const allBanners = allBannersData?.content || []
+    console.log(allBanners);
+    if (isLoading) return <CSpinner color="primary"/>;
 
-    if (isLoading) return <CSpinner color="primary" />;
-
+    // Di chuyển tới nhóm banner tiếp theo
     const handleNext = () => {
         if (startIndex + 2 < banners.length) {
-            setStartIndex(startIndex + 1);
+            setStartIndex(startIndex + 2); // Di chuyển 2 banner
         }
     };
 
+    // Di chuyển tới nhóm banner trước
     const handlePrev = () => {
         if (startIndex > 0) {
-            setStartIndex(startIndex - 1);
+            setStartIndex(startIndex - 2); // Di chuyển 2 banner
         }
     };
 
@@ -86,22 +99,34 @@ const BannerList = () => {
                     />
                     <h5 className="mt-3">Các Banner đang hiển thị</h5>
                     <div className="d-flex justify-content-center align-items-center position-relative">
-                        <FaArrowLeft className="position-absolute start-0" size={32} style={{ cursor: 'pointer' }} onClick={handlePrev} />
-                        <CRow className="flex-nowrap overflow-hidden justify-content-center" style={{ width: '80%' }}>
-                            {banners.slice(startIndex, startIndex + 2).map((banner) => (
-                                <CCol key={banner.imageId} md={6} className="text-center">
-                                    <div className="banner-box p-3 border rounded d-flex flex-column align-items-center justify-content-center" style={{ height: '300px', width: '100%' }}>
-                                        <div className="banner-image" style={{ width: '100%', height: '150px', background: banner.url ? `url(${banner.url})` : '#ccc', backgroundSize: 'cover' }}></div>
-                                        <p className="mt-2">Banner #{banner.imageId}</p>
+                        <FaArrowLeft className="position-absolute start-0" size={32} style={{cursor: 'pointer'}}
+                                     onClick={handlePrev}/>
+                        <CRow className="flex-nowrap overflow-hidden justify-content-center" style={{width: '80%'}}>
+                            {banners.slice(startIndex, startIndex + 2).map((banner, index) => (
+                                <CCol key={banner.id} md={6} className="text-center">
+                                    <div
+                                        className="banner-box p-3 border rounded d-flex flex-column align-items-center justify-content-center"
+                                        style={{height: '300px', width: '100%'}}>
+                                        <div className="banner-image" style={{
+                                            width: '100%',
+                                            height: '150px',
+                                            background: banner.url ? `url(${banner.url})` : '#ccc',
+                                            backgroundSize: 'cover'
+                                        }}></div>
+                                        <p className="mt-2">Banner {startIndex + index + 1}</p>
                                         <div className="d-flex gap-2 mt-2">
-                                            <FaUpload size={20} style={{ cursor: 'pointer' }} onClick={() => handleUploadClick(banner.imageId)} />
-                                            <FaTrash size={20} style={{ cursor: 'pointer', color: 'red' }} onClick={() => confirmDelete(banner.imageId)} />
+                                            {/* Nút Edit thay vì Change với icon FaPen */}
+                                            <FaPen size={20} style={{cursor: 'pointer', color: 'blue'}}
+                                                   onClick={() => handleUploadClick(banner.id)}/>
+                                            <FaTrash size={20} style={{cursor: 'pointer', color: 'red'}}
+                                                     onClick={() => confirmDelete(banner.id)}/>
                                         </div>
                                     </div>
                                 </CCol>
                             ))}
                         </CRow>
-                        <FaArrowRight className="position-absolute end-0" size={32} style={{ cursor: 'pointer' }} onClick={handleNext} />
+                        <FaArrowRight className="position-absolute end-0" size={32} style={{cursor: 'pointer'}}
+                                      onClick={handleNext}/>
                     </div>
                     <div className="mt-4 d-flex justify-content-center">
                         <CButton color="primary" onClick={handleSave}>Lưu</CButton>
@@ -115,20 +140,20 @@ const BannerList = () => {
                 <CModalBody>
                     {/* Hiển thị danh sách các banner */}
                     <CListGroup>
-                        {banners.map((banner) => (
+                        {allBanners.map((banner) => (
                             <CListGroupItem
-                                key={banner.imageId}
-                                onClick={() => setSelectedBanner(banner.imageId)}
+                                key={banner.id}
+                                onClick={() => setSelectedBanner(banner.id)}
                                 style={{
                                     cursor: 'pointer',
-                                    backgroundColor: selectedBanner === banner.imageId ? '#d3d3d3' : 'transparent',
+                                    backgroundColor: selectedBanner === banner.id ? '#d3d3d3' : 'transparent',
                                     transition: 'background-color 0.3s',
                                 }}
-                                className={selectedBanner === banner.imageId ? 'border-primary' : ''}
+                                className={selectedBanner === banner.id ? 'border-primary' : ''}
                             >
                                 <div>
                                     <div className="d-flex justify-content-between">
-                                        <div>Banner #{banner.imageId}</div>
+                                        <div>Banner #{banner.id}</div>
                                         <button
                                             type="button"
                                             onClick={(e) => {
@@ -138,21 +163,20 @@ const BannerList = () => {
                                         >
                                             <img
                                                 src={banner.url}
-                                                alt={`Banner ${banner.imageId}`}
+                                                alt={`Banner ${banner.id}`}
                                                 width="50"
                                                 height="50"
-                                                style={{ objectFit: 'cover' }}
+                                                style={{objectFit: 'cover'}}
                                             />
                                         </button>
                                     </div>
                                 </div>
                             </CListGroupItem>
-
                         ))}
                     </CListGroup>
                 </CModalBody>
                 <CModalFooter>
-                    <CButton color="secondary" onClick={() => setShowModal(false)}>Đóng</CButton>
+                    <CButton color="secondary" onClick={() => handleCloseModal()}>Đóng</CButton>
                 </CModalFooter>
             </CModal>
 
@@ -168,5 +192,6 @@ const BannerList = () => {
         </CCard>
     );
 };
+
 
 export default BannerList;

@@ -15,7 +15,12 @@ export const bannerService = createApi({
             }),
             providesTags: ["banner"],
         }),
-
+        getAllBanners: builder.query({
+            query: () => ({
+                url: `api/banners`,
+            }),
+            providesTags: ["banner"],
+        }),
         // get by id
         getBannerById: builder.query({
             query: (bannerId) => `api/banners/${bannerId}`,
@@ -55,6 +60,7 @@ export const bannerService = createApi({
 
 export const {
     useGetBannersQuery,
+    useGetAllBannersQuery,
     useGetBannerByIdQuery,
     useCreateBannerMutation,
     useUpdateBannerMutation,
