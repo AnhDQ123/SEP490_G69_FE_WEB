@@ -10,77 +10,121 @@ import {
     CTableHeaderCell,
     CTableRow,
     CButton,
-    CFormInput,
     CFormSelect,
     CPagination,
     CPaginationItem
 } from '@coreui/react';
-import { useGetAllReportsQuery } from '../../service/reportService';
+import { useGetAllReportsByStatusQuery } from '../../service/reportService';
 
 const ReportList = () => {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
-    const [size, setSize] = useState(10);  // Mặc định là 10 báo cáo mỗi trang
-    const [statusFilter, setStatusFilter] = useState('');
+    const [size, setSize] = useState(10);
+    const [statusFilter, setStatusFilter] = useState('PENDING');
+    const [typeFilter, setTypeFilter] = useState('SHOP'); // New filter for report type
     const navigate = useNavigate();
 
-    // Gọi API lấy danh sách báo cáo theo tìm kiếm và trạng thái
-    const { data, error, isLoading } = useGetAllReportsQuery({
-        search,
+    // Call API with both status and type filters
+    const { data, error, isLoading } = useGetAllReportsByStatusQuery({
         status: statusFilter,
-        page: page - 1,  // API yêu cầu bắt đầu từ trang 0
+        reportType: typeFilter === 'ALL' ? undefined : typeFilter,
+        page: 1,  // Thêm page vào dependencies
         size
+    }, {
+        refetchOnMountOrArgChange: true,  // Đảm bảo refetch khi args thay đổi
     });
 
     useEffect(() => {
+        console.log("Current filters:", {
+            statusFilter,
+            typeFilter,
+            page,
+            size
+        });
         if (data) {
             console.log("Report Data:", data);
         }
-    }, [data]);
+    }, [statusFilter, typeFilter, page, size, data]);
 
     if (isLoading) return <p>Đang tải dữ liệu...</p>;
     if (error) return <p>Có lỗi xảy ra khi lấy danh sách báo cáo.</p>;
 
-    // Xử lý điều hướng chi tiết báo cáo
     const handleViewDetail = (report) => {
-        navigate(`/report-detail/${report.id}`);
+        if (report.reportType === "SHOP") {
+            switch (report.status) {
+                case "PENDING":
+                    navigate(`/report-pending/${report.id}`);
+                    break;
+                case "COMPLETED":
+                    navigate(`/report-completed/${report.id}`);
+                    break;
+                default:
+                    alert("Trạng thái khiếu nại không hợp lệ!");
+            }
+        } else if (report.reportType === "BLOG") {
+            switch (report.status) {
+                case "PENDING":
+                    navigate(`/blog-report-pending/${report.id}`);
+                    break;
+                case "COMPLETED":
+                    navigate(`/blog-report-completed/${report.id}`);
+                    break;
+                default:
+                    alert("Trạng thái khiếu nại không hợp lệ!");
+            }
+        } else if (report.reportType === "PRODUCT") {
+            switch (report.status) {
+                case "PENDING":
+                    navigate(`/product-report-pending/${report.id}`);
+                    break;
+                case "COMPLETED":
+                    navigate(`/product-report-completed/${report.id}`);
+                    break;
+                default:
+                    alert("Trạng thái khiếu nại không hợp lệ!");
+            }
+        } else {
+            alert("Loại báo cáo không hợp lệ!");
+        }
     };
 
     return (
         <>
-            {/* Bộ lọc tìm kiếm */}
+            {/* Filter section */}
             <CRow className="mb-3">
                 <CTable>
                     <CTableBody>
                         <CTableRow>
                             <CTableDataCell>
-                                <CFormInput
-                                    type="text"
-                                    placeholder="Tìm kiếm theo tên báo cáo..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === "Enter") {
-                                            setSearch(searchTerm);
-                                        }
+                                <CFormSelect
+                                    value={typeFilter}
+                                    onChange={(e) => {
+                                        setTypeFilter(e.target.value);
+                                        setPage(1); // Reset về trang đầu khi thay đổi filter
                                     }}
-                                />
+                                >
+                                    <option value="ALL">Tất cả</option>
+                                    <option value="SHOP">Cửa hàng</option>
+                                    <option value="PRODUCT">Sản phẩm</option>
+                                    <option value="BLOG">Blog</option>
+                                </CFormSelect>
                             </CTableDataCell>
                             <CTableDataCell>
-                                <CFormSelect value={size} onChange={(e) => setSize(Number(e.target.value))}>
+                                <CFormSelect
+                                    value={size}
+                                    onChange={(e) => setSize(Number(e.target.value))}
+                                >
                                     <option value="10">Hiển thị 10</option>
                                     <option value="20">Hiển thị 20</option>
                                     <option value="50">Hiển thị 50</option>
                                 </CFormSelect>
                             </CTableDataCell>
                             <CTableDataCell>
-                                <CFormSelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                                    <option value="">Tất cả trạng thái</option>
-                                    <option value="PENDING">Chưa xử lý</option>
-                                    <option value="IN_PROGRESS">Đã xử lý</option>
-                                    <option value="COMPLETED">Hoàn thành</option>
-                                    <option value="CANCELLED">Bị từ chối</option>
+                                <CFormSelect
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                >
+                                    <option value="PENDING">Chờ tiếp nhận</option>
+                                    <option value="COMPLETED">Đã tiếp nhận</option>
                                 </CFormSelect>
                             </CTableDataCell>
                         </CTableRow>
@@ -88,27 +132,44 @@ const ReportList = () => {
                 </CTable>
             </CRow>
 
-            {/* Danh sách báo cáo */}
+            {/* Reports list */}
             <CRow>
                 <CTable striped hover>
                     <CTableHead>
                         <CTableRow>
-                            <CTableHeaderCell>Loại báo cáo</CTableHeaderCell>
+                            <CTableHeaderCell>Loại khiếu nại</CTableHeaderCell>
                             <CTableHeaderCell>Người tạo</CTableHeaderCell>
+                            <CTableHeaderCell>Ngày tạo</CTableHeaderCell>
                             <CTableHeaderCell>Trạng thái</CTableHeaderCell>
-                            <CTableHeaderCell>Ngày</CTableHeaderCell>
                             <CTableHeaderCell>Hành động</CTableHeaderCell>
                         </CTableRow>
                     </CTableHead>
                     <CTableBody>
                         {data?.content?.map((report) => (
                             <CTableRow key={report.id}>
-                                <CTableDataCell>{report.reportType}</CTableDataCell>
-                                <CTableDataCell>{report.creator?.userId}</CTableDataCell>
-                                <CTableDataCell>{report.status}</CTableDataCell>
-                                <CTableDataCell>{report.createdAt}</CTableDataCell>
                                 <CTableDataCell>
-                                    <CButton color="info" onClick={() => handleViewDetail(report)}>
+                                    {report.reportType === 'SHOP' && 'Cửa hàng'}
+                                    {report.reportType === 'PRODUCT' && 'Sản phẩm'}
+                                    {report.reportType === 'BLOG' && 'Blog'}
+                                </CTableDataCell>
+                                <CTableDataCell>{report.reportedUserId?.username || report.reportedUserId?.userId}</CTableDataCell>
+                                <CTableDataCell>
+                                    {new Date(report.createdAt).toLocaleDateString()}
+                                </CTableDataCell>
+                                <CTableDataCell>
+                                    {report.status === 'PENDING' && (
+                                        <span className="badge bg-warning">Chờ xử lý</span>
+                                    )}
+                                    {report.status === 'COMPLETED' && (
+                                        <span className="badge bg-success">Đã xử lý</span>
+                                    )}
+                                </CTableDataCell>
+                                <CTableDataCell>
+                                    <CButton
+                                        color="info"
+                                        size="sm"
+                                        onClick={() => handleViewDetail(report)}
+                                    >
                                         Xem chi tiết
                                     </CButton>
                                 </CTableDataCell>
@@ -118,7 +179,7 @@ const ReportList = () => {
                 </CTable>
             </CRow>
 
-            {/* Phân trang */}
+            {/* Pagination */}
             <CRow className="mt-3 d-flex justify-content-center">
                 <CPagination align="center">
                     <CPaginationItem

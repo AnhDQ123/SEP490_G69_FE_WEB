@@ -14,10 +14,13 @@ import {
     CTableDataCell,
     CButton,
     CImage,
+    CBadge
 } from "@coreui/react";
 import { useGetReportByIdQuery } from "../../service/reportService"; // Giả sử bạn đã tạo API này
+import { useGetUserByIdQuery } from "../../service/userService";
+import { useGetShopByIdQuery } from "../../service/shopService";
 
-const ReportDetail = () => {
+const ReportCompleted = () => {
     const { reportId } = useParams(); // Lấy reportId từ URL
     const { data, error, isLoading } = useGetReportByIdQuery(reportId); // Gọi API với reportId
 
@@ -28,47 +31,42 @@ const ReportDetail = () => {
     const customerSide = data?.customerSide || {};
     const shopSide = data?.shopSide || {};
     const products = data?.products || [];
+    const reportStatus = data?.status;  // Get the status of the report (e.g., "COMPLETED")
 
     return (
         <div>
-            <h5 className="mb-4">Chi tiết cáo buộc</h5>
+            <h5 className="mb-4">Chi tiết khiếu nại cửa hàng/quán ăn đã tiếp nhận</h5>
 
+            {/* Display status at the top */}
             <CCard>
-                <CCardHeader>Tranh chấp</CCardHeader>
+                <CCardHeader>
+                    Tranh chấp
+                    {reportStatus === "COMPLETED" && (
+                        <CBadge color="success" className="ms-2">Đã hoàn thành</CBadge>
+                    )}
+                </CCardHeader>
                 <CCardBody>
                     <CTable bordered>
                         <CTableHead>
-                            <CTableRow>
-                                <CTableHeaderCell>Phía khách hàng</CTableHeaderCell>
-                                <CTableHeaderCell>Phía cửa hàng</CTableHeaderCell>
-                            </CTableRow>
                         </CTableHead>
                         <CTableBody>
                             <CTableRow>
-                                <CTableDataCell><strong>Tài khoản:</strong> {customerSide.username}</CTableDataCell>
-                                <CTableDataCell><strong>Quán:</strong> {shopSide.reportName}</CTableDataCell>
+                                <CTableDataCell>
+                                    <strong>Tài khoản:</strong> {customerSide.username}
+                                    <strong>Tên người dùng:</strong> {customerSide.username}
+                                </CTableDataCell>
                             </CTableRow>
                             <CTableRow>
-                                <CTableDataCell><strong>Hướng giải quyết:</strong> {customerSide.solution}</CTableDataCell>
-                                <CTableDataCell><strong>Hướng giải quyết:</strong> {shopSide.solution}</CTableDataCell>
+                                <CTableDataCell><strong>Cửa hàng:</strong> {customerSide.username}</CTableDataCell>
                             </CTableRow>
                             <CTableRow>
-                                <CTableDataCell><strong>Lý do:</strong> {customerSide.reason}</CTableDataCell>
-                                <CTableDataCell><strong>Lý do:</strong> {shopSide.reason}</CTableDataCell>
+                                <CTableDataCell><strong>Khiếu nại:</strong> {customerSide.reason}</CTableDataCell>
                             </CTableRow>
                             <CTableRow>
                                 <CTableDataCell>
-                                    <strong>Bằng chứng:</strong>
+                                    <strong>Hình ảnh:</strong>
                                     <div className="d-flex gap-2 mt-2">
                                         {customerSide.images?.map((src, index) => (
-                                            <CImage key={index} src={src} width={70} thumbnail />
-                                        ))}
-                                    </div>
-                                </CTableDataCell>
-                                <CTableDataCell>
-                                    <strong>Bằng chứng:</strong>
-                                    <div className="d-flex gap-2 mt-2">
-                                        {shopSide.images?.map((src, index) => (
                                             <CImage key={index} src={src} width={70} thumbnail />
                                         ))}
                                     </div>
@@ -77,29 +75,31 @@ const ReportDetail = () => {
                         </CTableBody>
                     </CTable>
 
-                    <CTableRow>
-                        <CTableDataCell className="d-flex gap-2">
-                            <CButton color="warning">Yêu cầu thêm bằng chứng</CButton>
-                            <CButton color="success">Chấp nhận</CButton>
-                        </CTableDataCell>
-                    </CTableRow>
-
+                    {/* Indicating that the report is processed */}
+                    {reportStatus === "COMPLETED" && (
+                        <CTableRow>
+                            <CTableDataCell colSpan={2} className="d-flex justify-content-center">
+                                <CButton color="success" disabled>
+                                    Khiếu nại đã được ghi nhận
+                                </CButton>
+                            </CTableDataCell>
+                        </CTableRow>
+                    )}
                 </CCardBody>
             </CCard>
 
             <CCard className="mt-4">
-                <CCardHeader>Sản phẩm</CCardHeader>
+                <CCardHeader>Thông tin cửa hàng</CCardHeader>
                 <CCardBody>
                     <CTable striped bordered>
                         <CTableHead>
                             <CTableRow>
-                                <CTableHeaderCell>Ảnh</CTableHeaderCell>
-                                <CTableHeaderCell>Tên món</CTableHeaderCell>
-                                <CTableHeaderCell>Giá món</CTableHeaderCell>
-                                <CTableHeaderCell>Số lượng</CTableHeaderCell>
-                                <CTableHeaderCell>Voucher</CTableHeaderCell>
-                                <CTableHeaderCell>Giảm giá</CTableHeaderCell>
-                                <CTableHeaderCell>Tổng giá</CTableHeaderCell>
+                                <CTableHeaderCell>Tên cửa hàng</CTableHeaderCell>
+                                <CTableHeaderCell>Mô tả</CTableHeaderCell>
+                                <CTableHeaderCell>Địa chỉ cửa hàng</CTableHeaderCell>
+                                <CTableHeaderCell>Số điện thoại</CTableHeaderCell>
+                                <CTableHeaderCell>Điểm đánh giá</CTableHeaderCell>
+
                             </CTableRow>
                         </CTableHead>
                         <CTableBody>
@@ -112,8 +112,6 @@ const ReportDetail = () => {
                                     <CTableDataCell>{item.price?.toLocaleString()}đ</CTableDataCell>
                                     <CTableDataCell>{item.quantity}</CTableDataCell>
                                     <CTableDataCell>{item.voucher}</CTableDataCell>
-                                    <CTableDataCell>{item.discount?.toLocaleString()}đ</CTableDataCell>
-                                    <CTableDataCell>{item.total?.toLocaleString()}đ</CTableDataCell>
                                 </CTableRow>
                             ))}
                         </CTableBody>
@@ -124,4 +122,4 @@ const ReportDetail = () => {
     );
 };
 
-export default ReportDetail;
+export default ReportCompleted;

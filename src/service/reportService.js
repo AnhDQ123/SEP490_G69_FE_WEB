@@ -36,7 +36,7 @@ export const reportService = createApi({
         // Fetch all reports for a specific shop
         getAllReportsByShop: builder.query({
             query: ({ shopId, page = 1, size = 20 }) => ({
-                url: `api/report/shop/${shopId}`, // Make sure the endpoint supports filtering by userId
+                url: `api/report/shop/${shopId}`,
                 params: { shopId, page, size },
             }),
             providesTags: ["reports"],
@@ -78,10 +78,29 @@ export const reportService = createApi({
             providesTags: ["reports"],
         }),
 
-        // Get the total count of pending
+        // Get the total count of pending reports
         getReportPendingCount: builder.query({
             query: () => "api/report/count/pending",
             providesTags: ["reports"],
+        }),
+
+        // Fetch all reports by status
+        getAllReportsByStatus: builder.query({
+            query: ({ status, page = 1, size = 20 }) => ({
+                url: "api/report/status",
+                params: { status, page, size },
+            }),
+            providesTags: ["reports"],
+        }),
+
+        // Update the status of a report
+        updateReportStatus: builder.mutation({
+            query: (id ) => ({
+                url: "api/report/update",
+                method: "PUT",
+                params: { id: id }, // passing status and id as query params
+            }),
+            invalidatesTags: [{ type: "reports", id: "LIST" }], // Invalidate the report list after status update
         }),
     }),
 });
@@ -96,4 +115,6 @@ export const {
     useGetReportCountByMonthQuery,
     useGetReportCountByYearQuery,
     useGetReportPendingCountQuery,
+    useGetAllReportsByStatusQuery,
+    useUpdateReportStatusMutation,
 } = reportService;
