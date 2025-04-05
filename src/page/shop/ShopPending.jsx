@@ -164,7 +164,7 @@ const ShopPending = () => {
                     </CCol>
                     <CCol md={6}>
                         <label>Trạng thái</label>
-                        <CFormInput disabled value={shop.isActive ? 'Hoạt động' : 'Chờ duyệt'} />
+                        <CFormInput disabled value={shop.isActive ? 'Chờ duyệt' : 'Hoạt động'} />
                     </CCol>
                 </CRow>
 

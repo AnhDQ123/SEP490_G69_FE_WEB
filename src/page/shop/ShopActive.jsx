@@ -116,7 +116,7 @@ const ShopActive = () => {
                         <CFormInput disabled value={shop.openTime} />
                     </CCol>
                     <CCol md={4}>
-                        <label>Giờ hoạt động</label>
+                        <label>Giờ đóng cửa</label>
                         <CFormInput disabled value={shop.closeTime} />
                     </CCol>
                 </CRow>
@@ -197,7 +197,7 @@ const ShopActive = () => {
                     </CCol>
                     <CCol md={6} className="mt-3">
                         <CButton color="info" className="w-100" onClick={() => navigate(`/reports-list/shop/:shopId`)}>
-                            Xem danh sách cáo buộc
+                            Xem danh sách khiếu nại
                         </CButton>
                     </CCol>
                 </CRow>

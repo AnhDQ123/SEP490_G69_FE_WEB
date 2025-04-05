@@ -94,27 +94,27 @@ export const shopService = createApi({
 
         // Counting shops by day
         getShopCountByDay: builder.query({
-            query: ({ status, startDate, endDate }) => ({
+            query: ({ status }) => ({
                 url: 'api/shops/count/day',
-                params: { status, startDate, endDate },
+                params: { status },
             }),
             providesTags: ["shops"],
         }),
 
         // Counting shops by month
         getShopCountByMonth: builder.query({
-            query: ({ status, startDate, endDate }) => ({
+            query: ({ status }) => ({
                 url: 'api/shops/count/month',
-                params: { status, startDate, endDate },
+                params: { status },
             }),
             providesTags: ["shops"],
         }),
 
         // Counting shops by year
         getShopCountByYear: builder.query({
-            query: ({ status, startDate, endDate }) => ({
+            query: ({ status }) => ({
                 url: 'api/shops/count/year',
-                params: { status, startDate, endDate },
+                params: { status },
             }),
             providesTags: ["shops"],
         }),

@@ -118,7 +118,7 @@ const ShopInactive = () => {
                     </CCol>
                     <CCol md={6}>
                         <label>Trạng thái</label>
-                        <CFormInput disabled value={shop.isActive} />
+                        <CFormInput disabled value="Dừng hoạt động" />
                     </CCol>
                 </CRow>
                 <CRow className="mb-3">
