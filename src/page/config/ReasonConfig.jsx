@@ -57,15 +57,15 @@ const ReasonConfig = () => {
         search: debouncedSearch, // Debounced search term
     });
 
-    const [newItemName, setNewItemName] = useState('');
-    const [newItemValue, setNewItemValue] = useState('');
+    const [newItemKey, setNewItemName] = useState('');
+    const [newItemName, setNewItemValue] = useState('');
     const [newItemPublished, setNewItemPublished] = useState(true); // Default to "Hiển thị"
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false); // State to show edit modal
     const [showDeleteModal, setShowDeleteModal] = useState(false); // State to show delete confirmation modal
     const [editingConfig, setEditingConfig] = useState(null); // Store the config being edited
     const [configToDelete, setConfigToDelete] = useState(null); // Store the config being deleted
-
+    const [duplicateCodeError, setDuplicateCodeError] = useState('');
     const [createConfig] = useCreateConfigMutation();
     const [deleteConfig] = useDeleteConfigMutation();
     const [updateConfig] = useUpdateConfigMutation();
@@ -80,23 +80,32 @@ const ReasonConfig = () => {
     };
 
     const handleAddModal = async () => {
-        if (!newItemName || !newItemValue) return;
+        if (!newItemKey || !newItemName) return;
+
+        // Check if the code already exists
+        const isCodeExist = configData?.content?.some(item => item.key === newItemKey);
+        if (isCodeExist) {
+            setDuplicateCodeError('Mã này đã tồn tại. Vui lòng chọn mã khác.');
+            return;
+        } else {
+            setDuplicateCodeError('');
+        }
 
         try {
             await createConfig({
                 category: configType,
-                key: newItemName,
-                value: newItemValue,
-            }).unwrap(); // unwrap giúp bắt lỗi dễ hơn
+                key: newItemKey,
+                value: newItemName,
+            }).unwrap();
 
             setNewItemName('');
             setNewItemValue('');
             setNewItemPublished(true);
             setShowAddModal(false);
-            showSuccessModal('Thêm cấu hình thành công!');
+            showSuccessModal('Thêm lý do báo cáo thành công!');
         } catch (err) {
-            console.error('Tạo cấu hình thất bại:', err);
-            alert('Không thể tạo cấu hình mới. Vui lòng kiểm tra lại.');
+            console.error('Tạo lý do báo cáo thất bại:', err);
+            alert('Không thể tạo lý do mới. Vui lòng kiểm tra lại.');
         }
     };
 
@@ -117,15 +126,20 @@ const ReasonConfig = () => {
     };
 
     const handleSaveEdit = async () => {
-        if (!newItemValue || !editingConfig?.id) return;
+        if (!newItemName || !editingConfig?.id) return;
 
-        await updateConfig({ id: editingConfig.id, value: newItemValue });
+        try {
+            await updateConfig({
+                id: editingConfig.id,
+                value: newItemName,
+            }).unwrap();
 
-        setNewItemName('');
-        setNewItemValue('');
-        setNewItemPublished(true);
-        setShowEditModal(false);
-        showSuccessModal('Cập nhật cấu hình thành công!');
+            setShowEditModal(false);
+            showSuccessModal('Cập nhật lý do báo cáo thành công!');
+        } catch (err) {
+            console.error('Cập nhật thất bại:', err);
+            alert('Có lỗi xảy ra khi cập nhật lý do báo cáo');
+        }
     };
 
     const renderTable = () => {
@@ -147,8 +161,8 @@ const ReasonConfig = () => {
                     <CTableHead>
                         <CTableRow>
                             <CTableHeaderCell>Tên cấu hình</CTableHeaderCell>
-                            <CTableHeaderCell>Giá trị</CTableHeaderCell>
-                            <CTableHeaderCell>Trạng thái</CTableHeaderCell>
+                            <CTableHeaderCell>Mã</CTableHeaderCell>
+                            <CTableHeaderCell>Ngày tạo</CTableHeaderCell>
                             <CTableHeaderCell>Hành động</CTableHeaderCell>
                         </CTableRow>
                     </CTableHead>
@@ -164,9 +178,7 @@ const ReasonConfig = () => {
                                 <CTableRow key={item.id}>
                                     <CTableDataCell>{item.value}</CTableDataCell>
                                     <CTableDataCell>{item.key}</CTableDataCell>
-                                    <CTableDataCell>
-                                        {item.status === 'ACTIVE' ? 'Hiển thị' : 'Không hiển thị'}
-                                    </CTableDataCell>
+                                    <CTableDataCell>{new Date(item.createdAt).toLocaleString()}</CTableDataCell>
                                     <CTableDataCell>
                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                             <CButton
@@ -247,14 +259,22 @@ const ReasonConfig = () => {
             {/* Modal Add */}
             <CModal visible={showAddModal} onClose={() => setShowAddModal(false)}>
                 <CModalHeader closeButton>
-                    <strong>Thêm cấu hình mới</strong>
+                    <strong>Thêm lý do báo cáo mới</strong>
                 </CModalHeader>
                 <CModalBody>
-                    <CFormLabel>Tên cấu hình</CFormLabel>
+                    <CFormLabel>Mã</CFormLabel>
+                    <CFormInput
+                        value={newItemKey}
+                        onChange={(e) => setNewItemName(e.target.value)}
+                        placeholder="Nhập mã lý do..."
+                        className="mb-3"
+                    />
+                    {duplicateCodeError && <div style={{ color: 'red' }}>{duplicateCodeError}</div>}
+                    <CFormLabel>Tên lý do</CFormLabel>
                     <CFormInput
                         value={newItemName}
-                        onChange={(e) => setNewItemName(e.target.value)}
-                        placeholder="Nhập tên cấu hình..."
+                        onChange={(e) => setNewItemValue(e.target.value)}
+                        placeholder="Nhập tên lý do..."
                         className="mb-3"
                     />
                 </CModalBody>
@@ -263,7 +283,6 @@ const ReasonConfig = () => {
                     <CButton color="primary" onClick={handleAddModal}>Lưu</CButton>
                 </CModalFooter>
             </CModal>
-
             {/* Modal edit */}
             <CModal visible={showEditModal} onClose={() => setShowEditModal(false)}>
                 <CModalHeader closeButton>
@@ -272,7 +291,7 @@ const ReasonConfig = () => {
                 <CModalBody>
                     <CFormLabel>Tên cấu hình</CFormLabel>
                     <CFormInput
-                        value={newItemValue}
+                        value={newItemName}
                         onChange={(e) => setNewItemValue(e.target.value)}
                         placeholder="Nhập giá trị..."
                         className="mb-3"

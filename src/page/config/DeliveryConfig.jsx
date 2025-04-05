@@ -138,9 +138,9 @@ const DeliveryConfig = () => {
                     <CTableHead>
                         <CTableRow>
                             <CTableHeaderCell>Tên phương thức</CTableHeaderCell>
-                            <CTableHeaderCell>Ngày tạo</CTableHeaderCell>
                             <CTableHeaderCell>Mô tả</CTableHeaderCell>
                             <CTableHeaderCell>Giá</CTableHeaderCell>
+                            <CTableHeaderCell>Ngày tạo</CTableHeaderCell>
                             <CTableHeaderCell>Hành động</CTableHeaderCell>
                         </CTableRow>
                     </CTableHead>
@@ -155,9 +155,9 @@ const DeliveryConfig = () => {
                             data?.content?.map((item) => (
                                 <CTableRow key={item.id}>
                                     <CTableDataCell>{item.name}</CTableDataCell>
-                                    <CTableDataCell>{new Date(item.createdAt).toLocaleString()}</CTableDataCell>
                                     <CTableDataCell>{item.description}</CTableDataCell>
                                     <CTableDataCell>{item.fee}</CTableDataCell>
+                                    <CTableDataCell>{new Date(item.createdAt).toLocaleString()}</CTableDataCell>
                                     <CTableDataCell>
                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                                             <CButton
@@ -225,21 +225,7 @@ const DeliveryConfig = () => {
                     <CFormInput className="mb-3" placeholder="Tên phương thức" value={newItemName} onChange={(e) => setNewItemName(e.target.value)} />
                     <CFormInput className="mb-3" placeholder="Mô tả" value={newItemDescription} onChange={(e) => setNewItemDescription(e.target.value)} />
                     <CFormInput className="mb-3" placeholder="Giá" value={newItemFee} onChange={(e) => setNewItemFee(e.target.value)} />
-
-                    <CFormCheck
-                        type="radio"
-                        name="ACTIVE"
-                        label="Hiển thị"
-                        checked={newItemPublished === true}
-                        onChange={() => setNewItemPublished(true)}
-                    />
-                    <CFormCheck
-                        type="radio"
-                        name="INACTIVE"
-                        label="Không hiển thị"
-                        checked={newItemPublished === false}
-                        onChange={() => setNewItemPublished(false)}
-                    />                </CModalBody>
+                </CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" onClick={() => setShowAddModal(false)}>Hủy</CButton>
                     <CButton color="primary" onClick={handleAddModal}>Lưu</CButton>
@@ -253,20 +239,7 @@ const DeliveryConfig = () => {
                     <CFormInput className="mb-3" placeholder="Tên phương thức" value={newItemName} onChange={(e) => setNewItemName(e.target.value)} />
                     <CFormInput className="mb-3" placeholder="Mô tả" value={newItemDescription} onChange={(e) => setNewItemDescription(e.target.value)} />
                     <CFormInput className="mb-3" placeholder="Giá" value={newItemFee} onChange={(e) => setNewItemFee(e.target.value)} />
-                    <CFormCheck
-                        type="radio"
-                        name="ACTIVE"
-                        label="Hiển thị"
-                        checked={newItemPublished === true}
-                        onChange={() => setNewItemPublished(true)}
-                    />
-                    <CFormCheck
-                        type="radio"
-                        name="INACTIVE"
-                        label="Không hiển thị"
-                        checked={newItemPublished === false}
-                        onChange={() => setNewItemPublished(false)}
-                    />                </CModalBody>
+                </CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" onClick={() => setShowEditModal(false)}>Hủy</CButton>
                     <CButton color="primary" onClick={handleSaveEdit}>Lưu</CButton>

@@ -42,6 +42,7 @@ const PaymentConfig = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
     const [toasts, setToasts] = useState([]);
+
     const [successModal, setSuccessModal] = useState({
         visible: false,
         message: ''
@@ -73,7 +74,6 @@ const PaymentConfig = () => {
             await createPaymentMethod({
                 name: newName,
                 description: newDescription,
-                status: newItemPublished ? 'ACTIVE' : 'INACTIVE'
             }).unwrap();
             setShowAddModal(false);
             setNewName('');
@@ -131,8 +131,8 @@ const PaymentConfig = () => {
                     <CTableHead>
                         <CTableRow>
                             <CTableHeaderCell>Mã</CTableHeaderCell>
-                            <CTableHeaderCell>Ngày tạo</CTableHeaderCell>
                             <CTableHeaderCell>Mô tả</CTableHeaderCell>
+                            <CTableHeaderCell>Ngày tạo</CTableHeaderCell>
                             <CTableHeaderCell>Hành động</CTableHeaderCell>
                         </CTableRow>
                     </CTableHead>
@@ -147,8 +147,8 @@ const PaymentConfig = () => {
                             data?.content?.map((item) => (
                                 <CTableRow key={item.id}>
                                     <CTableDataCell>{item.name}</CTableDataCell>
-                                    <CTableDataCell>{new Date(item.createdAt).toLocaleString()}</CTableDataCell>
                                     <CTableDataCell>{item.description}</CTableDataCell>
+                                    <CTableDataCell>{new Date(item.createdAt).toLocaleString()}</CTableDataCell>
                                     <CTableDataCell>
                                         <CButton size="sm" color="secondary" onClick={() => {
                                             setEditingPayment(item);
@@ -203,20 +203,6 @@ const PaymentConfig = () => {
                     <CModalBody>
                         <CFormInput className="mb-3" placeholder="Tên phương thức" value={newName} onChange={(e) => setNewName(e.target.value)} />
                         <CFormInput placeholder="Mô tả" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
-                        <CFormCheck
-                            type="radio"
-                            name="ACTIVE"
-                            label="Hiển thị"
-                            checked={newItemPublished === true}
-                            onChange={() => setNewItemPublished(true)}
-                        />
-                        <CFormCheck
-                            type="radio"
-                            name="INACTIVE"
-                            label="Không hiển thị"
-                            checked={newItemPublished === false}
-                            onChange={() => setNewItemPublished(false)}
-                        />
                     </CModalBody>
                     <CModalFooter>
                         <CButton color="secondary" onClick={() => setShowAddModal(false)}>Hủy</CButton>
@@ -230,21 +216,6 @@ const PaymentConfig = () => {
                     <CModalBody>
                         <CFormInput className="mb-3" placeholder="Tên phương thức" value={newName} onChange={(e) => setNewName(e.target.value)} />
                         <CFormInput className="mb-3" placeholder="Mô tả" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
-
-                        <CFormCheck
-                            type="radio"
-                            name="editStatus"
-                            label="Hiển thị"
-                            checked={newItemPublished === true}
-                            onChange={() => setNewItemPublished(true)}
-                        />
-                        <CFormCheck
-                            type="radio"
-                            name="editStatus"
-                            label="Không hiển thị"
-                            checked={newItemPublished === false}
-                            onChange={() => setNewItemPublished(false)}
-                        />
                     </CModalBody>
                     <CModalFooter>
                         <CButton color="secondary" onClick={() => setShowEditModal(false)}>Hủy</CButton>
