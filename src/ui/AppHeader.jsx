@@ -97,7 +97,7 @@ const AppHeader = () => {
                 Tài khoản
               </CDropdownToggle>
               <CDropdownMenu>
-                <CDropdownItem as="button" type="button" onClick={() => navigate('/account')}>
+                <CDropdownItem as="button" type="button" onClick={() => navigate('/user-information')}>
                   Thông tin người dùng
                 </CDropdownItem>
                 <CDropdownItem as="button" type="button" onClick={() => navigate('/change-password')}>
