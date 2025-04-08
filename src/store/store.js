@@ -14,6 +14,7 @@ import {deliveryMethodService} from "../service/deliveryMethodService.js";
 import {paymentMethodService} from "../service/paymentMethodService.js";
 import {commentService} from "../service/commentService.js";
 import {reportService} from "../service/reportService.js";
+import {returnOrderService} from "../service/returnOrderService.js";
 
 export const store = configureStore({
     reducer: {
@@ -32,6 +33,7 @@ export const store = configureStore({
         [paymentMethodService.reducerPath]: paymentMethodService.reducer,
         [commentService.reducerPath]: commentService.reducer,
         [reportService.reducerPath]: reportService.reducer,
+        [returnOrderService.reducerPath]: returnOrderService.reducer,
 
     },
     middleware: (getDefaultMiddleware) =>
@@ -50,5 +52,6 @@ export const store = configureStore({
             paymentMethodService.middleware,
             commentService.middleware,
             reportService.middleware,
+            returnOrderService.middleware,
             orderService.middleware,),
 })

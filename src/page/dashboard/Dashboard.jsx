@@ -48,8 +48,16 @@ import {
     useGetTopSellingProductsThisMonthQuery, useGetTopSellingProductsThisYearQuery,
     useGetTopSellingProductsTodayQuery
 } from "../../service/orderService.js";
-import {useGetReportPendingCountQuery} from "../../service/reportService.js";
-import {useGetShopPendingCountQuery} from "../../service/shopService.js";
+import {
+    useGetReportCountByDayQuery,
+    useGetReportCountByMonthQuery, useGetReportCountByYearQuery,
+    useGetReportPendingCountQuery
+} from "../../service/reportService.js";
+import {
+    useGetShopCountByDayQuery,
+    useGetShopCountByMonthQuery, useGetShopCountByYearQuery,
+    useGetShopPendingCountQuery
+} from "../../service/shopService.js";
 import {useNavigate} from "react-router-dom";
 
 ChartJS.register(
@@ -64,41 +72,77 @@ ChartJS.register(
 
 const Dashboard = () => {
     const navigate = useNavigate();
-    const [chartTabs, setChartTabs] = useState({ bestseller: 'day' });
+    const [chartTabs] = useState({bestseller: 'day'});
     const [userTypeTime, setUserTypeTime] = useState('day');
     const [shopStatusTime, setShopStatusTime] = useState('day');
-    const [reportedProductsTime, setReportedProductsTime] = useState('day'); // Tab cho sản phẩm bị báo cáo
-    const [reportedBlogsTime, setReportedBlogsTime] = useState('day'); // Tab cho blog bị báo cáo
+    const [reportedProductsTime, setReportedProductsTime] = useState('day');
+    const [reportedBlogsTime, setReportedBlogsTime] = useState('day');
 
     const [orderStatusTime, setOrderStatusTime] = useState('day');
-    const [bestSeller, setbestSeller] = useState('day');// Default to 'day'
-    const [chartTabsOrder, setChartTabsOrder] = useState({ order_status: 'CANCELLED' });
+    const [bestSeller, setbestSeller] = useState('day');
+    const [chartTabsOrder, setChartTabsOrder] = useState({order_status: 'CANCELLED'});
+    const [chartTabsUser, setChartTabsUser] = useState({user_status: 'ACTIVE'});
+    const [chartTabsShop, setChartTabsShop] = useState({shop_status: 'ACTIVE'});
+    const [chartTabsProductReport, setChartTabsProductReport] = useState({product_report_status: 'PENDING'});
+    const [chartTabsBlogReport, setChartTabsBlogReport] = useState({blog_report_status: 'PENDING'});
+
 
     const [topSellingTodayData, setTopSellingTodayData] = useState([]);
     const [topSellingMonthData, setTopSellingMonthData] = useState([]);
     const [topSellingYearData, setTopSellingYearData] = useState([]);
 
     // Call Api
-    const { data: totalShops, isLoading: isCountAllShop } = useGetUserHaveShopCountQuery();
-    const { data: totalShippers, isLoading: isShipperLoading } = useGetUserAreShipperCountQuery();
-    const { data: totalOrders, isLoading: isOrderLoading } = useCountAllOrdersQuery();
-    const { data: totalPendingReports, isLoading: isPendingReportsLoading } = useGetReportPendingCountQuery();
-    const { data: totalUsers, isLoading: isCountAllUser } = useGetAllUserCountQuery();
-    const { data: pendingShipperCount, isLoading: isShipperPending } = useGetPendingShipperQuery();
-    const { data: pendingShopCount, isLoading: isShopPending } = useGetShopPendingCountQuery();
+    const {data: totalShops, isLoading: isCountAllShop} = useGetUserHaveShopCountQuery();
+    const {data: totalShippers, isLoading: isShipperLoading} = useGetUserAreShipperCountQuery();
+    const {data: totalOrders, isLoading: isOrderLoading} = useCountAllOrdersQuery();
+    const {data: totalPendingReports, isLoading: isPendingReportsLoading} = useGetReportPendingCountQuery();
+    const {data: totalUsers, isLoading: isCountAllUser} = useGetAllUserCountQuery();
+    const {data: pendingShipperCount, isLoading: isShipperPending} = useGetPendingShipperQuery();
+    const {data: pendingShopCount, isLoading: isShopPending} = useGetShopPendingCountQuery();
 
-    const { data: dayOrderData, isLoading: isOrderDayLoading } = useGetOrderCountByStatusAndDayQuery({ status: chartTabsOrder['order_status'] });
-    const { data: monthOrderData, isLoading: isOrderMonthLoading } = useGetOrderCountByStatusAndMonthQuery({ status: chartTabsOrder['order_status'] });
-    const { data: yearOrderData, isLoading: isOrderYearLoading } = useGetOrderCountByStatusAndYearQuery({ status: chartTabsOrder['order_status'] });
+    const {data: dayOrderData} = useGetOrderCountByStatusAndDayQuery({status: chartTabsOrder['order_status']});
+    const {data: monthOrderData} = useGetOrderCountByStatusAndMonthQuery({status: chartTabsOrder['order_status']});
+    const {data: yearOrderData} = useGetOrderCountByStatusAndYearQuery({status: chartTabsOrder['order_status']});
 
-    const { data: dayUserData, isLoading: isUserDayLoading } = useGetUserCountByDayQuery({ status: chartTabsOrder['user_status'] });
-    const { data: monthUserData, isLoading: isUserMonthLoading } = useGetUserCountByMonthQuery({ status: chartTabsOrder['user_status'] });
-    const { data: yearUserData, isLoading: isUserYearLoading } = useGetUserCountByYearQuery({ status: chartTabsOrder['user_status'] });
+    const {data: dayUserData} = useGetUserCountByDayQuery({status: chartTabsUser['user_status']});
+    const {data: monthUserData} = useGetUserCountByMonthQuery({status: chartTabsUser['user_status']});
+    const {data: yearUserData} = useGetUserCountByYearQuery({status: chartTabsUser['user_status']});
+
+    const {data: dayShopData} = useGetShopCountByDayQuery({status: chartTabsShop['shop_status']});
+    const {data: monthShopData} = useGetShopCountByMonthQuery({status: chartTabsShop['shop_status']});
+    const {data: yearShopData} = useGetShopCountByYearQuery({status: chartTabsShop['shop_status']});
 
 
-    const { data: topSellingToday, isLoading: isLoadingToday } = useGetTopSellingProductsTodayQuery();
-    const { data: topSellingMonth, isLoading: isLoadingMonth } = useGetTopSellingProductsThisMonthQuery();
-    const { data: topSellingYear, isLoading: isLoadingYear } = useGetTopSellingProductsThisYearQuery();
+    const {data: dayReportData} = useGetReportCountByDayQuery({
+        status: chartTabsProductReport['product_report_status'],
+        type: 6
+    });
+    const {data: monthReportData} = useGetReportCountByMonthQuery({
+        status: chartTabsProductReport['product_report_status'],
+        type: 6
+    });
+    const {data: yearReportData} = useGetReportCountByYearQuery({
+        status: chartTabsProductReport['product_report_status'],
+        type: 6
+    });
+
+    const {data: dayBlogReportData} = useGetReportCountByDayQuery({
+        status: chartTabsBlogReport['blog_report_status'],
+        type: 3
+    });
+    const {data: monthBlogReportData} = useGetReportCountByMonthQuery({
+        status: chartTabsBlogReport['blog_report_status'],
+        type: 3
+    });
+    const {data: yearBlogReportData} = useGetReportCountByYearQuery({
+        status: chartTabsBlogReport['blog_report_status'],
+        type: 3
+    });
+
+
+    const {data: topSellingToday, isLoading: isLoadingToday} = useGetTopSellingProductsTodayQuery();
+    const {data: topSellingMonth, isLoading: isLoadingMonth} = useGetTopSellingProductsThisMonthQuery();
+    const {data: topSellingYear, isLoading: isLoadingYear} = useGetTopSellingProductsThisYearQuery();
 
     useEffect(() => {
         if (bestSeller === 'day' && !isLoadingToday) {
@@ -118,40 +162,98 @@ const Dashboard = () => {
         navigate(route);  // Navigate to the given route
     };
 
-    const chartSections = [
-        {key: 'reported_products', title: 'Sản phẩm bị báo cáo'},
-        {key: 'reported_blogs', title: 'Blog bị báo cáo'},
-    ]
-
-    const groupedSections = []
-    for (let i = 0; i < chartSections.length; i += 2) {
-        groupedSections.push(chartSections.slice(i, i + 2))
-    }
-
     const handleUserStatusChange = (status) => {
-        setChartTabs(prev => ({ ...prev, user_status: status }));
+        setChartTabsUser({user_status: status});
+    };
+    const handleUserTabChange = (value) => {
+        setUserTypeTime(value);
     };
 
     const handleOrderTabChange = (value) => {
-        setOrderStatusTime(value);  // Cập nhật tab cho biểu đồ đơn hàng
-    };
-    const handleBestSellerTabChange = (value) => {
-        setbestSeller(value);  // Cập nhật tab cho biểu đồ đơn hàng
+        setOrderStatusTime(value);
     };
     const handleOrderStatusChange = (status) => {
-        setChartTabsOrder({ order_status: status });
+        setChartTabsOrder({order_status: status});
     };
 
-    const getRealTimeOrderChartData = (mode) => {
+    const handleShopTabChange = (value) => {
+        setShopStatusTime(value);
+    };
+    const handleShopStatusChange = (status) => {
+        setChartTabsShop({shop_status: status});
+    };
+
+    const handleProductReportTabChange = (value) => {
+        setReportedProductsTime(value);
+    };
+    const handleProductReportStatusChange = (status) => {
+        setChartTabsProductReport({product_report_status: status});
+    };
+
+    const handleBlogReportTabChange = (value) => {
+        setReportedBlogsTime(value);
+    };
+    const handleBlogReportStatusChange = (status) => {
+        setChartTabsBlogReport({blog_report_status: status});
+    };
+
+    const handleBestSellerTabChange = (value) => {
+        setbestSeller(value);
+    };
+
+
+    const normalizedDayMap = (apiDataMap) => {
+        const normalizedDayMap = {};
+        for (const [timestamp, value] of Object.entries(apiDataMap)) {
+            const dateOnly = (timestamp && !isNaN(new Date(timestamp)))
+                ? new Date(timestamp).toISOString().split('T')[0] // Lấy phần ngày
+                : null; // Hoặc một giá trị mặc định khác nếu timestamp không hợp lệ
+            if (!normalizedDayMap[dateOnly]) {
+                normalizedDayMap[dateOnly] = value;
+            }
+        }
+        return normalizedDayMap;
+    }
+    const normalizedMonthMap = (apiDataMap) => {
+        const normalizedMonthMap = {};
+
+        for (const [timestamp, value] of Object.entries(apiDataMap)) {
+            // Tạo key theo định dạng MM-YYYY
+            const listTimeStamp = String(timestamp).split('/')
+            const month = listTimeStamp[0];
+            const year = listTimeStamp[1];
+
+            const monthKey = `${month}/${year}`;
+
+            // Cộng dồn dữ liệu
+            if (!normalizedMonthMap[monthKey]) {
+                normalizedMonthMap[monthKey] = value;
+            }
+        }
+        return normalizedMonthMap;
+    }
+    const normalizedYearMap = (apiDataMap) => {
+        const normalizedYearMap = {};
+
+        for (const [timestamp, value] of Object.entries(apiDataMap)) {
+            const date = new Date(timestamp);
+            const yearKey = date.getFullYear().toString(); // YYYY
+
+            if (!normalizedYearMap[yearKey]) {
+                normalizedYearMap[yearKey] = value;
+            }
+        }
+        return normalizedYearMap;
+    }
+    const getRealTimeChartData = (mode, labelFunction, dayData, monthData, yearData) => {
         const now = new Date();
         let labels = [];
         let dataPoints = [];
 
         // Lấy dữ liệu từ API (dạng array)
-        const apiArray = mode === 'day' ? dayOrderData
-            : mode === 'month' ? monthOrderData
-                : yearOrderData;
-        console.log(apiArray)
+        const apiArray = mode === 'day' ? dayData
+            : mode === 'month' ? monthData
+                : yearData;
         // Tạo object map từ array để dễ truy cập
         const apiDataMap = {};
         if (apiArray && apiArray.length > 0) {
@@ -163,41 +265,9 @@ const Dashboard = () => {
                 apiDataMap[key] = item.count;
             });
         }
-        const normalizedDayMap = {};
-        for (const [timestamp, value] of Object.entries(apiDataMap)) {
-            const dateOnly = (timestamp && !isNaN(new Date(timestamp)))
-                ? new Date(timestamp).toISOString().split('T')[0] // Lấy phần ngày
-                : null; // Hoặc một giá trị mặc định khác nếu timestamp không hợp lệ
-            if (!normalizedDayMap[dateOnly]) {
-                normalizedDayMap[dateOnly] = value;
-            }
-        }
-        const normalizedMonthMap = {};
-
-        for (const [timestamp, value] of Object.entries(apiDataMap)) {
-            const date = new Date(timestamp);
-
-            // Tạo key theo định dạng MM-YYYY
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const year = date.getFullYear();
-            const monthKey = `${year}-${month}`;
-
-            // Cộng dồn dữ liệu
-            if (!normalizedMonthMap[monthKey]) {
-                normalizedMonthMap[monthKey] = value;
-            }
-        }
-        const normalizedYearMap = {};
-
-        for (const [timestamp, value] of Object.entries(apiDataMap)) {
-            const date = new Date(timestamp);
-            const yearKey = date.getFullYear().toString(); // YYYY
-
-            if (!normalizedYearMap[yearKey]) {
-                normalizedYearMap[yearKey] = value;
-            }
-        }
-        console.log(apiDataMap)
+        const normalizedDayData = normalizedDayMap(apiDataMap)
+        const normalizedMonthData = normalizedMonthMap(apiDataMap)
+        const normalizedYearData = normalizedYearMap(apiDataMap)
         // Tạo dữ liệu theo thời gian thực
         if (mode === 'day') {
             // 7 ngày gần nhất tính từ hôm nay
@@ -212,10 +282,9 @@ const Dashboard = () => {
 
                 // Tìm dữ liệu tương ứng
                 const dateKey = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-                dataPoints.push(normalizedDayMap[dateKey] || 0); // Nếu không có thì mặc định 0
+                dataPoints.push(normalizedDayData[dateKey] || 0); // Nếu không có thì mặc định 0
             }
-        }
-        else if (mode === 'month') {
+        } else if (mode === 'month') {
             dataPoints = []
             // 6 tháng gần nhất tính từ tháng hiện tại
             for (let i = 5; i >= 0; i--) {
@@ -227,25 +296,24 @@ const Dashboard = () => {
                 labels.push(`${month}-${year}`);
 
                 // Tìm dữ liệu tương ứng
-                const monthKey = `${year}-${String(date.getMonth() + 1).padStart(2, '0')}`; // Format: YYYY-MM
-                dataPoints.push(normalizedMonthMap[monthKey] || 0);
+                const monthKey = `${String(date.getMonth() + 1)}/${year}`; // Format: YYYY-MM
+                dataPoints.push(normalizedMonthData[monthKey] || 0);
             }
-        }
-        else {
+        } else {
             // 5 năm gần nhất tính từ năm hiện tại
             for (let i = 4; i >= 0; i--) {
                 const year = now.getFullYear() - i;
                 labels.push(year.toString());
 
                 // Tìm dữ liệu tương ứng
-                dataPoints.push(normalizedYearMap[year] || 0);
+                dataPoints.push(normalizedYearData[year] || 0);
             }
         }
 
         return {
             labels,
             datasets: [{
-                label: 'Số lượng đơn hàng',
+                label: `${labelFunction}`,
                 data: dataPoints,
                 borderColor: 'rgba(75, 192, 192, 1)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
@@ -259,106 +327,6 @@ const Dashboard = () => {
             }]
         };
     };
-
-    const getRealTimeUserChartData = (mode) => {
-        const now = new Date();
-        let labels = [];
-        let counts = [];
-
-        // Lấy dữ liệu từ API
-        const apiArray = mode === 'day' ? [...(dayUserData || [])]
-            : mode === 'month' ? [...(monthUserData || [])]
-                : [...(yearUserData || [])];
-
-        // Kiểm tra dữ liệu
-        if (!apiArray || apiArray.length === 0) {
-            // Tạo dữ liệu mẫu nếu không có dữ liệu
-            if (mode === 'day') {
-                for (let i = 6; i >= 0; i--) {
-                    const date = new Date(now);
-                    date.setDate(now.getDate() - i);
-                    labels.push(`${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}`);
-                    counts.push(0);
-                }
-            } else if (mode === 'month') {
-                for (let i = 5; i >= 0; i--) {
-                    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-                    labels.push(`${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`);
-                    counts.push(0);
-                }
-            } else {
-                for (let i = 4; i >= 0; i--) {
-                    labels.push(`${now.getFullYear() - i}`);
-                    counts.push(0);
-                }
-            }
-
-            return {
-                labels,
-                datasets: [{
-                    label: 'Số lượng người dùng',
-                    data: counts,
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            };
-        }
-
-        // Xử lý dữ liệu thực từ API
-        if (mode === 'day') {
-            const sortedArray = [...apiArray].sort((a, b) => new Date(a.date) - new Date(b.date));
-            sortedArray.forEach(item => {
-                const date = new Date(item.date);
-                labels.push(`${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}`);
-                counts.push(item.count || 0);
-            });
-        } else if (mode === 'month') {
-            const sortedArray = [...apiArray].sort((a, b) => {
-                const [aYear, aMonth] = a.month.split('-');
-                const [bYear, bMonth] = b.month.split('-');
-                return new Date(aYear, aMonth) - new Date(bYear, bMonth);
-            });
-            sortedArray.forEach(item => {
-                const [year, month] = item.month.split('-');
-                labels.push(`${month}-${year}`);
-                counts.push(item.count || 0);
-            });
-        } else {
-            const sortedArray = [...apiArray].sort((a, b) => a.year - b.year);
-            sortedArray.forEach(item => {
-                labels.push(item.year.toString());
-                counts.push(item.count || 0);
-            });
-        }
-
-        return {
-            labels,
-            datasets: [{
-                label: 'Số lượng người dùng',
-                data: counts,
-                borderColor: 'rgba(54, 162, 235, 1)',
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                tension: 0.4,
-                borderWidth: 2,
-                pointRadius: 4,
-                pointBackgroundColor: 'rgba(54, 162, 235, 1)',
-                pointBorderColor: '#fff',
-                pointHoverRadius: 6,
-                fill: true
-            }]
-        };
-    };
-
-    const handleProductTabChange = (value) => {
-        setReportedProductsTime(value);
-    };
-
-    const handleBlogTabChange = (value) => {
-        setReportedBlogsTime(value);
-    };
-
 
     return (
         <div>
@@ -414,16 +382,18 @@ const Dashboard = () => {
                             },
                         ].map((item, idx) => (
                             <CCol key={idx} md={4} className="mb-4">
-                                <CCard className={`text-white bg-${item.color}`} onClick={() => handleNavigation(item.route)}>
+                                <CCard className={`text-white bg-${item.color}`}
+                                       onClick={() => handleNavigation(item.route)}>
                                     <CCardBody className="d-flex justify-content-between align-items-center">
                                         <div>
                                             <h3>{item.count}</h3>
                                             <p>{item.label}</p>
                                         </div>
-                                        <CIcon icon={item.icon} size="xxl" />
+                                        <CIcon icon={item.icon} size="xxl"/>
                                     </CCardBody>
                                     <div className={`bg-${item.color} p-2 text-center`}>
-                                        <CButton color="link" className="text-white p-0">Xem thêm <CIcon icon="cilArrowRight" /></CButton>
+                                        <CButton color="link" className="text-white p-0">Xem thêm <CIcon
+                                            icon="cilArrowRight"/></CButton>
                                     </div>
                                 </CCard>
                             </CCol>
@@ -463,9 +433,9 @@ const Dashboard = () => {
                         <CCardBody>
                             <div className="d-flex justify-content-between align-items-center mb-3">
                                 <CDropdown>
-                                    <CDropdownToggle color="primary" style={{ borderRadius: '4px' }}>
-                                        {chartTabs['user_status'] === 'ACTIVE' && 'Người dùng đang hoạt động ▼'}
-                                        {chartTabs['user_status'] === 'INACTIVE' && 'Người dùng bị khóa ▼'}
+                                    <CDropdownToggle color="primary" style={{borderRadius: '4px'}}>
+                                        {chartTabsUser['user_status'] === 'ACTIVE' && 'Người dùng đang hoạt động'}
+                                        {chartTabsUser['user_status'] === 'INACTIVE' && 'Người dùng bị khóa'}
                                     </CDropdownToggle>
                                     <CDropdownMenu>
                                         {['ACTIVE', 'INACTIVE'].map((status) => (
@@ -480,11 +450,9 @@ const Dashboard = () => {
                                         ))}
                                     </CDropdownMenu>
                                 </CDropdown>
-
-                                <div className="text-muted small">Số lượng người dùng</div>
                             </div>
 
-                            <div style={{ height: '250px' }}>
+                            <div style={{height: '250px'}}>
                                 <Line
                                     options={{
                                         responsive: true,
@@ -528,17 +496,18 @@ const Dashboard = () => {
                                             mode: 'nearest'
                                         }
                                     }}
-                                    data={getRealTimeUserChartData(userTypeTime)}
+                                    data={getRealTimeChartData(userTypeTime, "Số lượng người dùng", dayUserData, monthUserData, yearUserData)}
                                 />
                             </div>
                         </CCardBody>
                     </CCard>
                 </CCol>
+
                 {/* Order */}
                 <CCol md={6}>
                     <CCard>
                         <CCardHeader>
-                            <strong>Thống kê đơn hàng theo trạng thái</strong>
+                            <strong>Thống kê đơn hàng</strong>
                             <div className="float-end">
                                 <CNav variant="pills">
                                     {['day', 'month', 'year'].map((tab) => (
@@ -563,11 +532,11 @@ const Dashboard = () => {
                         <CCardBody>
                             <div className="d-flex justify-content-between align-items-center mb-3">
                                 <CDropdown>
-                                    <CDropdownToggle color="primary" style={{ borderRadius: '4px' }}>
-                                        {chartTabsOrder['order_status'] === 'CANCELLED' && 'Đơn bị huỷ ▼'}
-                                        {chartTabsOrder['order_status'] === 'RETURNED' && 'Đơn trả hàng ▼'}
-                                        {chartTabsOrder['order_status'] === 'DELIVERED' && 'Đơn thành công ▼'}
-                                        {chartTabsOrder['order_status'] === 'RETURN_PENDING' && 'Đơn đang tranh chấp ▼'}
+                                    <CDropdownToggle color="primary" style={{borderRadius: '4px'}}>
+                                        {chartTabsOrder['order_status'] === 'CANCELLED' && 'Đơn bị huỷ'}
+                                        {chartTabsOrder['order_status'] === 'RETURNED' && 'Đơn trả hàng'}
+                                        {chartTabsOrder['order_status'] === 'DELIVERED' && 'Đơn thành công'}
+                                        {chartTabsOrder['order_status'] === 'RETURN_PENDING' && 'Đơn đang tranh chấp'}
                                     </CDropdownToggle>
                                     <CDropdownMenu>
                                         {['CANCELLED', 'RETURNED', 'DELIVERED', 'RETURN_PENDING'].map((status) => (
@@ -584,11 +553,9 @@ const Dashboard = () => {
                                         ))}
                                     </CDropdownMenu>
                                 </CDropdown>
-
-                                <div className="text-muted small">Số lượng đơn hàng</div>
                             </div>
 
-                            <div style={{ height: '250px' }}>
+                            <div style={{height: '250px'}}>
                                 <Line
                                     options={{
                                         responsive: true,
@@ -632,7 +599,7 @@ const Dashboard = () => {
                                             mode: 'nearest'
                                         }
                                     }}
-                                    data={getRealTimeOrderChartData(orderStatusTime)}
+                                    data={getRealTimeChartData(orderStatusTime, "Số lượng đơn hàng", dayOrderData, monthOrderData, yearOrderData)}
                                 />
                             </div>
                         </CCardBody>
@@ -642,18 +609,23 @@ const Dashboard = () => {
 
             {/* Shop by status + best seller */}
             <CRow className="mb-4">
-                {/* Order detail by status*/}
+                {/*Shop by status*/}
                 <CCol md={6}>
                     <CCard>
                         <CCardHeader>
-                            Thống kê Shop theo trạng thái
+                            <strong>Thống kê cửa hàng</strong>
                             <div className="float-end">
                                 <CNav variant="pills">
                                     {['day', 'month', 'year'].map((tab) => (
                                         <CNavItem key={tab}>
                                             <CNavLink
                                                 active={shopStatusTime === tab}
-                                                onClick={() => handleShopStatusTabChange(tab)} // Khi click, chỉ thay đổi tab của shop status
+                                                onClick={() => handleShopTabChange(tab)}
+                                                style={{
+                                                    padding: '0.5rem 1rem',
+                                                    fontSize: '0.875rem',
+                                                    fontWeight: shopStatusTime === tab ? '600' : '400'
+                                                }}
                                             >
                                                 {tab === 'day' ? 'Ngày' : tab === 'month' ? 'Tháng' : 'Năm'}
                                             </CNavLink>
@@ -664,34 +636,76 @@ const Dashboard = () => {
                         </CCardHeader>
 
                         <CCardBody>
-                            {/* Dropdown chọn trạng thái */}
-                            <CDropdown className="mb-3">
-                                <CDropdownToggle color="primary">
-                                    {chartTabs['shop_status'] || 'registered'}
-                                </CDropdownToggle>
-                                <CDropdownMenu>
-                                    {['registered', 'pending', 'deactivated', 'reported'].map((status) => (
-                                        <CDropdownItem
-                                            key={status}
-                                            active={chartTabs['shop_status'] === status}
-                                            onClick={() => handleTabChange('shop_status', status)}
-                                        >
-                                            {status}
-                                        </CDropdownItem>
-                                    ))}
-                                </CDropdownMenu>
-                            </CDropdown>
+                            <div className="d-flex justify-content-between align-items-center mb-3">
+                                <CDropdown>
+                                    <CDropdownToggle color="primary" style={{borderRadius: '4px'}}>
+                                        {chartTabsShop['shop_status'] === 'ACTIVE' && 'Đang hoạt động'}
+                                        {chartTabsShop['shop_status'] === 'INACTIVE' && 'Dừng hoạt động'}
+                                        {chartTabsShop['shop_status'] === 'PENDING' && 'Đang đăng ký'}
+                                    </CDropdownToggle>
+                                    <CDropdownMenu>
+                                        {['ACTIVE', 'INACTIVE', 'PENDING'].map((status) => (
+                                            <CDropdownItem
+                                                key={status}
+                                                active={chartTabsShop['shop_status'] === status}
+                                                onClick={() => handleShopStatusChange(status)}
+                                            >
+                                                {status === 'ACTIVE' && 'Đang hoạt động'}
+                                                {status === 'INACTIVE' && 'Dừng hoạt động'}
+                                                {status === 'PENDING' && 'Đang đăng ký'}
+                                            </CDropdownItem>
+                                        ))}
+                                    </CDropdownMenu>
+                                </CDropdown>
+                            </div>
 
-                            {/* Biểu đồ Shop Status */}
-                            <Line
-                                options={userChartOptions(`Shop ${{
-                                    registered: 'đã đăng ký',
-                                    pending: 'đang đăng ký',
-                                    deactivated: 'bị khoá',
-                                    reported: 'bị báo cáo'
-                                }[chartTabs['shop_status'] || 'registered']}`)}
-                                data={getUserChartData(shopStatusTime)} // Sử dụng shopStatusTime cho tab Shop Status
-                            />
+                            <div style={{height: '250px'}}>
+                                <Line
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: {
+                                                display: false
+                                            },
+                                            tooltip: {
+                                                enabled: true,
+                                                mode: 'index',
+                                                intersect: false
+                                            }
+                                        },
+                                        scales: {
+                                            y: {
+                                                beginAtZero: true,
+                                                ticks: {
+                                                    stepSize: 1,
+                                                    font: {
+                                                        size: 10
+                                                    }
+                                                },
+                                                grid: {
+                                                    color: 'rgba(0, 0, 0, 0.05)'
+                                                }
+                                            },
+                                            x: {
+                                                ticks: {
+                                                    font: {
+                                                        size: 10
+                                                    }
+                                                },
+                                                grid: {
+                                                    display: false
+                                                }
+                                            }
+                                        },
+                                        interaction: {
+                                            intersect: false,
+                                            mode: 'nearest'
+                                        }
+                                    }}
+                                    data={getRealTimeChartData(shopStatusTime, "Số lượng cửa hàng", dayShopData, monthShopData, yearShopData)}
+                                />
+                            </div>
                         </CCardBody>
                     </CCard>
                 </CCol>
@@ -744,17 +758,22 @@ const Dashboard = () => {
             {/* Product report + blog report */}
             <CRow className="mb-4">
                 {/* Biểu đồ sản phẩm bị báo cáo */}
-                <CCol md={6} key="reported_products">
+                <CCol md={6}>
                     <CCard>
                         <CCardHeader>
-                            Sản phẩm bị báo cáo
+                            <strong>Sản phẩm bị báo cáo</strong>
                             <div className="float-end">
                                 <CNav variant="pills">
                                     {['day', 'month', 'year'].map((tab) => (
                                         <CNavItem key={tab}>
                                             <CNavLink
-                                                active={reportedProductsTime === tab || (!reportedProductsTime && tab === 'day')}
-                                                onClick={() => handleProductTabChange(tab)}  // Chỉ cập nhật cho biểu đồ sản phẩm bị báo cáo
+                                                active={reportedProductsTime === tab}
+                                                onClick={() => handleProductReportTabChange(tab)}
+                                                style={{
+                                                    padding: '0.5rem 1rem',
+                                                    fontSize: '0.875rem',
+                                                    fontWeight: reportedProductsTime === tab ? '600' : '400'
+                                                }}
                                             >
                                                 {tab === 'day' ? 'Ngày' : tab === 'month' ? 'Tháng' : 'Năm'}
                                             </CNavLink>
@@ -763,27 +782,75 @@ const Dashboard = () => {
                                 </CNav>
                             </div>
                         </CCardHeader>
+
                         <CCardBody>
-                            <Line
-                                options={userChartOptions("Sản phẩm bị báo cáo")}
-                                data={getUserChartData(reportedProductsTime || 'day')} // Dùng reportedProductsTime cho biểu đồ sản phẩm bị báo cáo
-                            />
+                            <div className="d-flex justify-content-between align-items-center mb-3">
+                                <CDropdown>
+                                    <CDropdownToggle color="primary" style={{borderRadius: '4px'}}>
+                                        {chartTabsProductReport['product_report_status'] === 'PENDING' && 'Chờ xét duyệt'}
+                                        {chartTabsProductReport['product_report_status'] === 'IN_PROGRESS' && 'Đang xét duyệt '}
+                                        {chartTabsProductReport['product_report_status'] === 'COMPLETED' && 'Thành công'}
+                                        {chartTabsProductReport['product_report_status'] === 'CANCELLED' && 'Hủy bỏ'}
+                                    </CDropdownToggle>
+                                    <CDropdownMenu>
+                                        {['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map((status) => (
+                                            <CDropdownItem
+                                                key={status}
+                                                active={chartTabsProductReport['product_report_status'] === status}
+                                                onClick={() => handleProductReportStatusChange(status)}
+                                            >
+                                                {status === 'PENDING' && 'Chờ xét duyệt'}
+                                                {status === 'IN_PROGRESS' && 'Đang xét duyệt'}
+                                                {status === 'COMPLETED' && 'Thành công'}
+                                                {status === 'CANCELLED' && 'Hủy bỏ'}
+                                            </CDropdownItem>
+                                        ))}
+                                    </CDropdownMenu>
+                                </CDropdown>
+                            </div>
+                            <div style={{height: '250px'}}>
+                                <Line
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: {display: false},
+                                            tooltip: {enabled: true, mode: 'index', intersect: false}
+                                        },
+                                        scales: {
+                                            y: {
+                                                beginAtZero: true,
+                                                ticks: {stepSize: 1, font: {size: 10}},
+                                                grid: {color: 'rgba(0, 0, 0, 0.05)'}
+                                            },
+                                            x: {ticks: {font: {size: 10}}, grid: {display: false}}
+                                        },
+                                        interaction: {intersect: false, mode: 'nearest'}
+                                    }}
+                                    data={getRealTimeChartData(reportedProductsTime, "Sản phẩm bị báo cáo", dayReportData, monthReportData, yearReportData)}
+                                />
+                            </div>
                         </CCardBody>
                     </CCard>
                 </CCol>
 
                 {/* Biểu đồ blog bị báo cáo */}
-                <CCol md={6} key="reported_blogs">
+                <CCol md={6}>
                     <CCard>
                         <CCardHeader>
-                            Blog bị báo cáo
+                            <strong>Blog bị báo cáo</strong>
                             <div className="float-end">
                                 <CNav variant="pills">
                                     {['day', 'month', 'year'].map((tab) => (
                                         <CNavItem key={tab}>
                                             <CNavLink
-                                                active={reportedBlogsTime === tab || (!reportedBlogsTime && tab === 'day')}
-                                                onClick={() => handleBlogTabChange(tab)}  // Chỉ cập nhật cho biểu đồ blog bị báo cáo
+                                                active={reportedBlogsTime === tab}
+                                                onClick={() => handleBlogReportTabChange(tab)}
+                                                style={{
+                                                    padding: '0.5rem 1rem',
+                                                    fontSize: '0.875rem',
+                                                    fontWeight: reportedBlogsTime === tab ? '600' : '400'
+                                                }}
                                             >
                                                 {tab === 'day' ? 'Ngày' : tab === 'month' ? 'Tháng' : 'Năm'}
                                             </CNavLink>
@@ -792,11 +859,54 @@ const Dashboard = () => {
                                 </CNav>
                             </div>
                         </CCardHeader>
+
                         <CCardBody>
-                            <Line
-                                options={userChartOptions("Blog bị báo cáo")}
-                                data={getUserChartData(reportedBlogsTime || 'day')} // Dùng reportedBlogsTime cho biểu đồ blog bị báo cáo
-                            />
+                            <div className="d-flex justify-content-between align-items-center mb-3">
+                                <CDropdown>
+                                    <CDropdownToggle color="primary" style={{borderRadius: '4px'}}>
+                                        {chartTabsBlogReport['blog_report_status'] === 'PENDING' && 'Chờ xét duyệt'}
+                                        {chartTabsBlogReport['blog_report_status'] === 'IN_PROGRESS' && 'Đang xét duyệt'}
+                                        {chartTabsBlogReport['blog_report_status'] === 'COMPLETED' && 'Thành công'}
+                                        {chartTabsBlogReport['blog_report_status'] === 'CANCELLED' && 'Hủy bỏ'}
+                                    </CDropdownToggle>
+                                    <CDropdownMenu>
+                                        {['PENDING', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'].map((status) => (
+                                            <CDropdownItem
+                                                key={status}
+                                                active={chartTabsBlogReport['blog_report_status'] === status}
+                                                onClick={() => handleBlogReportStatusChange(status)}
+                                            >
+                                                {status === 'PENDING' && 'Chờ xét duyệt'}
+                                                {status === 'IN_PROGRESS' && 'Đang xét duyệt'}
+                                                {status === 'COMPLETED' && 'Thành công'}
+                                                {status === 'CANCELLED' && 'Hủy bỏ'}
+                                            </CDropdownItem>
+                                        ))}
+                                    </CDropdownMenu>
+                                </CDropdown>
+                            </div>
+                            <div style={{height: '250px'}}>
+                                <Line
+                                    options={{
+                                        responsive: true,
+                                        maintainAspectRatio: false,
+                                        plugins: {
+                                            legend: {display: false},
+                                            tooltip: {enabled: true, mode: 'index', intersect: false}
+                                        },
+                                        scales: {
+                                            y: {
+                                                beginAtZero: true,
+                                                ticks: {stepSize: 1, font: {size: 10}},
+                                                grid: {color: 'rgba(0, 0, 0, 0.05)'}
+                                            },
+                                            x: {ticks: {font: {size: 10}}, grid: {display: false}}
+                                        },
+                                        interaction: {intersect: false, mode: 'nearest'}
+                                    }}
+                                    data={getRealTimeChartData(reportedBlogsTime, "Blog bị báo cáo", dayBlogReportData, monthBlogReportData, yearBlogReportData)}
+                                />
+                            </div>
                         </CCardBody>
                     </CCard>
                 </CCol>
@@ -806,7 +916,7 @@ const Dashboard = () => {
     )
 }
 
-const BestSellerTable = ({ time, data }) => {
+const BestSellerTable = ({time, data}) => {
     // Nếu không có dữ liệu, trả về thông báo
     if (!Array.isArray(data) || data.length === 0) {
         return <div>Không có sản phẩm bán chạy {time} này.</div>;
@@ -833,50 +943,5 @@ const BestSellerTable = ({ time, data }) => {
         </CTable>
     );
 }
-
-const userChartOptions = (title) => ({
-    responsive: true,
-    plugins: {
-        legend: {position: 'top'},
-        title: {display: true, text: title},
-    },
-})
-
-const getUserChartData = (mode) => {
-    const now = new Date();
-    let labels = [];
-
-    if (mode === 'day') {
-        // 7 days
-        for (let i = 6; i >= 0; i--) {
-            const date = new Date(now); // Tạo ngày mới từ ngày hiện tại
-            date.setDate(now.getDate() - i); // Trừ i ngày từ hôm nay
-            labels.push(date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })); // Định dạng theo dd/MM
-        }
-    } else if (mode === 'month') {
-        // 7 months
-        for (let i = 6; i >= 0; i--) {
-            const date = new Date(now.getFullYear(), now.getMonth() - i, 1); // Tạo ngày đầu tháng, tính từ tháng này và đi ngược lại
-            labels.push(date.toLocaleDateString('vi-VN', { month: 'numeric', year: 'numeric' })); // Định dạng theo M-yyyy (1-2025)
-        }
-    } else {
-        // 5 years
-        const year = now.getFullYear();
-        labels = Array.from({ length: 5 }, (_, i) => `${year - 4 + i}`);
-    }
-
-    return {
-        labels,
-        datasets: [
-            {
-                label: 'Số lượng',
-                data: labels.map(() => Math.floor(Math.random() * 200)),
-                borderColor: 'rgba(75,192,192,1)',
-                backgroundColor: 'rgba(75,192,192,0.2)',
-            },
-        ],
-    };
-};
-
 
 export default Dashboard

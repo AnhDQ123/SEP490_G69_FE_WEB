@@ -22,11 +22,20 @@ import ReasonConfig from "../page/config/ReasonConfig.jsx";
 import DeliveryConfig from "../page/config/DeliveryConfig.jsx";
 import Dashboard from "../page/dashboard/Dashboard.jsx";
 import ReportListById from "../page/report/ReportListById.jsx";
-import ReportDetail from "../page/report/ReportDetail.jsx";
 import PaymentConfig from "../page/config/PaymentConfig.jsx";
 import BlogDetail from "../page/blog/BlogDetail.jsx";
 import ReportList from "../page/report/ReportList.jsx";
 import ReportConfig from "../page/config/ReportConfig.jsx";
+import ReportCompleted from "../page/report/ReportCompleted.jsx";
+import ReportPending from "../page/report/ReportPending.jsx";
+import ProductReportPending from "../page/report/ProductReportPending.jsx";
+import ProductReportCompleted from "../page/report/ProductReportCompleted.jsx";
+import BlogReportPending from "../page/report/BlogReportPending.jsx";
+import BlogReportCompleted from "../page/report/BlogReportCompleted.jsx";
+import UserInformation from "../page/account/UserInformation.jsx";
+import ChangePassword from "../page/account/ChangePassword.jsx";
+import ReturnedOrder from "../page/order/ReturnedOrder.jsx";
+import ReturnedOrderList from "../page/order/ReturnedOrderList.jsx";
 
 
 const routes = [
@@ -55,12 +64,21 @@ const routes = [
   { path: '/delivery-config', name: 'DeliveryConfig', element: DeliveryConfig },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/reports-list/shop/:shopId', name: 'ReportListById', element: ReportListById },
-  { path: '/report-detail/:reportId', name: 'ReportDetail', element: ReportDetail },
+  { path: '/report-completed/:reportId', name: 'ReportCompleted', element: ReportCompleted },
+  { path: '/report-pending/:reportId', name: 'ReportPending', element: ReportPending },
+  { path: '/product-report-pending/:reportId', name: 'ProductReportPending', element: ProductReportPending },
+  { path: '/product-report-completed/:reportId', name: 'ProductReportCompleted', element: ProductReportCompleted },
+  { path: '/blog-report-pending/:reportId', name: 'BlogReportPending', element: BlogReportPending },
+  { path: '/blog-report-completed/:reportId', name: 'BlogReportCompleted', element: BlogReportCompleted },
   { path: '/reports-list', name: 'ReportList', element: ReportList },
   { path: '/payment-config', name: 'PaymentConfig', element: PaymentConfig },
   { path: '/blog-detail/:id', name: 'BlogDetail', element: BlogDetail },
-
+  { path: '/user-information', name: 'UserInformation', element: UserInformation },
+  { path: '/change-password', name: 'ChangePassword', element: ChangePassword },
   { path: '/login', name: 'Login', element: Login },
+  { path: '/returned-order', name: 'ReturnedOrder', element: ReturnedOrder },
+  { path: '/returned-order-list', name: 'ReturnedOrderList', element: ReturnedOrderList },
+
 ]
 
 export default routes

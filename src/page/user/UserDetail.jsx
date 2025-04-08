@@ -131,21 +131,21 @@ const UserDetail = () => {
                     </CCol>
                 </CRow>
 
-                <CRow className="text-center mt-4">
-                    <CCol md={4}>
-                        <CButton color="danger" className="w-100 py-2 fw-semibold">
+                <CRow className="text-center mt-4 justify-content-center">
+                    <CCol md="auto" className="mb-2">
+                        <CButton color="danger" className="py-2 px-3 fw-semibold">
                             🚨 Gửi cảnh báo
                         </CButton>
                     </CCol>
-                    <CCol md={4}>
-                        <CButton color="secondary" className="w-100 py-2 fw-semibold" onClick={() => navigate(-1)}>
+                    <CCol md="auto" className="mb-2">
+                        <CButton color="secondary" className="py-2 px-3 fw-semibold" onClick={() => navigate(-1)}>
                             ⬅️ Quay lại
                         </CButton>
                     </CCol>
-                    <CCol md={4}>
+                    <CCol md="auto" className="mb-2">
                         <CButton
                             color="success"
-                            className="w-100 py-2 fw-semibold"
+                            className="py-2 px-3 fw-semibold"
                             onClick={handleClickSave}
                             disabled={isActivating || isDeactivating}
                         >

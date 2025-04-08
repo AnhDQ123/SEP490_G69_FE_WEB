@@ -13,10 +13,10 @@ import { useGetProductByIdQuery } from '../../service/productService.js';
 
 const ProductDetail = () => {
     const [product, setProduct] = useState({});
-    const { id } = useParams(); // Lấy product_id từ URL
+    const [isExpanded, setIsExpanded] = useState(false);
+    const { id } = useParams();
     const navigate = useNavigate();
 
-    // Gọi API để lấy dữ liệu sản phẩm theo ID
     const { data, error, isLoading } = useGetProductByIdQuery(id);
 
     useEffect(() => {
@@ -24,6 +24,10 @@ const ProductDetail = () => {
             setProduct(data);
         }
     }, [data]);
+
+    const toggleExpand = () => {
+        setIsExpanded((prev) => !prev);
+    };
 
     if (isLoading) return <p>Đang tải dữ liệu...</p>;
     if (error) return <p>Có lỗi xảy ra khi lấy dữ liệu sản phẩm</p>;
@@ -53,8 +57,8 @@ const ProductDetail = () => {
                                 <CFormInput disabled value={product.supplier || ''} className="border rounded-2" />
                             </CCol>
                             <CCol md={6}>
-                                <label className="fw-semibold">Mô tả</label>
-                                <CFormInput disabled value={product.description || ''} className="border rounded-2" />
+                                <label className="fw-semibold">Giá thành</label>
+                                <CFormInput disabled value={product.price || ''} className="border rounded-2" />
                             </CCol>
                         </CRow>
 
@@ -76,7 +80,11 @@ const ProductDetail = () => {
                             </CCol>
                             <CCol md={6}>
                                 <label className="fw-semibold">Giảm giá</label>
-                                <CFormInput disabled value={product.discount_id ? `${product.discount_id} %` : "Không có"} className="border rounded-2" />
+                                <CFormInput
+                                    disabled
+                                    value={product.discount_id ? `${product.discount_id} %` : 'Không có'}
+                                    className="border rounded-2"
+                                />
                             </CCol>
                         </CRow>
 
@@ -88,6 +96,41 @@ const ProductDetail = () => {
                             <CCol md={6}>
                                 <label className="fw-semibold">Số lượng trong kho</label>
                                 <CFormInput disabled value={product.quantity || ''} className="border rounded-2" />
+                            </CCol>
+                        </CRow>
+
+                        {/* Mô tả sản phẩm */}
+                        <CRow className="mb-3">
+                            <CCol>
+                                <label className="fw-semibold">Mô tả</label>
+                                <div className="border rounded-2 p-2" style={{ overflow: 'hidden' }}>
+                                    <div
+                                        style={{
+                                            height: isExpanded ? 'auto' : '1.5em',
+                                            whiteSpace: isExpanded ? 'normal' : 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                        }}
+                                    >
+                                        {product.description || 'Không có mô tả.'}
+                                    </div>
+
+                                    {(product.description || '').length > 150 && (
+                                        <div style={{ marginTop: '0.25rem' }}>
+                      <span
+                          onClick={toggleExpand}
+                          style={{
+                              color: '#000000',
+                              cursor: 'pointer',
+                              fontWeight: '500',
+                              userSelect: 'none',
+                          }}
+                      >
+                        {isExpanded ? 'Ẩn bớt ▲' : 'Xem thêm ▼'}
+                      </span>
+                                        </div>
+                                    )}
+                                </div>
                             </CCol>
                         </CRow>
                     </CCol>
@@ -107,17 +150,21 @@ const ProductDetail = () => {
 
                 {/* Nút chức năng */}
                 <CRow className="text-center mt-4">
-                    <CCol md={6}>
-                        <CButton color="danger" className="w-100 rounded-3 py-2 fw-semibold">
+                    <CCol className="d-flex justify-content-center gap-3">
+                        <CButton color="danger" className="rounded-3 px-4 py-2 fw-semibold">
                             ❌ Xóa sản phẩm
                         </CButton>
-                    </CCol>
-                    <CCol md={6}>
-                        <CButton color="secondary" className="w-100 rounded-3 py-2 fw-semibold" onClick={() => navigate(-1)}>
+                        <CButton
+                            color="secondary"
+                            className="rounded-3 px-4 py-2 fw-semibold"
+                            onClick={() => navigate(-1)}
+                        >
                             ⬅️ Quay lại
                         </CButton>
                     </CCol>
                 </CRow>
+
+
             </CCardBody>
         </CCard>
     );

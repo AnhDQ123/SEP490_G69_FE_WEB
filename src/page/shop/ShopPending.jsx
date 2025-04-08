@@ -98,24 +98,19 @@ const ShopPending = () => {
     const imagesBackground = shop?.images || [shop.backgroundImage];
     const imageRegistrationCertificate = shop?.images || [shop.registrationCertificate];
     const foodSafetyCertificate = shop?.images || [shop.foodSafetyCertificate];
-    const citizenIdFront = shop?.images || [shop.citizenIDCardFront];
-    const citizenIdBack = shop?.images || [shop.citizenIDCardBack];
-
+    const citizenIdFront = shop?.images || [shop.owner.profile.citizenIDCardFront];
+    console.log(citizenIdFront[currentImageIndex])
+    const citizenIdBack = shop?.images || [shop.owner.profile.citizenIDCardBack];
+    console.log(shop)
     const handleNextImage = () => {
         if (currentSide === 'front') {
             setCurrentSide('back');
-        } else {
-            setCurrentSide('front');
         }
     };
 
     const handlePrevImage = () => {
-        if (currentSide === 'front') {
-            // Quay lại ảnh căn cước công dân mặt trước
-            setCurrentImageIndex((prevIndex) => (prevIndex - 1 + citizenIdFront.length) % citizenIdFront.length);
-        } else if (currentSide === 'back') {
-            // Quay lại ảnh căn cước công dân mặt sau
-            setCurrentImageIndex((prevIndex) => (prevIndex - 1 + citizenIdBack.length) % citizenIdBack.length);
+        if (currentSide === 'back') {
+            setCurrentSide('front');
         }
     };
 
@@ -389,7 +384,7 @@ const ShopPending = () => {
             </CModal>
 
             {/* Modal for Citizen ID */}
-            <CModal visible={showCitizenId} onClose={() => setShowCitizenId(false)} size="lg" centered>
+            <CModal visible={showCitizenId} onClose={() => setShowCitizenId(false)} size="lg" centered="true">
                 <CModalBody
                     className="d-flex justify-content-center align-items-center bg-white position-relative"
                     style={{
@@ -411,7 +406,7 @@ const ShopPending = () => {
 
                     {/* Hiển thị ảnh căn cước công dân mặt trước */}
                     {currentSide === 'front' && citizenIdFront.length > 0 && (
-                        <div className="d-flex flex-column align-items-center">
+                        <div className="d-flex flex-column align-items-center mt-4">
                             <h5>Mặt trước</h5>
                             <img
                                 src={citizenIdFront[currentImageIndex]}

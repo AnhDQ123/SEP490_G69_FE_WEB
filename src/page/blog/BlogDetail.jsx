@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {
     CCard, CCardBody, CCardHeader, CCol, CRow, CImage,
     CFormInput, CFormSelect, CButton, CTable, CTableBody,
@@ -12,6 +12,8 @@ import { useGetCommentsByBlogQuery } from '../../service/commentService';
 
 const BlogDetail = () => {
     const { id } = useParams();
+    const [showFullContent, setShowFullContent] = useState(false);
+    const previewLength = 200;
     const { data: blog, isLoading, isError } = useGetBlogByIdQuery(id);
     const {
         data: comments = [],
@@ -23,9 +25,6 @@ const BlogDetail = () => {
     if (isError || !blog) return <div>❌ Không thể tải bài viết.</div>;
 
     const {
-        description,
-        imageUrl,
-        author,
         createdAt,
         reportCount,
         status,
@@ -42,25 +41,57 @@ const BlogDetail = () => {
                 <CCardBody>
                     <CRow>
                         <CCol md={8}>
-                            <div className>
+                            <div>
                                 <strong>Nội dung bài viết:</strong>
-                                <div className="mt-2" style={{whiteSpace: 'pre-line'}}
-                                     dangerouslySetInnerHTML={{__html: content}}/>
-                            </div>
-                            <div className="mb-2">
-                                {description?.split('\n')?.map((line, i) => (
-                                    <li key={i}>{line}</li>
-                                ))}
+
+                                {!showFullContent ? (
+                                    <>
+                                        <div
+                                            className="text-truncate p-2 border rounded bg-light"
+                                            style={{
+                                                maxWidth: '100%',
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis',
+                                            }}
+                                            title={content} // hiện toàn bộ khi hover
+                                        >
+                                            {content}
+                                        </div>
+                                        {content.length > previewLength && (
+                                            <div>
+                                                <CButton
+                                                    size="sm"
+                                                    color="link"
+                                                    onClick={() => setShowFullContent(true)}
+                                                >
+                                                    Xem thêm
+                                                </CButton>
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <>
+                                        <div
+                                            className="mt-2 p-2 border rounded"
+                                            style={{whiteSpace: 'pre-line', backgroundColor: '#f8f9fa'}}
+                                            dangerouslySetInnerHTML={{__html: content}}
+                                        />
+                                        <div>
+                                            <CButton
+                                                size="sm"
+                                                color="link"
+                                                onClick={() => setShowFullContent(false)}
+                                            >
+                                                Ẩn bớt
+                                            </CButton>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </CCol>
                         <CCol md={4}>
-                            <CImage
-                                src={imageUrl || 'https://via.placeholder.com/150'}
-                                thumbnail
-                                width={150}
-                                height={100}
-                            />
-                            <div><strong>Tài khoản viết:</strong> {author?.username}</div>
+                            <div><strong>Tài khoản viết:</strong> {id.username}</div>
                             <div><strong>Ngày đăng:</strong> {new Date(createdAt).toLocaleDateString('vi-VN')}</div>
                             <div><strong>Bị báo cáo:</strong> {reportCount || 0}</div>
                             <div>

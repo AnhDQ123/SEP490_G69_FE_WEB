@@ -3,7 +3,7 @@ import {
     CRow, CCol, CCard, CCardBody, CCardHeader, CTable, CTableBody,
     CTableDataCell, CTableHead, CTableHeaderCell, CTableRow, CButton,
     CImage, CFormInput, CFormSelect, CPagination, CPaginationItem,
-    CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter,
+    CModal, CModalHeader, CModalTitle, CModalBody, CModalFooter, CFormTextarea,
 } from '@coreui/react';
 
 import {
@@ -221,16 +221,6 @@ const CategoriesList = () => {
                         }
                     />
 
-                    {/* Mô tả */}
-                    <CFormInput
-                        className="mb-3"
-                        placeholder="Mô tả"
-                        value={categoryToEdit?.description || ''}
-                        onChange={(e) =>
-                            setCategoryToEdit((prev) => ({...prev, description: e.target.value}))
-                        }
-                    />
-
                     {/* Nhập URL ảnh */}
                     <CFormInput
                         className="mb-2"
@@ -275,6 +265,17 @@ const CategoriesList = () => {
                             />
                         </div>
                     )}
+
+                    {/* Mô tả */}
+                    <CFormTextarea
+                        className="mb-3"
+                        placeholder="Mô tả"
+                        value={categoryToEdit?.description || ''}
+                        onChange={(e) =>
+                            setCategoryToEdit((prev) => ({...prev, description: e.target.value}))
+                        }
+                        rows={5}  // Thêm thuộc tính rows để điều chỉnh chiều cao của textarea
+                    />
                 </CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" onClick={() => setShowEditModal(false)}>
@@ -300,16 +301,6 @@ const CategoriesList = () => {
                         value={newCategory.name}
                         onChange={(e) =>
                             setNewCategory((prev) => ({...prev, name: e.target.value}))
-                        }
-                    />
-
-                    {/* Mô tả */}
-                    <CFormInput
-                        className="mb-3"
-                        placeholder="Mô tả"
-                        value={newCategory.description}
-                        onChange={(e) =>
-                            setNewCategory((prev) => ({...prev, description: e.target.value}))
                         }
                     />
 
@@ -357,6 +348,17 @@ const CategoriesList = () => {
                             />
                         </div>
                     )}
+
+                    {/* Mô tả */}
+                    <CFormTextarea
+                        className="mb-3"
+                        placeholder="Mô tả"
+                        value={categoryToEdit?.description || ''}
+                        onChange={(e) =>
+                            setCategoryToEdit((prev) => ({...prev, description: e.target.value}))
+                        }
+                        rows={5}
+                    />
                 </CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" onClick={() => setShowAddModal(false)}>
