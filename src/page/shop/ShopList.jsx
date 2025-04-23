@@ -94,10 +94,10 @@ const ShopList = () => {
                             <CTableDataCell>
                                 <CFormSelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                                     <option value="">Tất cả</option>
-                                    <option value="ACTIVE">Active</option>
-                                    <option value="INACTIVE">Inactive</option>
-                                    <option value="PENDING">Pending</option>
-                                    <option value="REJECTED">Rejected</option>
+                                    <option value="ACTIVE">Hoạt động</option>
+                                    <option value="INACTIVE">Dừng hoạt động</option>
+                                    <option value="PENDING">Chờ duyệt</option>
+                                    <option value="REJECTED">Từ chối đăng ký</option>
                                 </CFormSelect>
                             </CTableDataCell>
                         </CTableRow>

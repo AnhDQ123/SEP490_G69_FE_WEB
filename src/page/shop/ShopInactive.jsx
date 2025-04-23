@@ -114,7 +114,7 @@ const ShopInactive = () => {
                 <CRow className="mb-3">
                     <CCol md={6}>
                         <label>Mã số thuế</label>
-                        <CFormInput disabled value={shop.taxCode} />
+                        <CFormInput disabled value={shop.owner.profile.taxCode} />
                     </CCol>
                     <CCol md={6}>
                         <label>Trạng thái</label>

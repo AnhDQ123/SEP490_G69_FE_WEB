@@ -85,7 +85,7 @@ const ShopReject = () => {
                 <CRow className="mb-3">
                     <CCol md={6}>
                         <label>Mã số thuế</label>
-                        <CFormInput disabled value={shop.tax_code} />
+                        <CFormInput disabled value={shop.owner.profile.taxCode} />
                     </CCol>
                     <CCol md={6}>
                         <label>Trạng thái</label>
@@ -96,7 +96,7 @@ const ShopReject = () => {
                 <CRow className="mb-3">
                     <CCol md={12}>
                         <label>Lí do từ chối</label>
-                        <CFormInput disabled value={shop.address} />
+                        <CFormInput disabled value={shop.reason} />
                     </CCol>
                 </CRow>
 

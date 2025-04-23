@@ -108,6 +108,22 @@ export const usersService = createApi({
             query: () => "api/users/count/all",
             providesTags: ["user"],
         }),
+
+        // Get User Rate
+        getUserRate: builder.query({
+            query: () => "api/users/change/rate",
+        }),
+
+        // Get Shipper Rate
+        getShipperRate: builder.query({
+            query: () => "api/users/shipper/change/rate", // Đảm bảo API này đúng
+        }),
+
+        // Get User Register Rate
+        getUserRegisterPending: builder.query({
+            query: () => "api/users/pending/change/rate",
+        }),
+
     }),
 });
 
@@ -125,4 +141,7 @@ export const {
     useGetUserAreShipperCountQuery,
     useGetPendingShipperQuery,
     useGetAllUserCountQuery,
+    useGetUserRateQuery,
+    useGetShipperRateQuery,
+    useGetUserRegisterPendingQuery,
 } = usersService;

@@ -121,10 +121,38 @@ export const shopService = createApi({
 
         // Counting pending shops
         getShopPendingCount: builder.query({
-            query: () => 'api/shops/count/pending',  // This will call the `getShopPending` backend API
+            query: () => 'api/shops/count/pending',
             providesTags: ["shops"],
         }),
 
+        getShopRevenueByDay: builder.query({
+            query: ({ startDate, endDate, shopId }) => ({
+                url: "api/shops/revenue/day",
+                params: { startDate, endDate, shopId },
+            }),
+            providesTags: ["shops"],
+        }),
+
+        // Calculate shop revenue by month
+        getShopRevenueByMonth: builder.query({
+            query: ({ startDate, endDate, shopId }) => ({
+                url: "api/shops/revenue/month",
+                params: { startDate, endDate, shopId },
+            }),
+            providesTags: ["shops"],
+        }),
+
+        // Calculate shop revenue by year
+        getShopRevenueByYear: builder.query({
+            query: ({ startDate, endDate, shopId }) => ({
+                url: "api/shops/revenue/year",
+                params: { startDate, endDate, shopId },
+            }),
+            providesTags: ["shops"],
+        }),
+        getShopChangeRate: builder.query({
+            query: () => 'api/shops/change/rate',  // Assuming your backend URL is like this
+        }),
     }),
 });
 
@@ -141,4 +169,8 @@ export const {
     useGetShopCountByMonthQuery,
     useGetShopCountByYearQuery,
     useGetShopPendingCountQuery,
+    useGetShopRevenueByDayQuery,
+    useGetShopRevenueByMonthQuery,
+    useGetShopRevenueByYearQuery,
+    useGetShopChangeRateQuery,
 } = shopService;
