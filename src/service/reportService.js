@@ -102,6 +102,15 @@ export const reportService = createApi({
             }),
             invalidatesTags: [{ type: "reports", id: "LIST" }], // Invalidate the report list after status update
         }),
+
+        // Fetch all reports by type
+        getAllReportsByType: builder.query({
+            query: ({ type = 4, page = 1, size = 20 }) => ({
+                url: `api/report/type`,
+                params: { type, page, size },
+            }),
+            providesTags: ["reports"],
+        }),
     }),
 });
 
@@ -117,4 +126,6 @@ export const {
     useGetReportPendingCountQuery,
     useGetAllReportsByStatusQuery,
     useUpdateReportStatusMutation,
+    useGetAllReportsByTypeQuery,
+
 } = reportService;

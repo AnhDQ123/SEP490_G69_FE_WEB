@@ -1,53 +1,111 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
-    CRow,
-    CCol,
-    CCard,
-    CCardBody,
-    CCardHeader,
-    CFormCheck,
-    CButton,
-    CForm,
-    CModal,
-    CModalHeader,
-    CModalBody,
-    CModalFooter,
-    CSpinner,
-    CListGroup,
-    CListGroupItem
+    CCard, CCardBody, CCardHeader, CButton, CModal, CModalHeader, CModalBody, CModalFooter,
+    CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell, CFormInput, CFormSelect,
+    CFormSwitch
 } from '@coreui/react';
-import {FaArrowLeft, FaArrowRight, FaPen, FaTrash, FaUpload, FaPlus} from 'react-icons/fa';
+import {FaTrash, FaPlus} from 'react-icons/fa';
 import {
     useGetBannersQuery,
     useDeleteBannerMutation,
     useUpdateBannerMutation,
     useGetAllBannersQuery
 } from '../../service/bannerService';
+import {
+    DndContext,
+    closestCenter,
+    PointerSensor,
+    useSensor,
+    useSensors
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    useSortable,
+    verticalListSortingStrategy
+} from '@dnd-kit/sortable';
+import {CSS} from '@dnd-kit/utilities';
+
+const SortableRow = ({banner, index, onToggleStatus, onDelete}) => {
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition
+    } = useSortable({id: banner.id});
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        cursor: 'grab'
+    };
+
+    return (
+        <CTableRow ref={setNodeRef} style={style}>
+            <CTableDataCell {...attributes} {...listeners}>Banner #{banner.id}</CTableDataCell>
+            <CTableDataCell>{banner.ownerId?.name || '---'}</CTableDataCell>
+            <CTableDataCell>
+                {banner.url && (
+                    <img src={banner.url} alt="banner" width={80} height={60} style={{objectFit: 'cover'}}/>
+                )}
+            </CTableDataCell>
+            <CTableDataCell>
+                <CFormSwitch
+                    label={banner.status === 'ACTIVE' ? 'Đang hiển thị' : 'Ẩn'}
+                    checked={banner.status === 'ACTIVE'}
+                    onChange={(e) => onToggleStatus(banner, e.target.checked)}
+                />
+            </CTableDataCell>
+            <CTableDataCell>
+                <CButton color="danger" size="sm" onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(banner.id);
+                }}>
+                    <FaTrash/>
+                </CButton>
+            </CTableDataCell>
+        </CTableRow>
+    );
+};
 
 const BannerList = () => {
-    const [showBanner, setShowBanner] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedBanner, setSelectedBanner] = useState(null);
     const [selectedBannerUrl, setSelectedBannerUrl] = useState('');
-    const [startIndex, setStartIndex] = useState(0);
-
-    const {data, isLoading, refetch} = useGetBannersQuery({page: 0, size: 5});
+    const [bannerList, setBannerList] = useState([]);
+    const [successModal, setSuccessModal] = useState({visible: false, message: ''});
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const {data, isLoading, refetch} = useGetBannersQuery({page: currentPage - 1, size: itemsPerPage});
     const {data: allBannersData} = useGetAllBannersQuery();
     const [deleteBanner] = useDeleteBannerMutation();
     const [updateBanner] = useUpdateBannerMutation();
+
+
+    const banners = data?.content || [];
+    const allBanners = allBannersData?.content || [];
+
+    useEffect(() => {
+        setBannerList(banners);
+    }, [banners]);
+
+    const confirmDelete = (id) => {
+        setSelectedBanner(id);
+        setShowDeleteModal(true);
+    };
 
     const handleDeleteImage = async () => {
         if (selectedBanner) {
             await deleteBanner(selectedBanner);
             await refetch();
+            setShowDeleteModal(false);
+            setSuccessModal({visible: true, message: 'Xoá banner thành công!'});
+            setTimeout(() => {
+                setSuccessModal({visible: false, message: ''});
+            }, 2000);
         }
-        setShowDeleteModal(false);
-    };
-
-    const confirmDelete = (id) => {
-        setSelectedBanner(id);
-        setShowDeleteModal(true);
     };
 
     const handleUploadClick = (id) => {
@@ -64,140 +122,133 @@ const BannerList = () => {
         setSelectedBannerUrl('');
     };
 
-    const handleSave = () => {
-        console.log({showBanner});
+    const handleToggleStatus = async (banner, checked) => {
+        const newStatus = checked ? 'ACTIVE' : 'INACTIVE';
+        await updateBanner({id: banner.id, status: newStatus});
+        await refetch();
     };
 
-    const banners = data?.content || [];
-    const allBanners = allBannersData?.content || [];
+    const sensors = useSensors(useSensor(PointerSensor));
 
-    if (isLoading) return <CSpinner color="primary"/>;
-
-    const handleNext = () => {
-        if (startIndex + 2 < banners.length) {
-            setStartIndex(startIndex + 2);
-        }
-    };
-
-    const handlePrev = () => {
-        if (startIndex > 0) {
-            setStartIndex(startIndex - 2);
+    const handleDragEnd = (event) => {
+        const {active, over} = event;
+        if (active.id !== over?.id) {
+            const oldIndex = bannerList.findIndex(b => b.id === active.id);
+            const newIndex = bannerList.findIndex(b => b.id === over.id);
+            const newList = arrayMove(bannerList, oldIndex, newIndex);
+            setBannerList(newList);
         }
     };
 
     return (
-        <CCard>
-            <CCardHeader>
-                <h3>Cài đặt Banner</h3>
-            </CCardHeader>
-            <CCardBody>
-                <CForm>
-                    <CFormCheck
-                        label="Hiển thị Banner"
-                        checked={showBanner}
-                        onChange={() => setShowBanner(!showBanner)}
-                    />
-                    <h5 className="mt-3">Các Banner đang hiển thị</h5>
-                    <div className="d-flex justify-content-center align-items-center position-relative">
-                        <FaArrowLeft className="position-absolute start-0" size={32} style={{cursor: 'pointer'}}
-                                     onClick={handlePrev}/>
-                        <CRow className="flex-nowrap overflow-hidden justify-content-center" style={{width: '80%'}}>
-                            {banners.slice(startIndex, startIndex + 2).map((banner, index) => (
-                                <CCol key={banner.id} md={6} className="text-center">
-                                    <div
-                                        className="banner-box p-3 border rounded d-flex flex-column align-items-center justify-content-center"
-                                        style={{height: '300px', width: '100%'}}>
-                                        {banner.url ? (
-                                            <>
-                                                <div className="banner-image" style={{
-                                                    width: '100%',
-                                                    height: '150px',
-                                                    background: `url(${banner.url})`,
-                                                    backgroundSize: 'cover'
-                                                }}></div>
-                                                <p className="mt-2">Banner {startIndex + index + 1}</p>
-                                                <div className="d-flex gap-2 mt-2">
-                                                    <FaPen size={20} style={{cursor: 'pointer', color: 'blue'}}
-                                                           onClick={() => handleUploadClick(banner.id)}/>
-                                                    <FaTrash size={20} style={{cursor: 'pointer', color: 'red'}}
-                                                             onClick={() => confirmDelete(banner.id)}/>
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <div
-                                                className="d-flex flex-column align-items-center justify-content-center"
-                                                style={{height: '100%', cursor: 'pointer'}}
-                                                onClick={() => handleUploadClick(banner.id)}
-                                            >
-                                                <FaPlus size={48} style={{color: 'gray'}}/>
-                                                <p className="mt-2">Thêm banner</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                </CCol>
-                            ))}
-                        </CRow>
-                        <FaArrowRight className="position-absolute end-0" size={32} style={{cursor: 'pointer'}}
-                                      onClick={handleNext}/>
+        <>
+            <CCard>
+                <CCardHeader className="d-flex justify-content-between align-items-center">
+                    <h4>Danh sách Banner</h4>
+                </CCardHeader>
+                <CCardBody>
+                    <div className="d-flex mb-3 gap-2">
+                        <CFormInput placeholder="Tìm kiếm theo tên cửa hàng..."/>
+                        <CFormSelect
+                            value={itemsPerPage}
+                            onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                            options={[{ label: 'Hiển thị 5', value: 5 }, { label: 'Hiển thị 10', value: 10 }]}
+                        />
                     </div>
-                    <div className="mt-4 d-flex justify-content-center">
-                        <CButton color="primary" onClick={handleSave}>Lưu</CButton>
-                    </div>
-                </CForm>
-            </CCardBody>
+                    <CTable striped hover responsive>
+                        <CTableHead>
+                            <CTableRow>
+                                <CTableHeaderCell>Thứ tự banner</CTableHeaderCell>
+                                <CTableHeaderCell>Chủ banner</CTableHeaderCell>
+                                <CTableHeaderCell>Ảnh</CTableHeaderCell>
+                                <CTableHeaderCell>Trạng thái</CTableHeaderCell>
+                                <CTableHeaderCell>Hành động</CTableHeaderCell>
+                            </CTableRow>
+                        </CTableHead>
+                        <CTableBody>
+                            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                                <SortableContext items={bannerList.map(b => b.id)}
+                                                 strategy={verticalListSortingStrategy}>
+                                    {bannerList.map((banner, index) => (
+                                        <SortableRow
+                                            key={banner.id}
+                                            banner={banner}
+                                            index={index}
+                                            onToggleStatus={handleToggleStatus}
+                                            onDelete={confirmDelete}
+                                        />
+                                    ))}
+                                </SortableContext>
+                            </DndContext>
+                        </CTableBody>
+                    </CTable>
 
-            {/* Modal Upload (Danh sách Banner) */}
-            <CModal visible={showModal} onClose={() => {
-                setShowModal(false);
-                setSelectedBannerUrl('');
-            }}>
-                <CModalHeader>Chọn Banner để Upload</CModalHeader>
-                <CModalBody>
-                    <CListGroup>
+                    <div className="d-flex justify-content-between align-items-center mt-3">
+                            <span>
+                                Trang <strong>{currentPage}</strong> / {Math.ceil(data?.totalElements / itemsPerPage)}
+                            </span>
+                        <div>
+                            <CButton
+                                size="sm"
+                                className="me-2"
+                                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                                disabled={currentPage === 1}
+                            >
+                                Trước
+                            </CButton>
+                            <CButton
+                                size="sm"
+                                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(data?.totalElements / itemsPerPage)))}
+                                disabled={currentPage === Math.ceil(data?.totalElements / itemsPerPage)}
+                            >
+                                Sau
+                            </CButton>
+                        </div>
+                    </div>
+                </CCardBody>
+
+                <CModal visible={showModal} onClose={() => {
+                    setShowModal(false);
+                    setSelectedBannerUrl('');
+                }}>
+                    <CModalHeader>Chọn Banner để Upload</CModalHeader>
+                    <CModalBody>
                         {allBanners.map((banner) => (
-                            <CListGroupItem
+                            <div
                                 key={banner.id}
-                                onClick={() => setSelectedBannerUrl(banner.url)}
+                                className="d-flex justify-content-between align-items-center p-2 border mb-2"
                                 style={{
                                     cursor: 'pointer',
-                                    backgroundColor: selectedBannerUrl === banner.url ? '#d3d3d3' : 'transparent',
-                                    transition: 'background-color 0.3s',
+                                    backgroundColor: selectedBannerUrl === banner.url ? '#eee' : 'transparent'
                                 }}
-                                className={selectedBannerUrl === banner.url ? 'border-primary' : ''}
+                                onClick={() => setSelectedBannerUrl(banner.url)}
                             >
-                                <div className="d-flex justify-content-between">
-                                    <div>Banner #{banner.id}</div>
-                                    <img
-                                        src={banner.url}
-                                        alt={`Banner ${banner.id}`}
-                                        width="50"
-                                        height="50"
-                                        style={{objectFit: 'cover'}}
-                                    />
-                                </div>
-                            </CListGroupItem>
+                                <span>Banner #{banner.id}</span>
+                                <img src={banner.url} alt="option" width={60} height={40} style={{objectFit: 'cover'}}/>
+                            </div>
                         ))}
-                    </CListGroup>
-                </CModalBody>
-                <CModalFooter>
-                    <CButton color="secondary" onClick={() => {
-                        setShowModal(false);
-                        setSelectedBannerUrl('');
-                    }}>Đóng</CButton>
-                    <CButton color="primary" onClick={handleCloseModal}>Lưu</CButton>
-                </CModalFooter>
-            </CModal>
+                    </CModalBody>
+                    <CModalFooter>
+                        <CButton color="secondary" onClick={() => setShowModal(false)}>Đóng</CButton>
+                        <CButton color="primary" onClick={handleCloseModal}>Lưu</CButton>
+                    </CModalFooter>
+                </CModal>
 
-            {/* Modal Confirm Delete */}
-            <CModal visible={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
-                <CModalHeader>Xác nhận xóa</CModalHeader>
-                <CModalBody>Bạn có chắc chắn muốn xóa ảnh này không?</CModalBody>
-                <CModalFooter>
-                    <CButton color="danger" onClick={handleDeleteImage}>Xóa</CButton>
-                    <CButton color="secondary" onClick={() => setShowDeleteModal(false)}>Hủy</CButton>
-                </CModalFooter>
-            </CModal>
-        </CCard>
+                <CModal visible={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
+                    <CModalHeader>Xác nhận xoá</CModalHeader>
+                    <CModalBody>Bạn có chắc muốn xoá banner này?</CModalBody>
+                    <CModalFooter>
+                        <CButton color="danger" onClick={handleDeleteImage}>Xoá</CButton>
+                        <CButton color="secondary" onClick={() => setShowDeleteModal(false)}>Huỷ</CButton>
+                    </CModalFooter>
+                </CModal>
+
+                <CModal visible={successModal.visible} onClose={() => setSuccessModal({visible: false, message: ''})}>
+                    <CModalHeader closeButton>Thành công</CModalHeader>
+                    <CModalBody>{successModal.message}</CModalBody>
+                </CModal>
+            </CCard>
+        </>
     );
 };
 

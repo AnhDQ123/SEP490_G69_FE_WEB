@@ -30,6 +30,10 @@ const DeliveryConfig = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deliveryMethodToDelete, setDeliveryMethodToDelete] = useState(null);
 
+    const [addErrorMessage, setAddErrorMessage] = useState('');
+    const [editErrorMessage, setEditErrorMessage] = useState('');
+
+
     const [successModal, setSuccessModal] = useState({
         visible: false,
         message: ''
@@ -38,6 +42,12 @@ const DeliveryConfig = () => {
     const { data, error, isLoading, refetch } = useGetAllDeliveryMethodsQuery(
         { page, size, search: debouncedSearch }
     );
+
+    const isValidFee = (value) => {
+        const numeric = value.replace(/\./g, '');
+        return /^\d+$/.test(numeric) && parseInt(numeric) > 0;
+    };
+
 
     const [createDeliveryMethod] = useCreateDeliveryMethodMutation();
     const [deleteDeliveryMethod] = useDeleteDeliveryMethodMutation();
@@ -61,21 +71,43 @@ const DeliveryConfig = () => {
     };
 
     const handleAddModal = async () => {
-        if (!newItemName || !newItemFee) return;
-        const newItem = {
-            name: newItemName,
-            description: newItemDescription,
-            fee: parseFloat(newItemFee),
-            status: newItemPublished ? 'ACTIVE' : 'INACTIVE'
-        };
+        if (!newItemName.trim()) {
+            setAddErrorMessage('Tên phương thức là bắt buộc!');
+            return;
+        }
+        if (!newItemDescription.trim()) {
+            setAddErrorMessage('Mô tả là bắt buộc!');
+            return;
+        }
+        if (!newItemFee.trim()) {
+            setAddErrorMessage('Giá là bắt buộc!');
+            return;
+        }
+        if (!isValidFee(newItemFee.trim())) {
+            setAddErrorMessage('Giá phải là số tiền hợp lệ theo định dạng Việt Nam (ví dụ: 15.000)!');
+            return;
+        }
 
-        await createDeliveryMethod(newItem);
-        setNewItemName('');
-        setNewItemDescription('');
-        setNewItemFee('');
-        setNewItemPublished(true);
-        setShowAddModal(false);
-        showSuccessModal('Thêm phương thức giao hàng thành công!');
+        try {
+            const newItem = {
+                name: newItemName,
+                description: newItemDescription,
+                fee: parseInt(newItemFee.replace(/\./g, '')),
+                status: newItemPublished ? 'ACTIVE' : 'INACTIVE',
+            };
+
+            await createDeliveryMethod(newItem);
+            setNewItemName('');
+            setNewItemDescription('');
+            setNewItemFee('');
+            setNewItemPublished(true);
+            setAddErrorMessage('');
+            setShowAddModal(false);
+            showSuccessModal('Thêm phương thức giao hàng thành công!');
+        } catch (error) {
+            console.error('Create failed:', error);
+            setAddErrorMessage('Thêm phương thức giao hàng thất bại!');
+        }
     };
 
     const handleDeleteDeliveryMethod = async () => {
@@ -92,27 +124,49 @@ const DeliveryConfig = () => {
         setNewItemDescription(deliveryMethod.description);
         setNewItemFee(deliveryMethod.fee);
         setNewItemPublished(deliveryMethod.status === 'ACTIVE');
+        setEditErrorMessage('');
         setShowEditModal(true);
     };
 
     const handleSaveEdit = async () => {
-        if (!newItemName || !newItemFee || !editingDeliveryMethod?.id) return;
+        if (!newItemName.trim()) {
+            setEditErrorMessage('Tên phương thức là bắt buộc!');
+            return;
+        }
+        if (!newItemDescription.trim()) {
+            setEditErrorMessage('Mô tả là bắt buộc!');
+            return;
+        }
+        if (!newItemFee.trim()) {
+            setEditErrorMessage('Giá là bắt buộc!');
+            return;
+        }
+        if (!isValidFee(newItemFee.trim())) {
+            setEditErrorMessage('Giá phải là số tiền hợp lệ theo định dạng Việt Nam (ví dụ: 15.000)!');
+            return;
+        }
 
-        const updatedItem = {
-            id: editingDeliveryMethod.id,
-            name: newItemName,
-            description: newItemDescription,
-            fee: parseFloat(newItemFee),
-            status: newItemPublished ? 'ACTIVE' : 'INACTIVE'
-        };
+        try {
+            const updatedItem = {
+                id: editingDeliveryMethod.id,
+                name: newItemName,
+                description: newItemDescription,
+                fee: parseInt(newItemFee.replace(/\./g, '')),
+                status: newItemPublished ? 'ACTIVE' : 'INACTIVE',
+            };
 
-        await updateDeliveryMethod(updatedItem); // id đi vào URL, phần còn lại đi vào body
-        setNewItemName('');
-        setNewItemDescription('');
-        setNewItemFee('');
-        setNewItemPublished(true);
-        setShowEditModal(false);
-        showSuccessModal('Cập nhật phương thức giao hàng thành công!');
+            await updateDeliveryMethod(updatedItem);
+            setNewItemName('');
+            setNewItemDescription('');
+            setNewItemFee('');
+            setNewItemPublished(true);
+            setEditErrorMessage('');
+            setShowEditModal(false);
+            showSuccessModal('Cập nhật phương thức giao hàng thành công!');
+        } catch (error) {
+            console.error('Update failed:', error);
+            setEditErrorMessage('Cập nhật phương thức giao hàng thất bại!');
+        }
     };
 
 
@@ -222,10 +276,12 @@ const DeliveryConfig = () => {
             <CModal visible={showAddModal} onClose={() => setShowAddModal(false)}>
                 <CModalHeader closeButton>Thêm phương thức giao hàng</CModalHeader>
                 <CModalBody>
+                    {addErrorMessage && <div className="text-danger mb-2">{addErrorMessage}</div>}
                     <CFormInput className="mb-3" placeholder="Tên phương thức" value={newItemName} onChange={(e) => setNewItemName(e.target.value)} />
                     <CFormInput className="mb-3" placeholder="Mô tả" value={newItemDescription} onChange={(e) => setNewItemDescription(e.target.value)} />
                     <CFormInput className="mb-3" placeholder="Giá" value={newItemFee} onChange={(e) => setNewItemFee(e.target.value)} />
                 </CModalBody>
+
                 <CModalFooter>
                     <CButton color="secondary" onClick={() => setShowAddModal(false)}>Hủy</CButton>
                     <CButton color="primary" onClick={handleAddModal}>Lưu</CButton>
@@ -236,10 +292,12 @@ const DeliveryConfig = () => {
             <CModal visible={showEditModal} onClose={() => setShowEditModal(false)}>
                 <CModalHeader closeButton>Chỉnh sửa phương thức giao hàng</CModalHeader>
                 <CModalBody>
+                    {editErrorMessage && <div className="text-danger mb-2">{editErrorMessage}</div>}
                     <CFormInput className="mb-3" placeholder="Tên phương thức" value={newItemName} onChange={(e) => setNewItemName(e.target.value)} />
                     <CFormInput className="mb-3" placeholder="Mô tả" value={newItemDescription} onChange={(e) => setNewItemDescription(e.target.value)} />
                     <CFormInput className="mb-3" placeholder="Giá" value={newItemFee} onChange={(e) => setNewItemFee(e.target.value)} />
                 </CModalBody>
+
                 <CModalFooter>
                     <CButton color="secondary" onClick={() => setShowEditModal(false)}>Hủy</CButton>
                     <CButton color="primary" onClick={handleSaveEdit}>Lưu</CButton>

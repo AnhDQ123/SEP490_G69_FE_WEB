@@ -42,6 +42,8 @@ const PaymentConfig = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
     const [toasts, setToasts] = useState([]);
+    const [addErrorMessage, setAddErrorMessage] = useState('');
+    const [editErrorMessage, setEditErrorMessage] = useState('');
 
     const [successModal, setSuccessModal] = useState({
         visible: false,
@@ -54,11 +56,15 @@ const PaymentConfig = () => {
     const [deletePaymentMethod] = useDeletePaymentMethodMutation();
 
     const pushToast = (message, color = 'success') => {
-        setToasts((prev) => [
-            ...prev,
-            { id: Date.now(), message, color },
-        ]);
+        const newToast = {
+            id: Date.now(),
+            message,
+            color,
+            visible: true,
+        };
+        setToasts((prev) => [...prev, newToast]);
     };
+
 
     const showSuccessModal = (message) => {
         setSuccessModal({ visible: true, message });
@@ -70,6 +76,15 @@ const PaymentConfig = () => {
     };
 
     const handleCreate = async () => {
+        if (!newName.trim()) {
+            setAddErrorMessage('Tên phương thức là bắt buộc!');
+            return;
+        }
+        if (!newDescription.trim()) {
+            setAddErrorMessage('Mô tả là bắt buộc!');
+            return;
+        }
+
         try {
             await createPaymentMethod({
                 name: newName,
@@ -78,14 +93,24 @@ const PaymentConfig = () => {
             setShowAddModal(false);
             setNewName('');
             setNewDescription('');
+            setAddErrorMessage('');
             showSuccessModal('Thêm phương thức thành công!');
         } catch (error) {
             console.error("Create failed:", error);
-            pushToast('Thêm phương thức thất bại!', 'danger');
+            setAddErrorMessage('Thêm phương thức thất bại!');
         }
     };
 
     const handleUpdate = async () => {
+        if (!newName.trim()) {
+            setEditErrorMessage('Tên phương thức là bắt buộc!');
+            return;
+        }
+        if (!newDescription.trim()) {
+            setEditErrorMessage('Mô tả là bắt buộc!');
+            return;
+        }
+
         try {
             await updatePaymentMethod({
                 id: editingPayment.id,
@@ -96,10 +121,11 @@ const PaymentConfig = () => {
             setShowEditModal(false);
             setNewName('');
             setNewDescription('');
+            setEditErrorMessage('');
             showSuccessModal('Cập nhật phương thức thành công!');
         } catch (error) {
             console.error("Update failed:", error);
-            pushToast('Cập nhật phương thức thất bại!', 'danger');
+            setEditErrorMessage('Cập nhật phương thức thất bại!');
         }
     };
 
@@ -183,14 +209,26 @@ const PaymentConfig = () => {
 
     return (
         <>
-            <CToaster placement="top-end">
-                {toasts.map((toast) => (
-                    <CToast key={toast.id} autohide={true} delay={3000} color={toast.color}>
-                        <CToastHeader closeButton>{toast.color === 'danger' ? 'Lỗi' : 'Thông báo'}</CToastHeader>
-                        <CToastBody>{toast.message}</CToastBody>
-                    </CToast>
-                ))}
+            <CToaster placement="middle-center  ">
+                {toasts.map((toast) =>
+                    toast.visible ? (
+                        <CToast
+                            key={toast.id}
+                            autohide
+                            visible
+                            color={toast.color}
+                            delay={3000}
+                            onClose={() =>
+                                setToasts((prev) => prev.filter((t) => t.id !== toast.id))
+                            }
+                        >
+                            <CToastHeader closeButton>{toast.color === 'danger' ? 'Lỗi' : 'Thông báo'}</CToastHeader>
+                            <CToastBody>{toast.message}</CToastBody>
+                        </CToast>
+                    ) : null
+                )}
             </CToaster>
+
 
             <CCard>
                 <CCardBody>
@@ -201,6 +239,7 @@ const PaymentConfig = () => {
                 <CModal visible={showAddModal} onClose={() => setShowAddModal(false)}>
                     <CModalHeader closeButton>Thêm phương thức thanh toán</CModalHeader>
                     <CModalBody>
+                        {addErrorMessage && <div className="text-danger mb-2">{addErrorMessage}</div>}
                         <CFormInput className="mb-3" placeholder="Tên phương thức" value={newName} onChange={(e) => setNewName(e.target.value)} />
                         <CFormInput placeholder="Mô tả" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
                     </CModalBody>
@@ -214,6 +253,7 @@ const PaymentConfig = () => {
                 <CModal visible={showEditModal} onClose={() => setShowEditModal(false)}>
                     <CModalHeader closeButton>Chỉnh sửa phương thức thanh toán</CModalHeader>
                     <CModalBody>
+                        {editErrorMessage && <div className="text-danger mb-2">{editErrorMessage}</div>}
                         <CFormInput className="mb-3" placeholder="Tên phương thức" value={newName} onChange={(e) => setNewName(e.target.value)} />
                         <CFormInput className="mb-3" placeholder="Mô tả" value={newDescription} onChange={(e) => setNewDescription(e.target.value)} />
                     </CModalBody>

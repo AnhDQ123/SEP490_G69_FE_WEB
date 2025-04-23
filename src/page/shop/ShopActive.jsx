@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import {useParams, useNavigate} from 'react-router-dom';
 import {
     CRow,
     CCol,
@@ -11,15 +11,36 @@ import {
     CModalBody,
     CModalFooter,
     CModalHeader,
-    CModalTitle, CCardHeader, CNavLink, CNavItem, CNav,
+    CModalTitle, CCardHeader, CNavLink, CNavItem, CNav, CTable, CTableRow, CTableDataCell, CTableBody,
 } from '@coreui/react';
-import { FaArrowCircleRight, FaArrowCircleLeft } from 'react-icons/fa';
-import { useGetShopByIdQuery, useInactivateShopMutation } from '../../service/shopService.js';
+import {FaArrowCircleRight, FaArrowCircleLeft} from 'react-icons/fa';
+import {
+    useGetShopByIdQuery,
+    useGetShopRevenueByDayQuery,
+    useGetShopRevenueByMonthQuery,
+    useGetShopRevenueByYearQuery,
+    useInactivateShopMutation
+} from '../../service/shopService.js';
 import {Line} from "react-chartjs-2";
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend
+} from 'chart.js';
 import DatePicker from "react-datepicker";
-import { ToastContainer, toast } from 'react-toastify';
+import {ToastContainer, toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import {
+    useGetTopSellingProductsThisMonthQuery, useGetTopSellingProductsThisYearQuery,
+    useGetTopSellingProductsTodayQuery
+} from "../../service/productService.js";
+import * as PropTypes from "prop-types";
+
 ChartJS.register(
     CategoryScale,
     LinearScale,
@@ -30,14 +51,50 @@ ChartJS.register(
     Legend
 );
 
-const ShopActive = () => {
-    const [timePeriod, setTimePeriod] = useState('day'); // State để lưu lựa chọn thời gian (Ngày, Tháng, Năm)
-    const [shop, setShop] = useState(null);
-    const { id } = useParams();
-    const navigate = useNavigate();
+function CTableHeader(props) {
+    return null;
+}
 
-    const { data, error, isLoading } = useGetShopByIdQuery(id);
+CTableHeader.propTypes = {children: PropTypes.node};
+const ShopActive = () => {
+    const [timePeriodRevenue, setTimePeriodRevenue] = useState('day'); // Time period for revenue
+    const [timePeriodBestSeller, setTimePeriodBestSeller] = useState('day'); // Time period for best seller
+    const [shop, setShop] = useState(null);
+    const {id} = useParams();
+    const navigate = useNavigate();
+    // State khởi tạo ngày bắt đầu và ngày kết thúc
+    const [startDate, setStartDate] = useState(new Date());  // Ngày bắt đầu
+    const [endDate, setEndDate] = useState(new Date());      // Ngày kết thúc
+
+    const {data, error, isLoading} = useGetShopByIdQuery(id);
     const [inactivateShop] = useInactivateShopMutation();
+
+    const [bestSellerData, setBestSellerData] = useState([]);
+    const { data: topSellingToday } = useGetTopSellingProductsTodayQuery(id);
+    const { data: topSellingMonth } = useGetTopSellingProductsThisMonthQuery(id);
+    const { data: topSellingYear } = useGetTopSellingProductsThisYearQuery(id);
+
+    const [revenueData, setRevenueData] = useState([]);
+    const formatDate = (date) => {
+        return date.toISOString().split('T')[0]; // Chuyển đổi sang định dạng "YYYY-MM-DD"
+    };
+
+    const { data: revenueByDay } = useGetShopRevenueByDayQuery({
+        shopId: id,
+        startDate: formatDate(startDate),  // Định dạng lại startDate
+        endDate: formatDate(endDate)       // Định dạng lại endDate
+    });
+    const { data: revenueByMonth } = useGetShopRevenueByMonthQuery({
+        shopId: id,
+        startDate: formatDate(startDate),
+        endDate: formatDate(endDate)
+    });
+    const { data: revenueByYear } = useGetShopRevenueByYearQuery({
+        shopId: id,
+        startDate: formatDate(startDate),
+        endDate: formatDate(endDate)
+    });
+
     const [showImageBackground, setShowImageBackground] = useState(false);
     const [showImageRegistrationCertificate, setShowImageRegistrationCertificate] = useState(false);
     const [showFoodSafetyCertificate, setShowFoodSafetyCertificate] = useState(false);
@@ -50,8 +107,7 @@ const ShopActive = () => {
     const [successMessage, setSuccessMessage] = useState('');  // Add state for success message
 
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [startDate, setStartDate] = useState(new Date());
-    const [endDate, setEndDate] = useState(new Date());
+
     const [selectedDate, setSelectedDate] = useState(new Date()); // Selected date for hourly chart
 
 
@@ -60,6 +116,26 @@ const ShopActive = () => {
             setShop(data);
         }
     }, [data]);
+
+    useEffect(() => {
+        if (timePeriodBestSeller === 'day' && topSellingToday) {
+            setBestSellerData(topSellingToday);
+        } else if (timePeriodBestSeller === 'month' && topSellingMonth) {
+            setBestSellerData(topSellingMonth);
+        } else if (timePeriodBestSeller === 'year' && topSellingYear) {
+            setBestSellerData(topSellingYear);
+        }
+    }, [timePeriodBestSeller, topSellingToday, topSellingMonth, topSellingYear]);
+
+    useEffect(() => {
+        if (timePeriodRevenue === 'day' && revenueByDay) {
+            setRevenueData(revenueByDay);
+        } else if (timePeriodRevenue === 'month' && revenueByMonth) {
+            setRevenueData(revenueByMonth);
+        } else if (timePeriodRevenue === 'year' && revenueByYear) {
+            setRevenueData(revenueByYear);
+        }
+    }, [timePeriodRevenue, revenueByDay, revenueByMonth, revenueByYear]);
 
     if (isLoading) return <p>Đang tải dữ liệu...</p>;
     if (error) return <p>Có lỗi xảy ra khi lấy dữ liệu cửa hàng</p>;
@@ -75,8 +151,8 @@ const ShopActive = () => {
 
         try {
             // Gửi yêu cầu chặn cửa hàng
-            await inactivateShop({ shopId: id, reason: blockReason }).unwrap();
-            setShop({ ...shop, isActive: 'INACTIVE' });
+            await inactivateShop({shopId: id, reason: blockReason}).unwrap();
+            setShop({...shop, isActive: 'INACTIVE'});
 
             // Hiển thị modal thông báo thành công
             setSuccessMessage('Đã dừng hoạt động cửa hàng');
@@ -117,10 +193,10 @@ const ShopActive = () => {
 
     const chartData = {
         day: {
-            labels: ['16-04', '17-04', '18-04', '19-04', '20-04', '21-04', '22-04'],
+            labels: revenueData?.labels || [],
             datasets: [{
                 label: 'Doanh thu',
-                data: [1000, 2000, 1500, 2500, 3000, 3500, 4000],
+                data: revenueData?.data || [],
                 borderColor: 'rgba(75, 192, 192, 1)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
                 borderWidth: 2,
@@ -128,10 +204,10 @@ const ShopActive = () => {
             }]
         },
         month: {
-            labels: ['Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4'],
+            labels: revenueData?.labels || [],
             datasets: [{
                 label: 'Doanh thu',
-                data: [5000, 7000, 6000, 8500],
+                data: revenueData?.data || [],
                 borderColor: 'rgba(75, 192, 192, 1)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
                 borderWidth: 2,
@@ -139,31 +215,24 @@ const ShopActive = () => {
             }]
         },
         year: {
-            labels: ['2021', '2022', '2023', '2024'],
+            labels: revenueData?.labels || [],
             datasets: [{
                 label: 'Doanh thu',
-                data: [60000, 70000, 75000, 80000],
+                data: revenueData?.data || [],
                 borderColor: 'rgba(75, 192, 192, 1)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
                 borderWidth: 2,
                 fill: true
             }]
-        },
-        orderByHour: {
-            labels: ['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00'],
-            datasets: [{
-                label: 'Số lượng đơn hàng',
-                data: [20, 30, 50, 40, 60, 70, 80, 90],
-                borderColor: 'rgba(255, 99, 132, 1)',
-                backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                borderWidth: 2,
-                fill: true
-            }]
-        },
+        }
     };
 
-    const handleTimePeriodChange = (period) => {
-        setTimePeriod(period); // Cập nhật thời gian khi người dùng chọn tab
+    const handleTimePeriodRevenueChange = (period) => {
+        setTimePeriodRevenue(period); // Update revenue time period
+    };
+
+    const handleTimePeriodBestSellerChange = (period) => {
+        setTimePeriodBestSeller(period); // Update best seller time period
     };
 
     const handleStartDateChange = (date) => {
@@ -178,6 +247,7 @@ const ShopActive = () => {
         setSelectedDate(date);
     };
 
+
     return (
         <CCard className="p-4">
             <CCardBody>
@@ -185,56 +255,56 @@ const ShopActive = () => {
                 <CRow className="mb-3">
                     <CCol>
                         <label>Tên cửa hàng</label>
-                        <CFormInput disabled value={shop.name} />
+                        <CFormInput disabled value={shop.name}/>
                     </CCol>
                     <CCol>
                         <label>Chủ cửa hàng</label>
-                        <CFormInput disabled value={shop.owner.username} />
+                        <CFormInput disabled value={shop.owner.username}/>
                     </CCol>
                     <CCol>
                         <label>Số điện thoại</label>
-                        <CFormInput disabled value={shop.phone} />
+                        <CFormInput disabled value={shop.phone}/>
                     </CCol>
                 </CRow>
                 <CRow className="mb-3">
                     <CCol md={8}>
                         <label>Địa chỉ</label>
-                        <CFormInput disabled value={shop.address} />
+                        <CFormInput disabled value={shop.address}/>
                     </CCol>
                     <CCol md={4}>
                         <label>Đánh giá</label>
-                        <CFormInput disabled value={shop.rate} />
+                        <CFormInput disabled value={shop.rate}/>
                     </CCol>
                 </CRow>
                 <CRow className="mb-3">
                     <CCol md={4}>
                         <label>Loại cửa hàng</label>
-                        <CFormInput disabled value={shop.sellType} />
+                        <CFormInput disabled value={shop.sellType}/>
                     </CCol>
                     <CCol md={4}>
                         <label>Giờ hoạt động</label>
-                        <CFormInput disabled value={shop.openTime} />
+                        <CFormInput disabled value={shop.openTime}/>
                     </CCol>
                     <CCol md={4}>
                         <label>Giờ đóng cửa</label>
-                        <CFormInput disabled value={shop.closeTime} />
+                        <CFormInput disabled value={shop.closeTime}/>
                     </CCol>
                 </CRow>
                 <CRow className="mb-3">
                     <CCol md={6}>
                         <label>Mã số thuế</label>
-                        <CFormInput disabled value={shop.owner.profile.taxCode} />
+                        <CFormInput disabled value={shop.owner.profile.taxCode}/>
                     </CCol>
                     <CCol md={6}>
                         <label>Trạng thái</label>
-                        <CFormInput disabled value={shop.isActive} />
+                        <CFormInput disabled value={shop.isActive}/>
                     </CCol>
                 </CRow>
 
                 <CRow className="mb-3">
                     <CCol md={6} className="d-flex align-items-center">
                         <label
-                            style={{ cursor: 'pointer', color: 'blue' }}
+                            style={{cursor: 'pointer', color: 'blue'}}
                             onClick={() => setShowImageBackground(true)}
                         >
                             Ảnh cửa hàng
@@ -242,7 +312,7 @@ const ShopActive = () => {
                     </CCol>
                     <CCol md={6} className="d-flex align-items-center">
                         <label
-                            style={{ cursor: 'pointer', color: 'blue' }}
+                            style={{cursor: 'pointer', color: 'blue'}}
                             onClick={() => setShowImageRegistrationCertificate(true)}
                         >
                             Giấy phép kinh doanh
@@ -252,7 +322,7 @@ const ShopActive = () => {
                 <CRow className="mb-3">
                     <CCol md={6} className="d-flex align-items-center">
                         <label
-                            style={{ cursor: 'pointer', color: 'blue' }}
+                            style={{cursor: 'pointer', color: 'blue'}}
                             onClick={() => setShowFoodSafetyCertificate(true)}
                         >
                             Giấy phép vệ sinh an toàn thực phẩm
@@ -260,7 +330,7 @@ const ShopActive = () => {
                     </CCol>
                     <CCol md={6} className="d-flex align-items-center">
                         <label
-                            style={{ cursor: 'pointer', color: 'blue' }}
+                            style={{cursor: 'pointer', color: 'blue'}}
                             onClick={() => setShowCitizenId(true)}
                         >
                             Căn cước công dân
@@ -300,32 +370,31 @@ const ShopActive = () => {
                                             />
                                         </div>
                                     </div>
-
-                                    {/* Time period tabs */}
-                                    <CNav variant="pills" style={{ position: 'absolute', top: '10px', right: '10px', zIndex: '10' }}>
-                                        {['day', 'month', 'year'].map((tab) => (
-                                            <CNavItem key={tab}>
+                                    <CNav variant="pills" className="mb-0">
+                                        {['day', 'month', 'year'].map((period) => (
+                                            <CNavItem key={period}>
                                                 <CNavLink
-                                                    active={timePeriod === tab}
-                                                    onClick={() => handleTimePeriodChange(tab)}
+                                                    active={timePeriodRevenue === period}
+                                                    onClick={() => handleTimePeriodRevenueChange(period)}
                                                     style={{
                                                         padding: '0.5rem 1rem',
                                                         fontSize: '0.875rem',
-                                                        fontWeight: timePeriod === tab ? '600' : '400',
-                                                        backgroundColor: timePeriod === tab ? '#6c757d' : '#f8f9fa',
-                                                        color: timePeriod === tab ? '#fff' : '#495057'
+                                                        fontWeight: timePeriodRevenue === period ? '600' : '400',
+                                                        backgroundColor: timePeriodRevenue === period ? '#6c757d' : '#f8f9fa',
+                                                        color: timePeriodRevenue === period ? '#fff' : '#495057',
                                                     }}
                                                 >
-                                                    {tab === 'day' ? 'Ngày' : tab === 'month' ? 'Tháng' : 'Năm'}
+                                                    {period === 'day' ? 'Ngày' : period === 'month' ? 'Tháng' : 'Năm'}
                                                 </CNavLink>
                                             </CNavItem>
                                         ))}
                                     </CNav>
+
                                 </div>
 
                                 <div style={{ height: '250px' }}>
                                     <Line
-                                        data={chartData[timePeriod]} // Use the selected time period data
+                                        data={chartData[timePeriodRevenue]}   // Dữ liệu biểu đồ theo thời gian
                                         options={{
                                             responsive: true,
                                             maintainAspectRatio: false,
@@ -334,13 +403,8 @@ const ShopActive = () => {
                                                 tooltip: { enabled: true, mode: 'index', intersect: false }
                                             },
                                             scales: {
-                                                y: {
-                                                    beginAtZero: true,
-                                                    ticks: { font: { size: 10 } }
-                                                },
-                                                x: {
-                                                    ticks: { font: { size: 10 } }
-                                                }
+                                                y: { beginAtZero: true, ticks: { font: { size: 10 } } },
+                                                x: { ticks: { font: { size: 10 } } }
                                             }
                                         }}
                                     />
@@ -348,29 +412,76 @@ const ShopActive = () => {
                             </CCardBody>
                         </CCard>
                     </CCol>
+                    <CCol md={6}>
+                        <CCard>
+                            <CCardHeader>
+                                <strong>Best
+                                    Seller</strong> ({timePeriodBestSeller === 'day' ? 'Ngày' : timePeriodBestSeller === 'month' ? 'Tháng' : 'Năm'})
 
+                                {/* Thêm phần chọn ngày, tháng, năm bên trong bảng */}
+                                <div className="float-end">
+                                <CNav variant="pills" className="mb-0">
+                                    {['day', 'month', 'year'].map((period) => (
+                                        <CNavItem key={period}>
+                                            <CNavLink
+                                                active={timePeriodBestSeller === period}
+                                                onClick={() => handleTimePeriodBestSellerChange(period)}
+                                                style={{
+                                                    padding: '0.5rem 1rem',
+                                                    fontSize: '0.875rem',
+                                                    fontWeight: timePeriodBestSeller === period ? '600' : '400',
+                                                    backgroundColor: timePeriodBestSeller === period ? '#6c757d' : '#f8f9fa',
+                                                    color: timePeriodBestSeller === period ? '#fff' : '#495057',
+                                                }}
+                                            >
+                                                {period === 'day' ? 'Ngày' : period === 'month' ? 'Tháng' : 'Năm'}
+                                            </CNavLink>
+                                        </CNavItem>
+                                    ))}
+                                </CNav>
+                                </div>
+                            </CCardHeader>
+                            <CCardBody>
+                                {bestSellerData[timePeriodBestSeller]?.length > 0 ? (
+                                    <CTable hover>
+                                        <CTableHeader>
+                                            <CTableRow>
+                                                <CTableDataCell><strong>Sản phẩm</strong></CTableDataCell>
+                                                <CTableDataCell><strong>Số lượng bán</strong></CTableDataCell>
+                                            </CTableRow>
+                                        </CTableHeader>
+                                        <CTableBody>
+                                            {bestSellerData.map((product) => (
+                                                <CTableRow key={product.id}>
+                                                    <CTableDataCell>{product.name}</CTableDataCell>
+                                                    <CTableDataCell>{product.sales}</CTableDataCell>
+                                                </CTableRow>
+                                            ))}
+                                        </CTableBody>
+                                    </CTable>
+                                ) : (
+                                    <p>Đang tải dữ liệu...</p>
+                                )}
+                            </CCardBody>
+                        </CCard>
+                    </CCol>
                 </CRow>
 
                 {/*Button*/}
                 <CRow className="text-center mt-4">
-                    <CCol md={6}>
+                    <CCol md={4}>
                         <CButton color="danger" className="w-100" onClick={() => setShowBlockModal(true)}>
                             Chặn cửa hàng
                         </CButton>
                     </CCol>
-                    <CCol md={6}>
+                    <CCol md={4}>
                         <CButton color="secondary" className="w-100" onClick={() => navigate('/shop-list')}>
                             Quay lại
                         </CButton>
                     </CCol>
-                    <CCol md={6} className="mt-3">
+                    <CCol md={4}>
                         <CButton color="primary" className="w-100" onClick={() => navigate(`/products-list/${id}`)}>
                             Xem danh sách sản phẩm
-                        </CButton>
-                    </CCol>
-                    <CCol md={6} className="mt-3">
-                        <CButton color="info" className="w-100" onClick={() => navigate(`/reports-list/shop/:shopId`)}>
-                            Xem danh sách khiếu nại
                         </CButton>
                     </CCol>
                 </CRow>
@@ -392,7 +503,7 @@ const ShopActive = () => {
                     <FaArrowCircleLeft
                         size={40}
                         className="position-absolute start-0 ms-3"
-                        style={{ cursor: 'pointer' }}
+                        style={{cursor: 'pointer'}}
                         onClick={handlePrevImage}
                     />
                     {imagesBackground.length > 0 && (
@@ -410,7 +521,7 @@ const ShopActive = () => {
                     <FaArrowCircleRight
                         size={40}
                         className="position-absolute end-0 me-3"
-                        style={{ cursor: 'pointer' }}
+                        style={{cursor: 'pointer'}}
                         onClick={handleNextImage}
                     />
                 </CModalBody>
@@ -419,7 +530,8 @@ const ShopActive = () => {
                 </CModalFooter>
             </CModal>
             {/* Modal for registration certificate */}
-            <CModal visible={showImageRegistrationCertificate} onClose={() => setShowImageRegistrationCertificate(false)} size="lg" centered>
+            <CModal visible={showImageRegistrationCertificate}
+                    onClose={() => setShowImageRegistrationCertificate(false)} size="lg" centered>
                 <CModalBody
                     className="d-flex justify-content-center align-items-center bg-white position-relative"
                     style={{
@@ -435,7 +547,7 @@ const ShopActive = () => {
                     <FaArrowCircleLeft
                         size={40}
                         className="position-absolute start-0 ms-3"
-                        style={{ cursor: 'pointer' }}
+                        style={{cursor: 'pointer'}}
                         onClick={handlePrevImage}
                     />
                     {imageRegistrationCertificate.length > 0 && (
@@ -453,7 +565,7 @@ const ShopActive = () => {
                     <FaArrowCircleRight
                         size={40}
                         className="position-absolute end-0 me-3"
-                        style={{ cursor: 'pointer' }}
+                        style={{cursor: 'pointer'}}
                         onClick={handleNextImage}
                     />
                 </CModalBody>
@@ -462,7 +574,8 @@ const ShopActive = () => {
                 </CModalFooter>
             </CModal>
             {/* Modal for food safety certificate */}
-            <CModal visible={showFoodSafetyCertificate} onClose={() => setShowFoodSafetyCertificate(false)} size="lg" centered>
+            <CModal visible={showFoodSafetyCertificate} onClose={() => setShowFoodSafetyCertificate(false)} size="lg"
+                    centered>
                 <CModalBody
                     className="d-flex justify-content-center align-items-center bg-white position-relative"
                     style={{
@@ -478,7 +591,7 @@ const ShopActive = () => {
                     <FaArrowCircleLeft
                         size={40}
                         className="position-absolute start-0 ms-3"
-                        style={{ cursor: 'pointer' }}
+                        style={{cursor: 'pointer'}}
                         onClick={handlePrevImage}
                     />
                     {foodSafetyCertificate.length > 0 && (
@@ -496,7 +609,7 @@ const ShopActive = () => {
                     <FaArrowCircleRight
                         size={40}
                         className="position-absolute end-0 me-3"
-                        style={{ cursor: 'pointer' }}
+                        style={{cursor: 'pointer'}}
                         onClick={handleNextImage}
                     />
                 </CModalBody>
@@ -521,7 +634,7 @@ const ShopActive = () => {
                     <FaArrowCircleLeft
                         size={40}
                         className="position-absolute start-0 ms-3"
-                        style={{ cursor: 'pointer' }}
+                        style={{cursor: 'pointer'}}
                         onClick={handlePrevImage}
                     />
                     {citizenIdFront.length > 0 && (
@@ -539,7 +652,7 @@ const ShopActive = () => {
                     <FaArrowCircleRight
                         size={40}
                         className="position-absolute end-0 me-3"
-                        style={{ cursor: 'pointer' }}
+                        style={{cursor: 'pointer'}}
                         onClick={handleNextImage}
                     />
                 </CModalBody>
@@ -582,7 +695,7 @@ const ShopActive = () => {
                 </CModalFooter>
             </CModal>
 
-            <ToastContainer />
+            <ToastContainer/>
         </CCard>
     );
 };

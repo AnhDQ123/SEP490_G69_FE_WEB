@@ -125,6 +125,7 @@ export const shopService = createApi({
             providesTags: ["shops"],
         }),
 
+        // Calculate shop revenue by day
         getShopRevenueByDay: builder.query({
             query: ({ startDate, endDate, shopId }) => ({
                 url: "api/shops/revenue/day",

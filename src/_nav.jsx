@@ -62,8 +62,8 @@ const _nav = [
             },
             {
                 component: CNavItem,
-                name: 'Quản lý trả hàng',
-                to: '/returned-order-list',
+                name: 'Khiếu nại',
+                to: '/complaints-list',
             },
             {
                 component: CNavItem,
@@ -97,6 +97,11 @@ const _nav = [
                 component: CNavItem,
                 name: 'Phương thức thanh toán',
                 to: '/payment-config',
+            },
+            {
+                component: CNavItem,
+                name: 'Cài đặt FastF&B',
+                to: '/app-setting',
             },
         ],
     },

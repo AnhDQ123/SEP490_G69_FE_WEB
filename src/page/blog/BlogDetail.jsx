@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
     CCard, CCardBody, CCardHeader, CCol, CRow, CImage,
     CFormInput, CFormSelect, CButton, CTable, CTableBody,
@@ -9,18 +9,18 @@ import { useParams } from 'react-router-dom';
 import { useGetBlogByIdQuery } from '../../service/blogService';
 import { useGetCommentsByBlogQuery } from '../../service/commentService';
 
-
 const BlogDetail = () => {
     const { id } = useParams();
     const [showFullContent, setShowFullContent] = useState(false);
     const previewLength = 200;
     const { data: blog, isLoading, isError } = useGetBlogByIdQuery(id);
     const {
-        data: comments = [],
+        data: comments = [], // Đảm bảo rằng comments luôn là mảng mặc định
         isLoading: isCommentsLoading,
         isError: isCommentsError,
     } = useGetCommentsByBlogQuery({ blogId: id, offset: 0, limit: 20 });
 
+    // Kiểm tra nếu dữ liệu bài viết không có hoặc lỗi
     if (isLoading) return <div>🔄 Đang tải dữ liệu bài viết...</div>;
     if (isError || !blog) return <div>❌ Không thể tải bài viết.</div>;
 
@@ -106,7 +106,7 @@ const BlogDetail = () => {
                 </CCardBody>
             </CCard>
 
-            {/* Quản lý bình luận (mock) */}
+            {/* Quản lý bình luận */}
             <CCard>
                 <CCardHeader className="fw-bold">Quản lý bình luận</CCardHeader>
                 <CCardBody>
@@ -123,7 +123,7 @@ const BlogDetail = () => {
                     </CRow>
 
                     <CRow className="mb-2">
-                        <CCol md={6}><strong>🗨️ Tổng số bình luận</strong> 10</CCol>
+                        <CCol md={6}><strong>🗨️ Tổng số bình luận</strong> {comments.length}</CCol>
                     </CRow>
 
                     <CTable striped hover bordered responsive>

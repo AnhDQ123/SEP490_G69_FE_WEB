@@ -16,7 +16,7 @@ import {
 } from '@coreui/react';
 import { useGetAllReportsByStatusQuery } from '../../service/reportService';
 
-const ReportList = () => {
+const ComplaintsList = () => {
     const [page, setPage] = useState(1);
     const [size, setSize] = useState(10);
     const [statusFilter, setStatusFilter] = useState('PENDING');
@@ -209,4 +209,4 @@ const ReportList = () => {
     );
 };
 
-export default ReportList;
+export default ComplaintsList;

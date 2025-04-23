@@ -8,10 +8,14 @@ export const orderService = createApi({
     endpoints: (builder) => ({
 
         getOrdersByFilter: builder.query({
-            query: ({ status, startDate, endDate, orderCode, page = 0, size = 10 }) => {
+            query: ({ status, startDate, endDate, orderCode, page = 0, size = 10 } = {}) => {
                 const params = {
                     page,
                     size,
+                    startDate,
+                    endDate,
+                    orderCode,
+                    status,
                 };
 
                 if (status) params.status = status;
@@ -91,6 +95,11 @@ export const orderService = createApi({
             }),
             providesTags: ['order'],
         }),
+
+        // Change rate order
+        orderChangeRate: builder.query({
+            query: () => 'api/order/change/rate',
+        }),
     }),
 });
 
@@ -104,4 +113,5 @@ export const {
     useGetTopSellingProductsThisMonthQuery,
     useGetTopSellingProductsThisYearQuery,
     useCountAllOrdersQuery,
+    useOrderChangeRateQuery,
 } = orderService;

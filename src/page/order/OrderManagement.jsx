@@ -33,6 +33,8 @@ const OrderManagement = () => {
         size: 10, // Default records per page set to 10
     });
 
+
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setSearchParams(prev => ({ ...prev, [name]: value }));

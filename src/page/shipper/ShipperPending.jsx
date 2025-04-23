@@ -70,7 +70,6 @@ const ShipperPending = () => {
             alert('Vui lòng xác nhận trước khi duyệt shipper!');
             return;
         }
-
         try {
             await approveShipper(id).unwrap();
             alert('Shipper đã được duyệt');
@@ -116,10 +115,6 @@ const ShipperPending = () => {
                     <CCol md={6}><label>Ngày sinh</label><CFormInput disabled value={shipper.dob} /></CCol>
                     <CCol md={6}><label>Ngày đăng ký</label><CFormInput disabled value={shipper.registrationDate} /></CCol>
                 </CRow>
-                <CRow className="mb-3">
-                    <CCol md={6}><label>Trạng thái</label><CFormInput disabled value={shipper.shipperStatus} /></CCol>
-                </CRow>
-
                 <CRow className="mb-3">
                     <CCol md={6} className="d-flex align-items-center">
                         <label>Căn cước công dân</label>
@@ -214,7 +209,7 @@ const ShipperPending = () => {
                         rows={4}
                         placeholder="Vui lòng nhập lý do từ chối shipper này"
                         value={rejectionReason}
-                        onChange={(e) => setRejectionReason(e.target.value)} // Cập nhật lý do từ chối
+                        onChange={(e) => setRejectionReason(e.target.value)} // Update rejection reason
                     />
                 </CModalBody>
                 <CModalFooter>

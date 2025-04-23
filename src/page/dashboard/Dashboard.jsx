@@ -36,9 +36,9 @@ import {
     Legend,
 } from 'chart.js'
 import {
-    useGetAllUserCountQuery, useGetPendingShipperQuery,
+    useGetAllUserCountQuery, useGetPendingShipperQuery, useGetShipperRateQuery,
     useGetUserAreShipperCountQuery, useGetUserCountByDayQuery, useGetUserCountByMonthQuery, useGetUserCountByYearQuery,
-    useGetUserHaveShopCountQuery
+    useGetUserHaveShopCountQuery, useGetUserRateQuery, useGetUserRegisterPendingQuery
 } from "../../service/userService.js";
 import {
     useCountAllOrdersQuery,
@@ -46,7 +46,7 @@ import {
     useGetOrderCountByStatusAndMonthQuery,
     useGetOrderCountByStatusAndYearQuery,
     useGetTopSellingProductsThisMonthQuery, useGetTopSellingProductsThisYearQuery,
-    useGetTopSellingProductsTodayQuery
+    useGetTopSellingProductsTodayQuery, useOrderChangeRateQuery
 } from "../../service/orderService.js";
 import {
     useGetReportCountByDayQuery,
@@ -54,6 +54,7 @@ import {
     useGetReportPendingCountQuery
 } from "../../service/reportService.js";
 import {
+    useGetShopChangeRateQuery,
     useGetShopCountByDayQuery,
     useGetShopCountByMonthQuery, useGetShopCountByYearQuery,
     useGetShopPendingCountQuery
@@ -74,6 +75,9 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const [chartTabs] = useState({bestseller: 'day'});
     const [userTypeTime, setUserTypeTime] = useState('day');
+    const [percentageChange, setPercentageChange] = useState(0);
+    const [orderPercentageChange, setOrderPercentageChange] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
     const [shopStatusTime, setShopStatusTime] = useState('day');
     const [reportedProductsTime, setReportedProductsTime] = useState('day');
     const [reportedBlogsTime, setReportedBlogsTime] = useState('day');
@@ -100,6 +104,7 @@ const Dashboard = () => {
     const {data: pendingShipperCount, isLoading: isShipperPending} = useGetPendingShipperQuery();
     const {data: pendingShopCount, isLoading: isShopPending} = useGetShopPendingCountQuery();
 
+
     const {data: dayOrderData} = useGetOrderCountByStatusAndDayQuery({status: chartTabsOrder['order_status']});
     const {data: monthOrderData} = useGetOrderCountByStatusAndMonthQuery({status: chartTabsOrder['order_status']});
     const {data: yearOrderData} = useGetOrderCountByStatusAndYearQuery({status: chartTabsOrder['order_status']});
@@ -107,6 +112,11 @@ const Dashboard = () => {
     const {data: dayUserData} = useGetUserCountByDayQuery({status: chartTabsUser['user_status']});
     const {data: monthUserData} = useGetUserCountByMonthQuery({status: chartTabsUser['user_status']});
     const {data: yearUserData} = useGetUserCountByYearQuery({status: chartTabsUser['user_status']});
+    const { data: userRate, isLoading: rateLoading, error } = useGetUserRateQuery();
+    const {data: shipperRate } = useGetShipperRateQuery();
+    const {data: pendingRegistrations } = useGetUserRegisterPendingQuery();
+    const {data: shopRate } = useGetShopChangeRateQuery();
+    const { data: orderRate, isLoading: isOrderRateLoading } = useOrderChangeRateQuery();
 
     const {data: dayShopData} = useGetShopCountByDayQuery({status: chartTabsShop['shop_status']});
     const {data: monthShopData} = useGetShopCountByMonthQuery({status: chartTabsShop['shop_status']});
@@ -145,6 +155,12 @@ const Dashboard = () => {
     const {data: topSellingYear, isLoading: isLoadingYear} = useGetTopSellingProductsThisYearQuery();
 
     useEffect(() => {
+        if (!isOrderRateLoading && orderRate !== undefined) {
+            setOrderPercentageChange(orderRate);  // Set percentage change based on API data
+        }
+    }, [orderRate, isOrderRateLoading]);
+
+    useEffect(() => {
         if (bestSeller === 'day' && !isLoadingToday) {
             setTopSellingTodayData(topSellingToday);
         }
@@ -157,7 +173,25 @@ const Dashboard = () => {
     }, [bestSeller, topSellingToday, topSellingMonth, topSellingYear, isLoadingToday, isLoadingMonth, isLoadingYear]);
 
     const totalPending = (pendingShipperCount || 0) + (pendingShopCount || 0);
+    const shopPercentageChange = shopRate || 0;
 
+    useEffect(() => {
+        if (!rateLoading && userRate !== undefined) {
+            setPercentageChange(userRate);  // Set percentage change based on API data
+            setIsLoading(false);
+        }
+    }, [userRate, rateLoading]);
+
+    // Handle errors or loading states
+    if (rateLoading || isCountAllUser) {
+        return <div>Loading data...</div>;
+    }
+
+    if (error) {
+        return <div>Error fetching user rate: {error.message}</div>;
+    }
+
+    // Determine the direction (up/down) and color (green/red) of the arrow based on percentage change
     const handleNavigation = (route) => {
         navigate(route);  // Navigate to the given route
     };
@@ -343,57 +377,126 @@ const Dashboard = () => {
                                 count: isCountAllUser ? 'Loading...' : totalUsers || 0,
                                 color: 'primary',
                                 icon: 'cilUser',
-                                route: '/user-list', // Add route for navigation
+                                route: '/user-list',
+                                percentage: (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '10px',
+                                        right: '10px',
+                                        color: percentageChange >= 0 ? 'white' : 'white',
+                                        fontSize: '20px',
+                                        padding: '5px 0',
+                                        fontWeight: 'bold',
+                                    }}>
+                                        {percentageChange >= 0 ? '↑' : '↓'} {Math.abs(percentageChange).toFixed(2)}%
+                                    </div>
+                                ),
                             },
                             {
-                                label: 'Quán',
+                                label: 'Cửa hàng',
                                 count: isCountAllShop ? 'Loading...' : totalShops || 0,
                                 color: 'info',
                                 icon: 'cilHome',
-                                route: '/shop-list', // Add route for navigation
+                                route: '/shop-list',
+                                percentage: (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '10px',
+                                        right: '10px',
+                                        color: shopPercentageChange >= 0 ? 'white' : 'white',
+                                        fontSize: '20px',
+                                        padding: '5px 0',
+                                        fontWeight: 'bold',
+                                    }}>
+                                        {shopPercentageChange >= 0 ? '↑' : '↓'} {Math.abs(shopPercentageChange).toFixed(2)}%
+                                    </div>
+                                ),
                             },
                             {
                                 label: 'Người giao hàng',
                                 count: isShipperLoading ? 'Loading...' : totalShippers || 0,
                                 color: 'success',
                                 icon: 'cilTruck',
-                                route: '/shipper-list', // Add route for navigation
+                                route: '/shipper-list',
+                                percentage: (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '10px',
+                                        right: '10px',
+                                        color: shipperRate >= 0 ? 'white' : 'white',
+                                        fontSize: '20px',
+                                        padding: '5px 0',
+                                        fontWeight: 'bold',
+                                    }}>
+                                        {shipperRate >= 0 ? '↑' : '↓'} {Math.abs(shipperRate).toFixed(2)}%
+                                    </div>
+                                ),
                             },
                             {
                                 label: 'Đơn hàng',
                                 count: isOrderLoading ? 'Loading...' : totalOrders || 0,
                                 color: 'warning',
                                 icon: 'cilCart',
-                                route: '/order-management', // Add route for navigation
+                                route: '/order-management',
+                                percentage: (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '10px',
+                                        right: '10px',
+                                        color: orderPercentageChange >= 0 ? 'white' : 'white',
+                                        fontSize: '20px',
+                                        padding: '5px 0',
+                                        fontWeight: 'bold',
+                                    }}>
+                                        {orderPercentageChange >= 0 ? '↑' : '↓'} {Math.abs(orderPercentageChange).toFixed(2)}%
+                                    </div>
+                                ),
                             },
                             {
-                                label: 'Khiếu nại chưa xử lý',
-                                count: isPendingReportsLoading ? 'Loading...' : totalPendingReports || 0,  // Sử dụng API gọi tổng số khiếu nại chưa xử lý
+                                label: 'Đơn tranh chấp',
+                                count: isPendingReportsLoading ? 'Loading...' : totalPendingReports || 0,
                                 color: 'danger',
                                 icon: 'cilWarning',
-                                route: '/reports-list'
+                                route: '/returned-order-list',
                             },
                             {
                                 label: 'Danh sách đăng ký đang chờ',
-                                count: isShipperPending || isShopPending ? 'Loading...' : totalPending, // Cộng tổng từ cả 2 API
+                                count: isShipperPending || isShopPending ? 'Loading...' : totalPending,
                                 color: 'secondary',
                                 icon: 'cilClock',
-                                route: '/pending-registration-list', // Add route for navigation
+                                route: '/pending-registration-list',
+                                percentage: (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '10px',
+                                        right: '10px',
+                                        color: pendingRegistrations >= 0 ? 'white' : 'white',
+                                        fontSize: '20px',
+                                        padding: '5px 0',
+                                        fontWeight: 'bold',
+                                    }}>
+                                        {pendingRegistrations >= 0 ? '↑' : '↓'} {Math.abs(pendingRegistrations).toFixed(2)}%
+                                    </div>
+                                ),
                             },
                         ].map((item, idx) => (
                             <CCol key={idx} md={4} className="mb-4">
-                                <CCard className={`text-white bg-${item.color}`}
-                                       onClick={() => handleNavigation(item.route)}>
+                                <CCard className={`text-white bg-${item.color}`} onClick={() => handleNavigation(item.route)} style={{ position: 'relative' }}>
                                     <CCardBody className="d-flex justify-content-between align-items-center">
                                         <div>
                                             <h3>{item.count}</h3>
                                             <p>{item.label}</p>
                                         </div>
-                                        <CIcon icon={item.icon} size="xxl"/>
+                                        <CIcon icon={item.icon} size="xxl" />
                                     </CCardBody>
+
+                                    {/* Render the percentage in the top-right corner */}
+                                    {item.percentage}
+
                                     <div className={`bg-${item.color} p-2 text-center`}>
-                                        <CButton color="link" className="text-white p-0">Xem thêm <CIcon
-                                            icon="cilArrowRight"/></CButton>
+                                        <CButton color="link" className="text-white p-0">
+                                            Xem thêm <CIcon icon="cilArrowRight" />
+                                        </CButton>
                                     </div>
                                 </CCard>
                             </CCol>

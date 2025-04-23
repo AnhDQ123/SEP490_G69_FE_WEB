@@ -52,11 +52,11 @@ export const shipperService = createApi({
         // reject
         rejectShipper: builder.mutation({
             query: ({ userId, reason }) => ({
-                url: `api/shippers/${userId}/reject`,
-                method: "PUT",
-                params: { reason },
+                url: `api/shippers/${userId}/reject`,  // URL
+                method: "POST", // Phương thức POST
+                params: { reason },  // Truyền lý do qua query params
             }),
-            invalidatesTags: ["shipper"],
+            invalidatesTags: ["shipper"], // Invalidate cache khi từ chối shipper
         }),
 
         // update
