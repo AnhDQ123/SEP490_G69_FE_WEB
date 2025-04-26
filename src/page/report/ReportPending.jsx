@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
-    CRow,
-    CCol,
+
     CCard,
     CCardHeader,
     CCardBody,
@@ -19,9 +18,13 @@ import {
     CModal,
     CModalHeader,
     CModalBody,
-    CModalFooter
+    CModalFooter,
+    CForm,
+    CFormInput,
+    CFormTextarea,
+    CFormSelect
 } from "@coreui/react";
-import { useGetReportByIdQuery, useUpdateReportStatusMutation } from "../../service/reportService";
+import { useGetReportByIdQuery } from "../../service/reportService";
 import { useGetUserByIdQuery } from "../../service/userService";
 import { useGetShopByIdQuery } from "../../service/shopService";
 
@@ -43,28 +46,17 @@ const ReportPending = () => {
         skip: !shopId
     });
 
-    const [updateReportStatus] = useUpdateReportStatusMutation();
+    // State lưu trữ trạng thái modal
+    const [modalVisible, setModalVisible] = useState(false);
+    const [solution, setSolution] = useState("");
+    const [assignee, setAssignee] = useState("");
+
+    // const [updateReportStatus] = useUpdateReportStatusMutation();
     const [status, setStatus] = useState(reportData?.status);
-    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         if (reportData) setStatus(reportData.status);
     }, [reportData]);
-
-    const handleAccept = async () => {
-        try {
-            await updateReportStatus(reportId);
-            setStatus("COMPLETED");
-        } catch (err) {
-            console.error("Lỗi khi cập nhật trạng thái", err);
-        }
-    };
-
-    const handleModalClose = () => setShowModal(false);
-    const handleConfirmAction = () => {
-        handleAccept();
-        handleModalClose();
-    };
 
     if (isReportLoading || isUserLoading || isShopLoading) {
         return (
@@ -79,24 +71,70 @@ const ReportPending = () => {
     if (userError) return <p className="text-danger">Có lỗi khi lấy thông tin người dùng.</p>;
     if (shopError) return <p className="text-danger">Có lỗi khi lấy thông tin cửa hàng.</p>;
 
+    // Hàm mở modal
+    const handleOpenModal = () => {
+        setModalVisible(true);
+    };
+
+    // Hàm đóng modal
+    const handleCloseModal = () => {
+        setModalVisible(false);
+    };
+
+    // Hàm xử lý tranh chấp
+    const handleSubmit = () => {
+        // Xử lý thông tin trong modal (lưu trữ, gọi API, v.v)
+        console.log("Giải quyết tranh chấp với thông tin:", { solution, assignee });
+
+        // Đóng modal sau khi xử lý
+        handleCloseModal();
+    };
+
     return (
         <div>
-            <h5 className="mb-4">Chi tiết khiếu nại cửa hàng/quán ăn</h5>
+            <h5 className="mb-4">Chi tiết tranh chấp đơn hàng</h5>
 
             <CCard>
                 <CCardHeader>
-                    Tranh chấp
+                    Đơn hàng
                     {status === "PENDING" && <CBadge color="warning" className="ms-2">Chưa xử lý</CBadge>}
                 </CCardHeader>
                 <CCardBody>
                     <CTable bordered>
                         <CTableBody>
+                            {/* Dòng 1: Tên người mua */}
                             <CTableRow>
-                                <CTableDataCell><strong>Tên người dùng:</strong> {userData?.name || 'Không xác định'}</CTableDataCell>
+                                <CTableDataCell><strong>Tên người mua:</strong> {userData?.name || 'Không xác định'}</CTableDataCell>
                             </CTableRow>
+
+                            {/* Dòng 2: Lý do hoàn đơn */}
                             <CTableRow>
-                                <CTableDataCell><strong>Khiếu nại:</strong> {reportData?.reason}</CTableDataCell>
+                                <CTableDataCell><strong>Lý do hoàn đơn:</strong> {reportData?.reason}</CTableDataCell>
                             </CTableRow>
+
+                            {/* Dòng 3: Số điện thoại đặt hàng */}
+                            <CTableRow>
+                                <CTableDataCell><strong>Số điện thoại đặt hàng:</strong> {reportData?.phone || 'Không xác định'}</CTableDataCell>
+                            </CTableRow>
+
+                            {/* Dòng thông tin sản phẩm */}
+                            <CTableRow>
+                                <CTableDataCell colSpan={1}><strong>Sản phẩm trong đơn:</strong></CTableDataCell>
+                            </CTableRow>
+
+                            {/* Hiển thị các sản phẩm */}
+                            {reportData?.orderItems?.map((item, index) => (
+                                <CTableRow key={index}>
+                                    <CTableDataCell>{item.productName} - {item.price.toLocaleString()} VNĐ - {item.quantity} - {(item.price * item.quantity).toLocaleString()} VNĐ</CTableDataCell>
+                                </CTableRow>
+                            ))}
+
+                            {/* Tổng giá đơn hàng */}
+                            <CTableRow>
+                                <CTableDataCell><strong>Tổng giá:</strong> {reportData?.orderItems?.reduce((total, item) => total + item.price * item.quantity, 0).toLocaleString()} VNĐ</CTableDataCell>
+                            </CTableRow>
+
+                            {/* Hình ảnh */}
                             <CTableRow>
                                 <CTableDataCell>
                                     <strong>Hình ảnh:</strong>
@@ -108,13 +146,8 @@ const ReportPending = () => {
                                 </CTableDataCell>
                             </CTableRow>
                         </CTableBody>
-                    </CTable>
 
-                    {status === "PENDING" && (
-                        <div>
-                            <CButton color="success" onClick={() => setShowModal(true)}>Ghi nhận khiếu nại</CButton>
-                        </div>
-                    )}
+                    </CTable>
                 </CCardBody>
             </CCard>
 
@@ -124,34 +157,82 @@ const ReportPending = () => {
                     <CTable bordered>
                         <CTableHead>
                             <CTableRow>
-                                <CTableHeaderCell>Tên cửa hàng</CTableHeaderCell>
-                                <CTableHeaderCell>Mô tả</CTableHeaderCell>
+                                <CTableHeaderCell style={{width: '200px'}}>Tên cửa hàng</CTableHeaderCell>
                                 <CTableHeaderCell>Địa chỉ cửa hàng</CTableHeaderCell>
-                                <CTableHeaderCell>Số điện thoại</CTableHeaderCell>
-                                <CTableHeaderCell>Điểm đánh giá</CTableHeaderCell>
+                                <CTableHeaderCell style={{width: '200px'}}>Số điện thoại</CTableHeaderCell>
+                                <CTableHeaderCell style={{width: '200px'}}>Ảnh</CTableHeaderCell>
                             </CTableRow>
                         </CTableHead>
                         <CTableBody>
                             <CTableRow>
                                 <CTableDataCell>{shopData?.name}</CTableDataCell>
-                                <CTableDataCell>{shopData?.description}</CTableDataCell>
                                 <CTableDataCell>{shopData?.address}</CTableDataCell>
                                 <CTableDataCell>{shopData?.phone}</CTableDataCell>
-                                <CTableDataCell>{shopData?.rating?.toFixed(1)}</CTableDataCell>
+                                <CTableDataCell>{shopData?.phone}</CTableDataCell>
                             </CTableRow>
                         </CTableBody>
                     </CTable>
                 </CCardBody>
             </CCard>
 
-            <CModal visible={showModal} onClose={handleModalClose}>
-                <CModalHeader>
-                    <h5>Xác nhận tiếp nhận khiếu nại</h5>
-                </CModalHeader>
-                <CModalBody>Bạn có chắc chắn muốn ghi nhận khiếu nại này không?</CModalBody>
+            <CCard className="mt-4">
+                <CCardHeader>Thông tin người giao hàng</CCardHeader>
+                <CCardBody>
+                    <CTable bordered>
+                        <CTableHead>
+                            <CTableRow>
+                                <CTableHeaderCell style={{width: '200px'}}>Tên người giao hàng</CTableHeaderCell>
+                                <CTableHeaderCell style={{width: '200px'}}>Số điện thoại</CTableHeaderCell>
+                                <CTableHeaderCell style={{width: '200px'}}>Ảnh</CTableHeaderCell>
+                            </CTableRow>
+                        </CTableHead>
+                        <CTableBody>
+                            <CTableRow>
+                                <CTableDataCell>{shopData?.name}</CTableDataCell>
+                                <CTableDataCell>{shopData?.phone}</CTableDataCell>
+                                <CTableDataCell>{shopData?.phone}</CTableDataCell>
+                            </CTableRow>
+                        </CTableBody>
+                    </CTable>
+                </CCardBody>
+            </CCard>
+
+            <div className="d-flex justify-content-end mt-4">
+                <CButton color="danger" onClick={handleOpenModal}>Xử lý tranh chấp</CButton>
+            </div>
+
+            {/* Modal xử lý tranh chấp */}
+            <CModal visible={modalVisible} onClose={handleCloseModal}>
+                <CModalHeader onClose={handleCloseModal}>Xử lý tranh chấp</CModalHeader>
+                <CModalBody>
+                    <CForm>
+                        <div className="mb-3">
+                            <CFormTextarea
+                                label="Cách xử lý"
+                                value={solution}
+                                onChange={(e) => setSolution(e.target.value)}
+                                placeholder="Nhập cách xử lý"
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <CFormSelect
+                                label="Người chịu xử lý"
+                                value={assignee}
+                                onChange={(e) => setAssignee(e.target.value)}
+                            >
+                                <option value="">Chọn người xử lý</option>
+                                <option value="shop">Cửa hàng</option>
+                                <option value="user">Người dùng</option>
+                                <option value="shipper">Người giao hàng</option>
+
+                                {/* Thêm các tùy chọn người xử lý khác nếu cần */}
+                            </CFormSelect>
+                        </div>
+                    </CForm>
+                </CModalBody>
                 <CModalFooter>
-                    <CButton color="secondary" onClick={handleModalClose}>Hủy</CButton>
-                    <CButton color="primary" onClick={handleConfirmAction}>Tiếp nhận</CButton>
+                    <CButton color="secondary" onClick={handleCloseModal}>Đóng</CButton>
+                    <CButton color="primary" onClick={handleSubmit}>Xử lý</CButton>
                 </CModalFooter>
             </CModal>
         </div>

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
+import {useNavigate, useParams} from 'react-router-dom'
 import {
   CContainer,
   CDropdown,
@@ -26,8 +26,8 @@ import AppBreadcrumb from './AppBreadcrumb.jsx'
 
 const AppHeader = () => {
   const headerRef = useRef()
-  const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
-
+  const { colorMode, setColorMode } = useColorModes('core-free-react-admin-template-theme')
+  const { id } = useParams()
   const dispatch = useDispatch()
   const sidebarShow = useSelector((state) => state.sidebarShow)
   const navigate = useNavigate()
@@ -97,7 +97,7 @@ const AppHeader = () => {
                 Tài khoản
               </CDropdownToggle>
               <CDropdownMenu>
-                <CDropdownItem as="button" type="button" onClick={() => navigate('/user-information')}>
+                <CDropdownItem as="button" type="button" onClick={() => navigate(`/user-information/${id}`)}>
                   Thông tin người dùng
                 </CDropdownItem>
                 <CDropdownItem as="button" type="button" onClick={() => navigate('/change-password')}>

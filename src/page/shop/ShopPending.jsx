@@ -114,16 +114,9 @@ const ShopPending = () => {
     console.log(citizenIdFront[currentImageIndex])
     const citizenIdBack = shop?.images || [shop.owner.profile.citizenIDCardBack];
     console.log(shop)
-    const handleNextImage = () => {
-        if (currentSide === 'front') {
-            setCurrentSide('back');
-        }
-    };
 
-    const handlePrevImage = () => {
-        if (currentSide === 'back') {
-            setCurrentSide('front');
-        }
+    const handleNextSide = () => {
+        setCurrentSide(currentSide === 'front' ? 'back' : 'front');
     };
 
     return (
@@ -177,48 +170,38 @@ const ShopPending = () => {
 
                 <CRow className="mb-3">
                     <CCol md={6} className="d-flex align-items-center">
-                        <label>Ảnh cửa hàng</label>
-                        <FaArrowRight
-                            className="ms-3"
-                            size={24}
-                            style={{ cursor: 'pointer' }}
+                        <label
+                            style={{cursor: 'pointer', color: 'blue'}}
                             onClick={() => setShowImageBackground(true)}
-                        />
+                        >
+                            Ảnh cửa hàng
+                        </label>
                     </CCol>
-                </CRow>
-                <CRow className="mb-3">
                     <CCol md={6} className="d-flex align-items-center">
-                        <label>Giấy phép kinh doanh</label>
-                        <FaArrowRight
-                            className="ms-3"
-                            size={24}
-                            style={{ cursor: 'pointer' }}
+                        <label
+                            style={{cursor: 'pointer', color: 'blue'}}
                             onClick={() => setShowImageRegistrationCertificate(true)}
-                        />
+                        >
+                            Giấy phép kinh doanh
+                        </label>
                     </CCol>
                 </CRow>
-                {/* New section for food safety certificate */}
                 <CRow className="mb-3">
                     <CCol md={6} className="d-flex align-items-center">
-                        <label>Giấy phép vệ sinh an toàn thực phẩm</label>
-                        <FaArrowRight
-                            className="ms-3"
-                            size={24}
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => setShowFoodSafetyCertificate(true)} // Show food safety certificate modal
-                        />
+                        <label
+                            style={{cursor: 'pointer', color: 'blue'}}
+                            onClick={() => setShowFoodSafetyCertificate(true)}
+                        >
+                            Giấy phép vệ sinh an toàn thực phẩm
+                        </label>
                     </CCol>
-                </CRow>
-                {/* New section for Citizen ID */}
-                <CRow className="mb-3">
                     <CCol md={6} className="d-flex align-items-center">
-                        <label>Căn cước công dân</label>
-                        <FaArrowRight
-                            className="ms-3"
-                            size={24}
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => setShowCitizenId(true)} // Show Citizen ID modal
-                        />
+                        <label
+                            style={{cursor: 'pointer', color: 'blue'}}
+                            onClick={() => setShowCitizenId(true)}
+                        >
+                            Căn cước công dân
+                        </label>
                     </CCol>
                 </CRow>
 
@@ -321,68 +304,26 @@ const ShopPending = () => {
 
             {/* Modal image shop's background */}
             <CModal visible={showImageBackground} onClose={() => setShowImageBackground(false)} size="lg" centered>
-                <CModalBody
-                    className="d-flex justify-content-center align-items-center bg-white position-relative"
-                    style={{
-                        width: 'auto',
-                        height: 'auto',
-                        maxWidth: '90vw',
-                        maxHeight: '90vh',
-                        margin: 'auto',
-                        padding: '20px',
-                        borderRadius: '10px'
-                    }}
-                >
+                <CModalBody className="d-flex justify-content-center align-items-center bg-white position-relative">
+                    <FaArrowCircleLeft size={40} className="position-absolute start-0 ms-3" onClick={handleNextSide} />
                     {imagesBackground.length > 0 && (
-                        <img
-                            src={imagesBackground[currentImageIndex]}
-                            alt="Ảnh cửa hàng"
-                            style={{
-                                maxWidth: '100%',
-                                maxHeight: '80vh',
-                                objectFit: 'contain',
-                                borderRadius: '8px'
-                            }}
-                        />
+                        <img src={imagesBackground[currentImageIndex]} alt="Ảnh cửa hàng" style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' }} />
                     )}
+                    <FaArrowCircleRight size={40} className="position-absolute end-0 me-3" onClick={handleNextSide} />
                 </CModalBody>
-                <CModalFooter>
-                    <CButton color="secondary" onClick={() => setShowImageBackground(false)}>Đóng</CButton>
-                </CModalFooter>
+                <CModalFooter><CButton color="secondary" onClick={() => setShowImageBackground(false)}>Đóng</CButton></CModalFooter>
             </CModal>
-
             {/* Modal image shop's registration certificate */}
             <CModal visible={showImageRegistrationCertificate} onClose={() => setShowImageRegistrationCertificate(false)} size="lg" centered>
-                <CModalBody
-                    className="d-flex justify-content-center align-items-center bg-white position-relative"
-                    style={{
-                        width: 'auto',
-                        height: 'auto',
-                        maxWidth: '90vw',
-                        maxHeight: '90vh',
-                        margin: 'auto',
-                        padding: '20px',
-                        borderRadius: '10px'
-                    }}
-                >
+                <CModalBody className="d-flex justify-content-center align-items-center bg-white position-relative">
+                    <FaArrowCircleLeft size={40} className="position-absolute start-0 ms-3" onClick={handleNextSide} />
                     {imageRegistrationCertificate.length > 0 && (
-                        <img
-                            src={imageRegistrationCertificate[currentImageIndex]}
-                            alt="Giấy phép kinh doanh"
-                            style={{
-                                maxWidth: '100%',
-                                maxHeight: '80vh',
-                                objectFit: 'contain',
-                                borderRadius: '8px'
-                            }}
-                        />
+                        <img src={imageRegistrationCertificate[currentImageIndex]} alt="Giấy phép kinh doanh" style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' }} />
                     )}
+                    <FaArrowCircleRight size={40} className="position-absolute end-0 me-3" onClick={handleNextSide} />
                 </CModalBody>
-                <CModalFooter>
-                    <CButton color="secondary" onClick={() => setShowImageRegistrationCertificate(false)}>Đóng</CButton>
-                </CModalFooter>
+                <CModalFooter><CButton color="secondary" onClick={() => setShowImageRegistrationCertificate(false)}>Đóng</CButton></CModalFooter>
             </CModal>
-
             {/* Modal for food safety certificate */}
             <CModal visible={showFoodSafetyCertificate} onClose={() => setShowFoodSafetyCertificate(false)} size="lg" centered>
                 <CModalBody
@@ -394,9 +335,15 @@ const ShopPending = () => {
                         maxHeight: '90vh',
                         margin: 'auto',
                         padding: '20px',
-                        borderRadius: '10px'
+                        borderRadius: '10px',
                     }}
                 >
+                    <FaArrowCircleLeft
+                        size={40}
+                        className="position-absolute start-0 ms-3"
+                        style={{ cursor: 'pointer' }}
+                        onClick={handleNextSide}
+                    />
                     {foodSafetyCertificate.length > 0 && (
                         <img
                             src={foodSafetyCertificate[currentImageIndex]}
@@ -405,18 +352,26 @@ const ShopPending = () => {
                                 maxWidth: '100%',
                                 maxHeight: '80vh',
                                 objectFit: 'contain',
-                                borderRadius: '8px'
+                                borderRadius: '8px',
                             }}
                         />
                     )}
+                    <FaArrowCircleRight
+                        size={40}
+                        className="position-absolute end-0 me-3"
+                        style={{ cursor: 'pointer' }}
+                        onClick={handleNextSide}
+                    />
                 </CModalBody>
                 <CModalFooter>
-                    <CButton color="secondary" onClick={() => setShowFoodSafetyCertificate(false)}>Đóng</CButton>
+                    <CButton color="secondary" onClick={() => setShowFoodSafetyCertificate(false)}>
+                        Đóng
+                    </CButton>
                 </CModalFooter>
             </CModal>
 
             {/* Modal for Citizen ID */}
-            <CModal visible={showCitizenId} onClose={() => setShowCitizenId(false)} size="lg" centered="true">
+            <CModal visible={showCitizenId} onClose={() => setShowCitizenId(false)} size="lg" centered>
                 <CModalBody
                     className="d-flex justify-content-center align-items-center bg-white position-relative"
                     style={{
@@ -426,59 +381,50 @@ const ShopPending = () => {
                         maxHeight: '90vh',
                         margin: 'auto',
                         padding: '20px',
-                        borderRadius: '10px'
+                        borderRadius: '10px',
                     }}
                 >
                     <FaArrowCircleLeft
                         size={40}
                         className="position-absolute start-0 ms-3"
                         style={{ cursor: 'pointer' }}
-                        onClick={handlePrevImage}
+                        onClick={handleNextSide}
                     />
-
-                    {/* Hiển thị ảnh căn cước công dân mặt trước */}
                     {currentSide === 'front' && citizenIdFront.length > 0 && (
-                        <div className="d-flex flex-column align-items-center mt-4">
-                            <h5>Mặt trước</h5>
-                            <img
-                                src={citizenIdFront[currentImageIndex]}
-                                alt="Căn cước công dân mặt trước"
-                                style={{
-                                    maxWidth: '100%',
-                                    maxHeight: '80vh',
-                                    objectFit: 'contain',
-                                    borderRadius: '8px'
-                                }}
-                            />
-                        </div>
+                        <img
+                            src={citizenIdFront[currentImageIndex]}
+                            alt="Căn cước công dân mặt trước"
+                            style={{
+                                maxWidth: '100%',
+                                maxHeight: '80vh',
+                                objectFit: 'contain',
+                                borderRadius: '8px',
+                            }}
+                        />
                     )}
-
-                    {/* Hiển thị ảnh căn cước công dân mặt sau */}
                     {currentSide === 'back' && citizenIdBack.length > 0 && (
-                        <div className="d-flex flex-column align-items-center mt-4">
-                            <h5>Mặt sau</h5>
-                            <img
-                                src={citizenIdBack[currentImageIndex]}
-                                alt="Căn cước công dân mặt sau"
-                                style={{
-                                    maxWidth: '100%',
-                                    maxHeight: '80vh',
-                                    objectFit: 'contain',
-                                    borderRadius: '8px'
-                                }}
-                            />
-                        </div>
+                        <img
+                            src={citizenIdBack[currentImageIndex]}
+                            alt="Căn cước công dân mặt sau"
+                            style={{
+                                maxWidth: '100%',
+                                maxHeight: '80vh',
+                                objectFit: 'contain',
+                                borderRadius: '8px',
+                            }}
+                        />
                     )}
-
                     <FaArrowCircleRight
                         size={40}
                         className="position-absolute end-0 me-3"
                         style={{ cursor: 'pointer' }}
-                        onClick={handleNextImage}
+                        onClick={handleNextSide} // Change between front and back
                     />
                 </CModalBody>
                 <CModalFooter>
-                    <CButton color="secondary" onClick={() => setShowCitizenId(false)}>Đóng</CButton>
+                    <CButton color="secondary" onClick={() => setShowCitizenId(false)}>
+                        Đóng
+                    </CButton>
                 </CModalFooter>
             </CModal>
         </CCard>

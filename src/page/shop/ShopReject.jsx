@@ -15,7 +15,7 @@ import {
     CModalTitle,
     CFormTextarea
 } from '@coreui/react';
-import { FaArrowRight } from 'react-icons/fa';
+import {FaArrowCircleLeft, FaArrowCircleRight, FaArrowRight} from 'react-icons/fa';
 import { useGetShopByIdQuery} from '../../service/shopService.js';
 
 const ShopReject = () => {
@@ -23,10 +23,12 @@ const ShopReject = () => {
     const { id } = useParams();
 
     const { data, error, isLoading } = useGetShopByIdQuery(id);
+    const [currentSide, setCurrentSide] = useState('front'); // 'front' or 'back'
     const [showImageBackground, setShowImageBackground] = useState(false);
     const [showImageRegistrationCertificate, setShowImageRegistrationCertificate] = useState(false);
     const [showFoodSafetyCertificate, setShowFoodSafetyCertificate] = useState(false);
     const [showCitizenId, setShowCitizenId] = useState(false);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
     useEffect(() => {
         if (data) {
@@ -38,6 +40,14 @@ const ShopReject = () => {
     if (error) return <p>Có lỗi xảy ra khi lấy dữ liệu cửa hàng</p>;
     if (!shop) return <p>Không tìm thấy thông tin cửa hàng</p>;
 
+    const imagesBackground = shop?.images || [shop.backgroundImage];
+    const imageRegistrationCertificate = shop?.images || [shop.registrationCertificate];
+    const foodSafetyCertificate = shop?.images || [shop.foodSafetyCertificate];
+    const citizenIdFront = shop?.images || [shop.owner.profile.citizenIDCardFront];
+    const citizenIdBack = shop?.images || [shop?.owner.profile.citizenIDCardBack];
+    const handleNextSide = () => {
+        setCurrentSide(currentSide === 'front' ? 'back' : 'front');
+    };
 
     return (
         <CCard className="p-4">
@@ -99,109 +109,171 @@ const ShopReject = () => {
                         <CFormInput disabled value={shop.reason} />
                     </CCol>
                 </CRow>
-
-                {/* Images */}
                 <CRow className="mb-3">
                     <CCol md={6} className="d-flex align-items-center">
-                        <label>Ảnh cửa hàng</label>
-                        <FaArrowRight
-                            className="ms-3"
-                            size={24}
-                            style={{ cursor: 'pointer' }}
+                        <label
+                            style={{cursor: 'pointer', color: 'blue'}}
                             onClick={() => setShowImageBackground(true)}
-                        />
+                        >
+                            Ảnh cửa hàng
+                        </label>
                     </CCol>
-                </CRow>
-                <CRow className="mb-3">
                     <CCol md={6} className="d-flex align-items-center">
-                        <label>Giấy phép kinh doanh</label>
-                        <FaArrowRight
-                            className="ms-3"
-                            size={24}
-                            style={{ cursor: 'pointer' }}
+                        <label
+                            style={{cursor: 'pointer', color: 'blue'}}
                             onClick={() => setShowImageRegistrationCertificate(true)}
-                        />
+                        >
+                            Giấy phép kinh doanh
+                        </label>
                     </CCol>
                 </CRow>
                 <CRow className="mb-3">
                     <CCol md={6} className="d-flex align-items-center">
-                        <label>Giấy phép vệ sinh an toàn thực phẩm</label>
-                        <FaArrowRight
-                            className="ms-3"
-                            size={24}
-                            style={{ cursor: 'pointer' }}
+                        <label
+                            style={{cursor: 'pointer', color: 'blue'}}
                             onClick={() => setShowFoodSafetyCertificate(true)}
-                        />
+                        >
+                            Giấy phép vệ sinh an toàn thực phẩm
+                        </label>
                     </CCol>
-                </CRow>
-                <CRow className="mb-3">
                     <CCol md={6} className="d-flex align-items-center">
-                        <label>Căn cước công dân</label>
-                        <FaArrowRight
-                            className="ms-3"
-                            size={24}
-                            style={{ cursor: 'pointer' }}
+                        <label
+                            style={{cursor: 'pointer', color: 'blue'}}
                             onClick={() => setShowCitizenId(true)}
-                        />
+                        >
+                            Căn cước công dân
+                        </label>
                     </CCol>
                 </CRow>
 
             </CCardBody>
 
 
-            {/* Modal for Image: Shop's Background */}
+            {/* Background */}
             <CModal visible={showImageBackground} onClose={() => setShowImageBackground(false)} size="lg" centered>
-                <CModalBody className="d-flex justify-content-center align-items-center">
-                    <img
-                        src={shop.backgroundImage}
-                        alt="Ảnh cửa hàng"
-                        style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' }}
-                    />
+                <CModalBody className="d-flex justify-content-center align-items-center bg-white position-relative">
+                    <FaArrowCircleLeft size={40} className="position-absolute start-0 ms-3" onClick={handleNextSide} />
+                    {imagesBackground.length > 0 && (
+                        <img src={imagesBackground[currentImageIndex]} alt="Ảnh cửa hàng" style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' }} />
+                    )}
+                    <FaArrowCircleRight size={40} className="position-absolute end-0 me-3" onClick={handleNextSide} />
                 </CModalBody>
-                <CModalFooter>
-                    <CButton color="secondary" onClick={() => setShowImageBackground(false)}>Đóng</CButton>
-                </CModalFooter>
+                <CModalFooter><CButton color="secondary" onClick={() => setShowImageBackground(false)}>Đóng</CButton></CModalFooter>
             </CModal>
 
-            {/* Modal for Image: Shop's Registration Certificate */}
+            {/* Modal for registration certificate */}
             <CModal visible={showImageRegistrationCertificate} onClose={() => setShowImageRegistrationCertificate(false)} size="lg" centered>
-                <CModalBody className="d-flex justify-content-center align-items-center">
-                    <img
-                        src={shop.registrationCertificate}
-                        alt="Giấy phép kinh doanh"
-                        style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' }}
-                    />
+                <CModalBody className="d-flex justify-content-center align-items-center bg-white position-relative">
+                    <FaArrowCircleLeft size={40} className="position-absolute start-0 ms-3" onClick={handleNextSide} />
+                    {imageRegistrationCertificate.length > 0 && (
+                        <img src={imageRegistrationCertificate[currentImageIndex]} alt="Giấy phép kinh doanh" style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' }} />
+                    )}
+                    <FaArrowCircleRight size={40} className="position-absolute end-0 me-3" onClick={handleNextSide} />
                 </CModalBody>
-                <CModalFooter>
-                    <CButton color="secondary" onClick={() => setShowImageRegistrationCertificate(false)}>Đóng</CButton>
-                </CModalFooter>
+                <CModalFooter><CButton color="secondary" onClick={() => setShowImageRegistrationCertificate(false)}>Đóng</CButton></CModalFooter>
             </CModal>
 
-            {/* Modal for Image: Food Safety Certificate */}
+            {/* Modal for food safety certificate */}
             <CModal visible={showFoodSafetyCertificate} onClose={() => setShowFoodSafetyCertificate(false)} size="lg" centered>
-                <CModalBody className="d-flex justify-content-center align-items-center">
-                    <img
-                        src={shop.foodSafetyCertificate}
-                        alt="Giấy phép vệ sinh an toàn thực phẩm"
-                        style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' }}
+                <CModalBody
+                    className="d-flex justify-content-center align-items-center bg-white position-relative"
+                    style={{
+                        width: 'auto',
+                        height: 'auto',
+                        maxWidth: '90vw',
+                        maxHeight: '90vh',
+                        margin: 'auto',
+                        padding: '20px',
+                        borderRadius: '10px',
+                    }}
+                >
+                    <FaArrowCircleLeft
+                        size={40}
+                        className="position-absolute start-0 ms-3"
+                        style={{ cursor: 'pointer' }}
+                        onClick={handleNextSide}
+                    />
+                    {foodSafetyCertificate.length > 0 && (
+                        <img
+                            src={foodSafetyCertificate[currentImageIndex]}
+                            alt="Giấy phép vệ sinh an toàn thực phẩm"
+                            style={{
+                                maxWidth: '100%',
+                                maxHeight: '80vh',
+                                objectFit: 'contain',
+                                borderRadius: '8px',
+                            }}
+                        />
+                    )}
+                    <FaArrowCircleRight
+                        size={40}
+                        className="position-absolute end-0 me-3"
+                        style={{ cursor: 'pointer' }}
+                        onClick={handleNextSide}
                     />
                 </CModalBody>
                 <CModalFooter>
-                    <CButton color="secondary" onClick={() => setShowFoodSafetyCertificate(false)}>Đóng</CButton>
+                    <CButton color="secondary" onClick={() => setShowFoodSafetyCertificate(false)}>
+                        Đóng
+                    </CButton>
                 </CModalFooter>
             </CModal>
 
-            {/* Modal for Image: Citizen ID */}
+            {/* Modal for Citizen ID */}
             <CModal visible={showCitizenId} onClose={() => setShowCitizenId(false)} size="lg" centered>
-                <CModalBody className="d-flex justify-content-center align-items-center">
-                    <img
-                        src={shop.citizenIDCardFront}
-                        alt="Căn cước công dân"
-                        style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' }}
+                <CModalBody
+                    className="d-flex justify-content-center align-items-center bg-white position-relative"
+                    style={{
+                        width: 'auto',
+                        height: 'auto',
+                        maxWidth: '90vw',
+                        maxHeight: '90vh',
+                        margin: 'auto',
+                        padding: '20px',
+                        borderRadius: '10px',
+                    }}
+                >
+                    <FaArrowCircleLeft
+                        size={40}
+                        className="position-absolute start-0 ms-3"
+                        style={{ cursor: 'pointer' }}
+                        onClick={handleNextSide}
+                    />
+                    {currentSide === 'front' && citizenIdFront.length > 0 && (
+                        <img
+                            src={citizenIdFront[currentImageIndex]}
+                            alt="Căn cước công dân mặt trước"
+                            style={{
+                                maxWidth: '100%',
+                                maxHeight: '80vh',
+                                objectFit: 'contain',
+                                borderRadius: '8px',
+                            }}
+                        />
+                    )}
+                    {currentSide === 'back' && citizenIdBack.length > 0 && (
+                        <img
+                            src={citizenIdBack[currentImageIndex]}
+                            alt="Căn cước công dân mặt sau"
+                            style={{
+                                maxWidth: '100%',
+                                maxHeight: '80vh',
+                                objectFit: 'contain',
+                                borderRadius: '8px',
+                            }}
+                        />
+                    )}
+                    <FaArrowCircleRight
+                        size={40}
+                        className="position-absolute end-0 me-3"
+                        style={{ cursor: 'pointer' }}
+                        onClick={handleNextSide} // Change between front and back
                     />
                 </CModalBody>
                 <CModalFooter>
-                    <CButton color="secondary" onClick={() => setShowCitizenId(false)}>Đóng</CButton>
+                    <CButton color="secondary" onClick={() => setShowCitizenId(false)}>
+                        Đóng
+                    </CButton>
                 </CModalFooter>
             </CModal>
         </CCard>

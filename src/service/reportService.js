@@ -111,6 +111,12 @@ export const reportService = createApi({
             }),
             providesTags: ["reports"],
         }),
+
+        // New endpoint for reporting the change rate
+        reportChangeRate: builder.query({
+            query: () => "api/report/change/rate",  // API endpoint for change rate
+            providesTags: ["reports"],
+        }),
     }),
 });
 
@@ -127,5 +133,5 @@ export const {
     useGetAllReportsByStatusQuery,
     useUpdateReportStatusMutation,
     useGetAllReportsByTypeQuery,
-
+    useReportChangeRateQuery,
 } = reportService;

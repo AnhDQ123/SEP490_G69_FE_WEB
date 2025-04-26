@@ -35,9 +35,11 @@ export const store = configureStore({
         [reportService.reducerPath]: reportService.reducer,
         [returnOrderService.reducerPath]: returnOrderService.reducer,
 
+
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware().concat(
+            loginService.middleware,
             usersService.middleware,
             productService.middleware,
             shopService.middleware,

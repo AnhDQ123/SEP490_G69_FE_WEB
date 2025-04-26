@@ -224,36 +224,16 @@ const CategoriesList = () => {
                     {/* Nhập URL ảnh */}
                     <CFormInput
                         className="mb-2"
-                        placeholder="URL ảnh từ trang web (nếu có)"
+                        placeholder="URL ảnh từ trang web"
                         value={categoryToEdit?.image || ''}
                         onChange={(e) =>
                             setCategoryToEdit((prev) => ({
                                 ...prev,
                                 image: e.target.value,
-                                imageFile: null, // reset file nếu dùng URL
+                                imageFile: null,
                             }))
                         }
                     />
-
-                    {/* Upload ảnh từ máy */}
-                    <div className="mb-3">
-                        <label className="form-label">Hoặc chọn ảnh từ máy</label>
-                        <CFormInput
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                                const file = e.target.files[0];
-                                if (file) {
-                                    const previewURL = URL.createObjectURL(file);
-                                    setCategoryToEdit((prev) => ({
-                                        ...prev,
-                                        imageFile: file,
-                                        image: previewURL,
-                                    }));
-                                }
-                            }}
-                        />
-                    </div>
 
                     {/* Preview ảnh */}
                     {categoryToEdit?.image && (
@@ -274,7 +254,7 @@ const CategoriesList = () => {
                         onChange={(e) =>
                             setCategoryToEdit((prev) => ({...prev, description: e.target.value}))
                         }
-                        rows={5}  // Thêm thuộc tính rows để điều chỉnh chiều cao của textarea
+                        rows={5}
                     />
                 </CModalBody>
                 <CModalFooter>
@@ -286,7 +266,6 @@ const CategoriesList = () => {
                     </CButton>
                 </CModalFooter>
             </CModal>
-
 
             {/* Add Modal */}
             <CModal visible={showAddModal} onClose={() => setShowAddModal(false)} centered>
@@ -307,36 +286,16 @@ const CategoriesList = () => {
                     {/* Nhập URL ảnh */}
                     <CFormInput
                         className="mb-2"
-                        placeholder="URL ảnh từ trang web (nếu có)"
+                        placeholder="URL ảnh từ trang web"
                         value={newCategory.image}
                         onChange={(e) =>
                             setNewCategory((prev) => ({
                                 ...prev,
                                 image: e.target.value,
-                                imageFile: null, // reset file nếu dùng URL
+                                imageFile: null, // reset imageFile khi người dùng nhập URL
                             }))
                         }
                     />
-
-                    {/* Upload ảnh từ máy */}
-                    <div className="mb-3">
-                        <label className="form-label">Hoặc chọn ảnh từ máy</label>
-                        <CFormInput
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                                const file = e.target.files[0];
-                                if (file) {
-                                    const previewURL = URL.createObjectURL(file);
-                                    setNewCategory((prev) => ({
-                                        ...prev,
-                                        imageFile: file,
-                                        image: previewURL,
-                                    }));
-                                }
-                            }}
-                        />
-                    </div>
 
                     {/* Preview ảnh */}
                     {newCategory.image && (
@@ -353,9 +312,9 @@ const CategoriesList = () => {
                     <CFormTextarea
                         className="mb-3"
                         placeholder="Mô tả"
-                        value={categoryToEdit?.description || ''}
+                        value={newCategory.description}
                         onChange={(e) =>
-                            setCategoryToEdit((prev) => ({...prev, description: e.target.value}))
+                            setNewCategory((prev) => ({...prev, description: e.target.value}))
                         }
                         rows={5}
                     />

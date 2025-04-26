@@ -24,7 +24,6 @@ import Dashboard from "../page/dashboard/Dashboard.jsx";
 import ReportListById from "../page/report/ReportListById.jsx";
 import PaymentConfig from "../page/config/PaymentConfig.jsx";
 import BlogDetail from "../page/blog/BlogDetail.jsx";
-import ComplaintsList from "../page/report/ComplaintsList.jsx";
 import ReportConfig from "../page/config/ReportConfig.jsx";
 import ReportCompleted from "../page/report/ReportCompleted.jsx";
 import ReportPending from "../page/report/ReportPending.jsx";
@@ -71,14 +70,13 @@ const routes = [
   { path: '/product-report-completed/:reportId', name: 'ProductReportCompleted', element: ProductReportCompleted },
   { path: '/blog-report-pending/:reportId', name: 'BlogReportPending', element: BlogReportPending },
   { path: '/blog-report-completed/:reportId', name: 'BlogReportCompleted', element: BlogReportCompleted },
-  { path: '/complaints-list', name: 'ComplaintsList', element: ComplaintsList },
 
   { path: '/payment-config', name: 'PaymentConfig', element: PaymentConfig },
   { path: '/blog-detail/:id', name: 'BlogDetail', element: BlogDetail },
-  { path: '/user-information', name: 'UserInformation', element: UserInformation },
+  { path: '/user-information/:id', name: 'UserInformation', element: UserInformation },
   { path: '/change-password', name: 'ChangePassword', element: ChangePassword },
   { path: '/login', name: 'Login', element: Login },
-  { path: '/returned-order', name: 'ReturnedOrder', element: ReturnedOrder },
+  { path: '/returned-order/:orderId', name: 'ReturnedOrder', element: ReturnedOrder },
   { path: '/returned-order-list', name: 'ReturnedOrderList', element: ReturnedOrderList },
   { path: '/app-setting', name: 'AppSetting', element: AppSetting },
 

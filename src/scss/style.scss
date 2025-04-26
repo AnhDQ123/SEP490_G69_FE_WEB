@@ -65,6 +65,37 @@ body {
     color: #fff;
 }
 
+/* Khi nút không được chọn (màu xám) */
+.inactive-btn {
+    background-color: #6c757d;  /* Màu nền xám */
+    color: white;               /* Màu chữ trắng */
+    border: 2px solid #5a6268;  /* Viền xám */
+    transition: all 0.3s ease;  /* Hiệu ứng chuyển động mượt mà */
+}
+
+/* Khi nút được chọn (màu xanh) */
+.active-btn {
+    background-color: #007bff;  /* Màu nền xanh */
+    color: white;               /* Màu chữ trắng */
+    border: 2px solid #0056b3;  /* Viền xanh đậm */
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5); /* Bóng đổ nhẹ */
+    transition: all 0.3s ease;  /* Hiệu ứng chuyển động mượt mà */
+}
+
+/* Hiệu ứng hover cho cả 2 nút */
+.active-btn:hover, .inactive-btn:hover {
+    opacity: 0.8;               /* Khi hover, giảm độ sáng */
+    cursor: pointer;           /* Con trỏ chuột thay đổi thành pointer */
+}
+
+/* Hiệu ứng khi nút được nhấn */
+.active-btn:active, .inactive-btn:active {
+    transform: scale(0.95);     /* Thu nhỏ một chút khi nhấn */
+    box-shadow: 0 0 15px rgba(0, 123, 255, 0.8); /* Bóng đổ mạnh hơn */
+}
+
+
+
 @include color-mode(dark) {
     body {
         background-color: var(--cui-dark-bg-subtle);

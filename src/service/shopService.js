@@ -127,28 +127,40 @@ export const shopService = createApi({
 
         // Calculate shop revenue by day
         getShopRevenueByDay: builder.query({
-            query: ({ startDate, endDate, shopId }) => ({
-                url: "api/shops/revenue/day",
-                params: { startDate, endDate, shopId },
-            }),
+            query: ({ shopId }) => {
+                const endDate = new Date().toISOString().split('T')[0]; // Today's date
+                const startDate = new Date(new Date().setDate(new Date().getDate() - 7)).toISOString().split('T')[0]; // 7 days ago
+                return {
+                    url: "api/shops/revenue/day",
+                    params: { startDate, endDate, shopId },
+                };
+            },
             providesTags: ["shops"],
         }),
 
         // Calculate shop revenue by month
         getShopRevenueByMonth: builder.query({
-            query: ({ startDate, endDate, shopId }) => ({
-                url: "api/shops/revenue/month",
-                params: { startDate, endDate, shopId },
-            }),
+            query: ({ shopId }) => {
+                const endDate = new Date().toISOString().split('T')[0]; // This month
+                const startDate = new Date(new Date().setMonth(new Date().getMonth() - 7)).toISOString().split('T')[0]; // 7 months ago
+                return {
+                    url: "api/shops/revenue/month",
+                    params: { startDate, endDate, shopId },
+                };
+            },
             providesTags: ["shops"],
         }),
 
         // Calculate shop revenue by year
         getShopRevenueByYear: builder.query({
-            query: ({ startDate, endDate, shopId }) => ({
-                url: "api/shops/revenue/year",
-                params: { startDate, endDate, shopId },
-            }),
+            query: ({ shopId }) => {
+                const endDate = new Date().toISOString().split('T')[0]; // This year
+                const startDate = new Date(new Date().setFullYear(new Date().getFullYear() - 3)).toISOString().split('T')[0]; // 3 years ago
+                return {
+                    url: "api/shops/revenue/year",
+                    params: { startDate, endDate, shopId },
+                };
+            },
             providesTags: ["shops"],
         }),
         getShopChangeRate: builder.query({

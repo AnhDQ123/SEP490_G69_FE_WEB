@@ -62,11 +62,6 @@ const _nav = [
             },
             {
                 component: CNavItem,
-                name: 'Khiếu nại',
-                to: '/complaints-list',
-            },
-            {
-                component: CNavItem,
                 name: 'Thông báo',
                 to: '/notifications-list',
             },

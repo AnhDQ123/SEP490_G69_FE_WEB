@@ -23,102 +23,77 @@ import {
     CFormInput
 } from "@coreui/react";
 import { useLocation } from "react-router-dom";
-import { useViewReturnOrderQuery } from "../../service/returnOrderService"; // Import your API hook
-import { useAcceptReturnOrderMutation, useRejectReturnOrderMutation } from "../../service/returnOrderService"; // Import reject mutation
+import { useViewReturnOrderQuery } from "../../service/returnOrderService";
+import { useAcceptReturnOrderMutation, useRejectReturnOrderMutation } from "../../service/returnOrderService";
 
 const ReturnedOrder = () => {
-    // Get orderId from URL
     const location = useLocation();
     const queryParams = new URLSearchParams(location.search);
-    const orderId = queryParams.get('id'); // Get 'id' from the query string
-    // Use the query hook to fetch order details
+    const orderId = queryParams.get('id');
+
     const {
         data: orderDetails,
         isLoading,
         isError,
         error
     } = useViewReturnOrderQuery(orderId);
-    console.log(orderDetails)
+
     const [showShopModal, setShowShopModal] = useState(false);
     const [showCustomerModal, setShowCustomerModal] = useState(false);
-    const [showSuccessModal, setShowSuccessModal] = useState(false); // New state for success modal
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [actorToProcess, setActorToProcess] = useState(null);
-    const [processingDirection, setProcessingDirection] = useState(""); // State for input field
-    const [acceptReturnOrder, { isLoading: isAccepting, error: acceptError }] = useAcceptReturnOrderMutation();
-    const [rejectReturnOrder, { isLoading: isRejecting, error: rejectError }] = useRejectReturnOrderMutation();
+    const [processingDirection, setProcessingDirection] = useState("");
+    const [acceptReturnOrder, { isLoading: isAccepting }] = useAcceptReturnOrderMutation();
+    const [rejectReturnOrder, { isLoading: isRejecting }] = useRejectReturnOrderMutation();
 
-    // Handle action (e.g., processing different actors)
     const handleAction = (actor) => {
         setActorToProcess(actor);
-        if (actor === 'shop') {
-            setShowShopModal(true);
-        } else if (actor === 'customer') {
-            setShowCustomerModal(true);
-        }
-        console.log(actor)
-        console.log(showShopModal);
+        if (actor === 'shop') setShowShopModal(true);
+        else if (actor === 'customer') setShowCustomerModal(true);
     };
 
     const confirmAction = () => {
-        // Handle Shop action
         if (actorToProcess === 'shop') {
-            // Only handle Shop action if processing direction is provided
             if (processingDirection.trim() === "") {
                 alert("Vui lòng nhập hướng xử lý.");
                 return;
             }
-
-            // Perform API mutation for accepting the return order
             acceptReturnOrder(orderId)
                 .then(() => {
-                    alert(`Đã xử lý cho ${actorToProcess === 'shop' ? 'Shop' : 'Người mua'}`);
+                    alert(`Đã xử lý cho ${actorToProcess}`);
                     closeModals();
-                    setShowSuccessModal(true); // Show success modal
+                    setShowSuccessModal(true);
                 })
-                .catch((err) => {
-                    alert(`Đã xảy ra lỗi: ${err.message}`);
-                });
+                .catch((err) => alert(`Lỗi: ${err.message}`));
         }
 
-        // Handle Customer action
         if (actorToProcess === 'customer') {
-            // Perform API mutation for rejecting the return order
             rejectReturnOrder(orderId)
                 .then(() => {
-                    alert(`Đã xử lý cho ${actorToProcess === 'shop' ? 'Shop' : 'Người mua'}`);
+                    alert(`Đã xử lý cho ${actorToProcess}`);
                     closeModals();
-                    setShowSuccessModal(true); // Show success modal
+                    setShowSuccessModal(true);
                 })
-                .catch((err) => {
-                    alert(`Đã xảy ra lỗi: ${err.message}`);
-                });
+                .catch((err) => alert(`Lỗi: ${err.message}`));
         }
     };
 
     const closeModals = () => {
         setShowShopModal(false);
         setShowCustomerModal(false);
-        setProcessingDirection(""); // Reset the input field
+        setProcessingDirection("");
     };
 
     const closeSuccessModal = () => {
-        setShowSuccessModal(false); // Close the success modal
+        setShowSuccessModal(false);
     };
 
-    // Render the page based on loading, error, or data
-    if (isLoading) {
-        return <CSpinner color="primary" />;
-    }
-
-    if (isError) {
-        return <div>Đã xảy ra lỗi: {error?.message}</div>;
-    }
+    if (isLoading) return <CSpinner color="primary" />;
+    if (isError) return <div>Error: {error?.message}</div>;
 
     return (
         <div>
             <h4 className="mb-4">Chi tiết trả hàng</h4>
-
-            {/* Order Details */}
             <CCard className="mb-4">
                 <CCardHeader>Đơn hàng #{orderDetails?.order.orderCode}</CCardHeader>
                 <CCardBody>
@@ -127,7 +102,6 @@ const ReturnedOrder = () => {
                 </CCardBody>
             </CCard>
 
-            {/* Product Table */}
             <CCard className="mt-4">
                 <CCardHeader>Danh sách sản phẩm</CCardHeader>
                 <CCardBody>
@@ -143,7 +117,7 @@ const ReturnedOrder = () => {
                         <CTableBody>
                             {orderDetails?.order?.products?.map((product, index) => (
                                 <CTableRow key={index}>
-                                    <CTableDataCell>{orderDetails?.order.orderItem.products?.productName}</CTableDataCell>
+                                    <CTableDataCell>{product.productName}</CTableDataCell>
                                     <CTableDataCell>{product.price?.toLocaleString('vi-VN')} đ</CTableDataCell>
                                     <CTableDataCell>{product.quantity}</CTableDataCell>
                                     <CTableDataCell>{(product.price * product.quantity).toLocaleString('vi-VN')} đ</CTableDataCell>
@@ -154,7 +128,6 @@ const ReturnedOrder = () => {
                 </CCardBody>
             </CCard>
 
-            {/* Proof Images */}
             <CCard className="mb-4">
                 <CCardHeader>Ảnh minh chứng</CCardHeader>
                 <CCardBody>
@@ -171,24 +144,15 @@ const ReturnedOrder = () => {
                         <CTableBody>
                             {['shop', 'shipper', 'customer'].map((actor, index) => (
                                 <CTableRow key={index}>
+                                    <CTableDataCell>{actor}</CTableDataCell>
                                     <CTableDataCell>
-                                        {actor === 'shop' ? '🏬 Shop' : actor === 'shipper' ? '🚚 Shipper' : '👤 Người mua'}
-                                    </CTableDataCell>
-                                    <CTableDataCell>
-                                        <CImage
-                                            rounded
-                                            thumbnail
-                                            src={orderDetails?.[actor]?.image || "/images/default_image.png"} // Assuming each actor has an image field
-                                            width={150}
-                                        />
+                                        <CImage rounded thumbnail src={orderDetails?.[actor]?.image} width={150} />
                                     </CTableDataCell>
                                     <CTableDataCell>{orderDetails?.[actor]?.imageId}</CTableDataCell>
-                                    <CTableDataCell>
-                                        {actor === 'shop' ? orderDetails?.order?.shopId : actor === 'shipper' ? orderDetails?.order?.shipperId : orderDetails?.order?.ownerId}
-                                    </CTableDataCell>
+                                    <CTableDataCell>{orderDetails?.[actor]?.userId}</CTableDataCell>
                                     <CTableDataCell>
                                         <CButton
-                                            color={actor === 'shop' ? 'primary' : actor === 'shipper' ? 'warning' : 'danger'}
+                                            color="primary"
                                             size="sm"
                                             onClick={() => handleAction(actor)}
                                         >
@@ -203,16 +167,11 @@ const ReturnedOrder = () => {
             </CCard>
 
             {/* Shop Modal */}
-            <CModal
-                visible={showShopModal}
-                onClose={closeModals}
-                centered
-            >
+            <CModal visible={showShopModal} onClose={closeModals} centered>
                 <CModalHeader closeButton>
                     <CModalTitle>Xác nhận xử lý Shop</CModalTitle>
                 </CModalHeader>
                 <CModalBody>
-                    <p>Vui lòng nhập hướng xử lý đơn hàng cho Shop:</p>
                     <CForm>
                         <CFormInput
                             type="text"
@@ -228,7 +187,7 @@ const ReturnedOrder = () => {
                     <CButton
                         color="primary"
                         onClick={confirmAction}
-                        disabled={isAccepting} // Disable button while the API request is in progress
+                        disabled={isAccepting}
                     >
                         {isAccepting ? <CSpinner size="sm" /> : "Xác nhận"}
                     </CButton>
@@ -236,11 +195,7 @@ const ReturnedOrder = () => {
             </CModal>
 
             {/* Customer Modal */}
-            <CModal
-                visible={showCustomerModal}
-                onClose={closeModals}
-                centered
-            >
+            <CModal visible={showCustomerModal} onClose={closeModals} centered>
                 <CModalHeader closeButton>
                     <CModalTitle>Xác nhận xử lý Người mua</CModalTitle>
                 </CModalHeader>
@@ -256,11 +211,7 @@ const ReturnedOrder = () => {
             </CModal>
 
             {/* Success Modal */}
-            <CModal
-                visible={showSuccessModal}
-                onClose={closeSuccessModal}
-                centered
-            >
+            <CModal visible={showSuccessModal} onClose={closeSuccessModal} centered>
                 <CModalHeader closeButton>
                     <CModalTitle>Thông báo</CModalTitle>
                 </CModalHeader>

@@ -124,6 +124,23 @@ export const usersService = createApi({
             query: () => "api/users/pending/change/rate",
         }),
 
+        changePassword: builder.mutation({
+            query: ({ id, oldPassword, newPassword, confirmPassword }) => ({
+                url: `api/users/changePassword`,
+                method: "PUT",
+                params: { id, oldPassword, newPassword, confirmPassword },
+            }),
+        }),
+
+        // Forgot Password
+        forgotPassword: builder.mutation({
+            query: ({ phone, password, confirmPassword }) => ({
+                url: `api/users/forgot`,
+                method: "PUT",
+                params: { phone, password, confirmPassword },
+            }),
+        }),
+
     }),
 });
 
@@ -144,4 +161,6 @@ export const {
     useGetUserRateQuery,
     useGetShipperRateQuery,
     useGetUserRegisterPendingQuery,
+    useChangePasswordMutation,
+    useForgotPasswordMutation,
 } = usersService;

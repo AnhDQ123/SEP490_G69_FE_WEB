@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import {
     CButton,
     CCard,
@@ -11,56 +11,92 @@ import {
     CFormFeedback,
     CRow,
     CAlert,
-} from '@coreui/react'
+} from '@coreui/react';
+import { useChangePasswordMutation } from '../../service/userService';
 
 const ChangePassword = () => {
     const [formData, setFormData] = useState({
         currentPassword: '',
         newPassword: '',
         confirmNewPassword: '',
-    })
+    });
 
-    const [submitted, setSubmitted] = useState(false)
-    const [error, setError] = useState('')
-    const [success, setSuccess] = useState(false)
+    const [submitted, setSubmitted] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState(false);
+
+    // Use the changePassword mutation from your usersService
+    const [changePassword, { isLoading, isError, error: apiError, isSuccess }] = useChangePasswordMutation();
 
     const handleChange = (e) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value,
-        })
-    }
+        });
+    };
 
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        setSubmitted(true)
-        setError('')
-        setSuccess(false)
+    // Validation function for the new password
+    const validateNewPassword = (password) => {
+        const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
+        return passwordRegex.test(password);
+    };
 
-        const { currentPassword, newPassword, confirmNewPassword } = formData
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setSubmitted(true);
+        setError('');
+        setSuccess(false);
 
+        const { currentPassword, newPassword, confirmNewPassword } = formData;
+
+        // Kiểm tra xem người dùng đã nhập đủ các trường
         if (!currentPassword || !newPassword || !confirmNewPassword) {
-            setError('Vui lòng điền đầy đủ thông tin.')
-            return
+            setError('Vui lòng điền đầy đủ thông tin.');
+            return;
         }
 
+        // Kiểm tra mật khẩu mới có đúng yêu cầu không
+        if (!validateNewPassword(newPassword)) {
+            setError('Mật khẩu mới phải có ít nhất 8 ký tự, chứa ít nhất một ký tự in hoa, một chữ số và một ký tự đặc biệt.');
+            return;
+        }
+
+        // Kiểm tra xem mật khẩu mới và mật khẩu xác nhận có khớp không
         if (newPassword !== confirmNewPassword) {
-            setError('Mật khẩu mới không khớp.')
-            return
+            setError('Mật khẩu không khớp.');
+            return;
         }
 
-        // 🔐 Giả lập gửi dữ liệu
-        console.log('Changing password...', formData)
+        try {
+            // Lấy userId từ localStorage
+            const userId = localStorage.getItem('userId');
+            if (!userId) {
+                setError('Không tìm thấy thông tin người dùng.');
+                return;
+            }
 
-        // Giả lập thành công
-        setSuccess(true)
-        setFormData({
-            currentPassword: '',
-            newPassword: '',
-            confirmNewPassword: '',
-        })
-        setSubmitted(false)
-    }
+            // Call the changePassword mutation with the necessary parameters
+            await changePassword({
+                id: userId,  // Sử dụng userId lấy từ localStorage
+                oldPassword: currentPassword,
+                newPassword,
+                confirmPassword: confirmNewPassword,
+            }).unwrap();
+
+            // On success
+            setSuccess(true);
+            setFormData({
+                currentPassword: '',
+                newPassword: '',
+                confirmNewPassword: '',
+            });
+        } catch (err) {
+            // Handle any error that occurs during the mutation
+            setError(apiError?.data?.message || 'Đã có lỗi xảy ra.');
+        } finally {
+            setSubmitted(false);
+        }
+    };
 
     return (
         <CRow>
@@ -71,7 +107,7 @@ const ChangePassword = () => {
                     </CCardHeader>
                     <CCardBody>
                         {error && <CAlert color="danger">{error}</CAlert>}
-                        {success && <CAlert color="success">Mật khẩu đã được thay đổi thành công!</CAlert>}
+                        {success && <CAlert color="success">Đổi mật khẩu thành công!</CAlert>}
                         <CForm onSubmit={handleSubmit}>
                             <div className="mb-3">
                                 <CFormLabel htmlFor="currentPassword">Mật khẩu hiện tại</CFormLabel>
@@ -112,15 +148,15 @@ const ChangePassword = () => {
                                 <CFormFeedback invalid>Bắt buộc</CFormFeedback>
                             </div>
 
-                            <CButton type="submit" color="primary">
-                                Lưu thay đổi
+                            <CButton type="submit" color="primary" disabled={isLoading}>
+                                {isLoading ? 'Đang thay đổi...' : 'Lưu thay đổi'}
                             </CButton>
                         </CForm>
                     </CCardBody>
                 </CCard>
             </CCol>
         </CRow>
-    )
-}
+    );
+};
 
-export default ChangePassword
+export default ChangePassword;

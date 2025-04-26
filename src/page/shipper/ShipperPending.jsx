@@ -134,17 +134,6 @@ const ShipperPending = () => {
                     </CCol>
                 </CRow>
 
-                <CRow className="mb-3">
-                    <CCol md={6} className="d-flex align-items-center">
-                        <label>Ảnh profile</label>
-                        <FaArrowRight
-                            size={24}
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => setShowShipperImage(true)}
-                        />
-                    </CCol>
-                </CRow>
-
                 {/* Checkbox for confirmation */}
                 <CRow className="mb-3">
                     <CCol md={12}>

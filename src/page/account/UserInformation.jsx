@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react';
 import {
     CBadge,
     CButton,
@@ -7,32 +7,36 @@ import {
     CCardHeader,
     CCol,
     CRow,
-} from '@coreui/react'
-import { useNavigate } from 'react-router-dom'
+} from '@coreui/react';
+import { useNavigate } from 'react-router-dom';
+import { useGetUserByIdQuery } from "../../service/userService.js";
 
 const UserInformation = () => {
-    const navigate = useNavigate()
+    const userId = localStorage.getItem('userId');  // Lấy userId từ localStorage
+    const navigate = useNavigate();
+    const { data: userInfo, isLoading, isError } = useGetUserByIdQuery(userId);  // Truyền userId vào API query
 
-    // Dữ liệu mẫu fix cứng dành cho operator
-    const userInfo = {
-        fullName: 'Trần Thị B',
-        email: 'tranthib.operator@example.com',
-        phone: '0912345678',
-        username: 'operator.b',
-        address: '456 Đường XYZ, Quận 3, TP.HCM',
-        role: 'Operator',
+    // Kiểm tra nếu userId không tồn tại, tránh lỗi
+    if (!userId) {
+        return <p>Không tìm thấy thông tin người dùng.</p>;
     }
+
+    // Sử dụng useGetUserByIdQuery để lấy dữ liệu người dùng
 
     const renderRoleBadge = (role) => {
         switch (role.toLowerCase()) {
             case 'operator':
-                return <CBadge color="info">Operator</CBadge>
+                return <CBadge color="info">Operator</CBadge>;
             case 'admin':
-                return <CBadge color="danger">Admin</CBadge>
+                return <CBadge color="danger">Admin</CBadge>;
             default:
-                return <CBadge color="secondary">{role}</CBadge>
+                return <CBadge color="secondary">{role}</CBadge>;
         }
-    }
+    };
+
+    // Hiển thị thông báo khi dữ liệu đang tải hoặc có lỗi
+    if (isLoading) return <p>Đang tải...</p>;
+    if (isError) return <p>Đã xảy ra lỗi khi tải dữ liệu.</p>;
 
     return (
         <CRow>
@@ -44,27 +48,27 @@ const UserInformation = () => {
                     <CCardBody>
                         <CRow className="mb-3">
                             <CCol md={3}><strong>Họ tên:</strong></CCol>
-                            <CCol>{userInfo.fullName}</CCol>
+                            <CCol>{userInfo?.fullName}</CCol>
                         </CRow>
                         <CRow className="mb-3">
                             <CCol md={3}><strong>Email:</strong></CCol>
-                            <CCol>{userInfo.email}</CCol>
+                            <CCol>{userInfo?.email}</CCol>
                         </CRow>
                         <CRow className="mb-3">
                             <CCol md={3}><strong>Số điện thoại:</strong></CCol>
-                            <CCol>{userInfo.phone}</CCol>
+                            <CCol>{userInfo?.phone}</CCol>
                         </CRow>
                         <CRow className="mb-3">
                             <CCol md={3}><strong>Tên đăng nhập:</strong></CCol>
-                            <CCol>{userInfo.username}</CCol>
+                            <CCol>{userInfo?.username}</CCol>
                         </CRow>
                         <CRow className="mb-3">
                             <CCol md={3}><strong>Địa chỉ:</strong></CCol>
-                            <CCol>{userInfo.address}</CCol>
+                            <CCol>{userInfo?.address}</CCol>
                         </CRow>
                         <CRow className="mb-3">
                             <CCol md={3}><strong>Vai trò:</strong></CCol>
-                            <CCol>{renderRoleBadge(userInfo.role)}</CCol>
+                            <CCol>{renderRoleBadge(userInfo?.role)}</CCol>
                         </CRow>
 
                         {/* Mật khẩu và nút Thay đổi */}
@@ -85,7 +89,7 @@ const UserInformation = () => {
                 </CCard>
             </CCol>
         </CRow>
-    )
-}
+    );
+};
 
-export default UserInformation
+export default UserInformation;

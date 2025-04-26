@@ -55,6 +55,24 @@ export const bannerService = createApi({
             }),
             invalidatesTags: ["banner"],
         }),
+
+        // active
+        activeBanner: builder.mutation({
+            query: (bannerId) => ({
+                url: `api/banners/active/${bannerId}`,
+                method: "POST",
+            }),
+            invalidatesTags: ["banner"],
+        }),
+
+        // deactivate banner
+        inactiveBanner: builder.mutation({
+            query: (bannerId) => ({
+                url: `api/banners/inactive/${bannerId}`,
+                method: "POST",
+            }),
+            invalidatesTags: ["banner"],
+        }),
     }),
 });
 
@@ -65,4 +83,6 @@ export const {
     useCreateBannerMutation,
     useUpdateBannerMutation,
     useDeleteBannerMutation,
+    useActiveBannerMutation,
+    useInactiveBannerMutation,
 } = bannerService;

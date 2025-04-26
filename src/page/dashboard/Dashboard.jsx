@@ -51,7 +51,7 @@ import {
 import {
     useGetReportCountByDayQuery,
     useGetReportCountByMonthQuery, useGetReportCountByYearQuery,
-    useGetReportPendingCountQuery
+    useGetReportPendingCountQuery, useReportChangeRateQuery
 } from "../../service/reportService.js";
 import {
     useGetShopChangeRateQuery,
@@ -81,6 +81,7 @@ const Dashboard = () => {
     const [shopStatusTime, setShopStatusTime] = useState('day');
     const [reportedProductsTime, setReportedProductsTime] = useState('day');
     const [reportedBlogsTime, setReportedBlogsTime] = useState('day');
+    const [reportPercentageChange, setReportPercentageChange] = useState(0);
 
     const [orderStatusTime, setOrderStatusTime] = useState('day');
     const [bestSeller, setbestSeller] = useState('day');
@@ -116,7 +117,9 @@ const Dashboard = () => {
     const {data: shipperRate } = useGetShipperRateQuery();
     const {data: pendingRegistrations } = useGetUserRegisterPendingQuery();
     const {data: shopRate } = useGetShopChangeRateQuery();
-    const { data: orderRate, isLoading: isOrderRateLoading } = useOrderChangeRateQuery();
+    const {data: orderRate, isLoading: isOrderRateLoading } = useOrderChangeRateQuery();
+    const { data: reportRate, isLoading: isReportRateLoading, error: reportRateError } = useReportChangeRateQuery();
+
 
     const {data: dayShopData} = useGetShopCountByDayQuery({status: chartTabsShop['shop_status']});
     const {data: monthShopData} = useGetShopCountByMonthQuery({status: chartTabsShop['shop_status']});
@@ -153,6 +156,12 @@ const Dashboard = () => {
     const {data: topSellingToday, isLoading: isLoadingToday} = useGetTopSellingProductsTodayQuery();
     const {data: topSellingMonth, isLoading: isLoadingMonth} = useGetTopSellingProductsThisMonthQuery();
     const {data: topSellingYear, isLoading: isLoadingYear} = useGetTopSellingProductsThisYearQuery();
+
+    useEffect(() => {
+        if (!isReportRateLoading && reportRate !== undefined) {
+            setReportPercentageChange(reportRate);  // Set percentage change based on API data
+        }
+    }, [reportRate, isReportRateLoading]);
 
     useEffect(() => {
         if (!isOrderRateLoading && orderRate !== undefined) {
@@ -458,6 +467,19 @@ const Dashboard = () => {
                                 color: 'danger',
                                 icon: 'cilWarning',
                                 route: '/returned-order-list',
+                                percentage: (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '10px',
+                                        right: '10px',
+                                        color: reportPercentageChange >= 0 ? 'white' : 'white',
+                                        fontSize: '20px',
+                                        padding: '5px 0',
+                                        fontWeight: 'bold',
+                                    }}>
+                                        {reportPercentageChange >= 0 ? '↑' : '↓'} {Math.abs(reportPercentageChange).toFixed(2)}%
+                                    </div>
+                                ),
                             },
                             {
                                 label: 'Danh sách đăng ký đang chờ',

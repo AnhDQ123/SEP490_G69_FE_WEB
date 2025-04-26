@@ -96,7 +96,7 @@ const ReturnedOrderList = () => {
                             </CFormSelect>
                         </CCol>
                         <CCol>
-                        <CFormSelect
+                            <CFormSelect
                                 name="size"
                                 label="Số lượng hiển thị"
                                 value={searchParams.size}
