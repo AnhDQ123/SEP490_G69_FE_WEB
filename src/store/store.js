@@ -16,6 +16,7 @@ import {commentService} from "../service/commentService.js";
 import {reportService} from "../service/reportService.js";
 import {returnOrderService} from "../service/returnOrderService.js";
 import {mapService} from "../service/mapService.js";
+import {firebaseNotificationService} from "../service/firebaseNotificationService.js";
 
 export const store = configureStore({
     reducer: {
@@ -36,6 +37,7 @@ export const store = configureStore({
         [reportService.reducerPath]: reportService.reducer,
         [returnOrderService.reducerPath]: returnOrderService.reducer,
         [mapService.reducerPath]: mapService.reducer,
+        [firebaseNotificationService.reducerPath]: firebaseNotificationService.reducer,
 
 
     },
@@ -58,5 +60,6 @@ export const store = configureStore({
             reportService.middleware,
             returnOrderService.middleware,
             mapService.middleware,
+            firebaseNotificationService.middleware,
             orderService.middleware,),
 })

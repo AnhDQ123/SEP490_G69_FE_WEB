@@ -20,12 +20,19 @@ L.Icon.Default.mergeOptions({
 
 const ShopMap = () => {
     const { data, isLoading } = useGetShopQuery();
-    const shops = data?.content || []; // ✅ lấy data.content từ API
-
+    // const shops = data?.content || [];
     // Lọc các cửa hàng có trạng thái "ACTIVE" và có latitude, longitude hợp lệ
-    const activeShops = shops.filter(shop => shop.isActive === "ACTIVE" && shop.latitude && shop.longitude);
-
-    console.log(`Số lượng cửa hàng ACTIVE với tọa độ hợp lệ: ${activeShops.length}`); // Kiểm tra số lượng cửa hàng đã lọc
+    // const activeShops = shops.filter(shop => shop.isActive === "ACTIVE");
+    const [activeShops, setActiveShops] = useState([]);
+    useEffect(() => {
+        if (data?.content) {
+            const newActiveShops = data.content.filter(shop => shop.isActive === "ACTIVE");
+            if (JSON.stringify(newActiveShops) !== JSON.stringify(activeShops)) {
+                setActiveShops(newActiveShops); // Chỉ cập nhật khi nội dung thực sự thay đổi
+            }
+        }
+    }, [data]);
+    // console.log(`Số lượng cửa hàng ACTIVE với tọa độ hợp lệ: ${activeShops.length}`); // Kiểm tra số lượng cửa hàng đã lọc
 
     const [searchQuery, setSearchQuery] = useState(''); // state cho tìm kiếm
     const [filteredShops, setFilteredShops] = useState(activeShops); // state cho các cửa hàng đã lọc
@@ -88,7 +95,7 @@ const ShopMap = () => {
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
                 {filteredShops.map((shop, idx) => {
-                    console.log(`Latitude: ${shop.latitude}, Longitude: ${shop.longitude}`); // Log tọa độ
+                    // console.log(`Latitude: ${shop.latitude}, Longitude: ${shop.longitude}`); // Log tọa độ
                     return (
                         <Marker
                             key={idx}
