@@ -15,6 +15,7 @@ import {paymentMethodService} from "../service/paymentMethodService.js";
 import {commentService} from "../service/commentService.js";
 import {reportService} from "../service/reportService.js";
 import {returnOrderService} from "../service/returnOrderService.js";
+import {mapService} from "../service/mapService.js";
 
 export const store = configureStore({
     reducer: {
@@ -34,6 +35,7 @@ export const store = configureStore({
         [commentService.reducerPath]: commentService.reducer,
         [reportService.reducerPath]: reportService.reducer,
         [returnOrderService.reducerPath]: returnOrderService.reducer,
+        [mapService.reducerPath]: mapService.reducer,
 
 
     },
@@ -55,5 +57,6 @@ export const store = configureStore({
             commentService.middleware,
             reportService.middleware,
             returnOrderService.middleware,
+            mapService.middleware,
             orderService.middleware,),
 })

@@ -60,6 +60,7 @@ import {
     useGetShopPendingCountQuery
 } from "../../service/shopService.js";
 import {useNavigate} from "react-router-dom";
+import ShopMap from "./ShopMap.jsx";
 
 ChartJS.register(
     CategoryScale,
@@ -527,6 +528,17 @@ const Dashboard = () => {
                 </CCardBody>
             </CCard>
 
+            {/* Map khu vực cửa hàng */}
+            <CCard className="mb-4">
+                <CCardHeader>
+                    <strong>Bản đồ cửa hàng</strong>
+                </CCardHeader>
+                <CCardBody>
+                    <ShopMap />
+                </CCardBody>
+            </CCard>
+
+
             {/* User + order by status */}
             <CRow className="mb-4">
                 {/* User */}
@@ -627,7 +639,6 @@ const Dashboard = () => {
                         </CCardBody>
                     </CCard>
                 </CCol>
-
                 {/* Order */}
                 <CCol md={6}>
                     <CCard>
@@ -834,7 +845,6 @@ const Dashboard = () => {
                         </CCardBody>
                     </CCard>
                 </CCol>
-
                 {/* Best seller */}
                 <CCol md={6}>
                     <CCard>
@@ -958,7 +968,6 @@ const Dashboard = () => {
                         </CCardBody>
                     </CCard>
                 </CCol>
-
                 {/* Biểu đồ blog bị báo cáo */}
                 <CCol md={6}>
                     <CCard>
@@ -1042,7 +1051,6 @@ const Dashboard = () => {
 }
 
 const BestSellerTable = ({time, data}) => {
-    // Nếu không có dữ liệu, trả về thông báo
     if (!Array.isArray(data) || data.length === 0) {
         return <div>Không có sản phẩm bán chạy {time} này.</div>;
     }
