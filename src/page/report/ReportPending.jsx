@@ -41,9 +41,14 @@ const ReportPending = () => {
     });
 
     // Lấy thông tin cửa hàng từ báo cáo
-    const shopId = reportData?.reportItemId;
+    const shopId = reportData?.shopId;
     const { data: shopData, error: shopError, isLoading: isShopLoading } = useGetShopByIdQuery(shopId, {
         skip: !shopId
+    });
+
+    const shipperId = reportData?.shipperId;
+    const { data: shipperData, error: shipperError, isLoading: isShipperLoading } = useGetUserByIdQuery(shipperId, {
+        skip: !shipperId
     });
 
     // State lưu trữ trạng thái modal
@@ -58,7 +63,7 @@ const ReportPending = () => {
         if (reportData) setStatus(reportData.status);
     }, [reportData]);
 
-    if (isReportLoading || isUserLoading || isShopLoading) {
+    if (isReportLoading || isUserLoading || isShopLoading || isShipperLoading) {
         return (
             <div className="d-flex justify-content-center my-5">
                 <CSpinner color="primary" />
@@ -70,7 +75,7 @@ const ReportPending = () => {
     if (reportError) return <p className="text-danger">Có lỗi khi lấy chi tiết báo cáo.</p>;
     if (userError) return <p className="text-danger">Có lỗi khi lấy thông tin người dùng.</p>;
     if (shopError) return <p className="text-danger">Có lỗi khi lấy thông tin cửa hàng.</p>;
-
+    if (shipperError) return <p className="text-danger">Có lỗi khi lấy thông tin shipper.</p>;
     // Hàm mở modal
     const handleOpenModal = () => {
         setModalVisible(true);
@@ -183,14 +188,12 @@ const ReportPending = () => {
                             <CTableRow>
                                 <CTableHeaderCell style={{width: '200px'}}>Tên người giao hàng</CTableHeaderCell>
                                 <CTableHeaderCell style={{width: '200px'}}>Số điện thoại</CTableHeaderCell>
-                                <CTableHeaderCell style={{width: '200px'}}>Ảnh</CTableHeaderCell>
                             </CTableRow>
                         </CTableHead>
                         <CTableBody>
                             <CTableRow>
-                                <CTableDataCell>{shopData?.name}</CTableDataCell>
-                                <CTableDataCell>{shopData?.phone}</CTableDataCell>
-                                <CTableDataCell>{shopData?.phone}</CTableDataCell>
+                                <CTableDataCell>{shipperData?.name}</CTableDataCell>
+                                <CTableDataCell>{shipperData?.phone}</CTableDataCell>
                             </CTableRow>
                         </CTableBody>
                     </CTable>
