@@ -79,10 +79,6 @@ const ShopReject = () => {
 
                 <CRow className="mb-3">
                     <CCol md={4}>
-                        <label>Loại cửa hàng</label>
-                        <CFormInput disabled value={shop.sellType} />
-                    </CCol>
-                    <CCol md={4}>
                         <label>Giờ hoạt động</label>
                         <CFormInput disabled value={shop.openTime} />
                     </CCol>
@@ -90,25 +86,23 @@ const ShopReject = () => {
                         <label>Giờ đóng cửa</label>
                         <CFormInput disabled value={shop.closeTime} />
                     </CCol>
-                </CRow>
-
-                <CRow className="mb-3">
-                    <CCol md={6}>
+                    <CCol md={4}>
                         <label>Mã số thuế</label>
                         <CFormInput disabled value={shop.owner.profile.taxCode} />
                     </CCol>
-                    <CCol md={6}>
+                </CRow>
+
+                <CRow className="mb-3">
+                    <CCol md={8}>
+                        <label>Lí do từ chối</label>
+                        <CFormInput disabled value={shop.reason} />
+                    </CCol>
+                    <CCol md={4}>
                         <label>Trạng thái</label>
                         <CFormInput disabled value={shop.isActive} />
                     </CCol>
                 </CRow>
 
-                <CRow className="mb-3">
-                    <CCol md={12}>
-                        <label>Lí do từ chối</label>
-                        <CFormInput disabled value={shop.reason} />
-                    </CCol>
-                </CRow>
                 <CRow className="mb-3">
                     <CCol md={6} className="d-flex align-items-center">
                         <label

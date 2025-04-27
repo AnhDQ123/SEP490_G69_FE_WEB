@@ -90,7 +90,7 @@ const ShopMap = () => {
             </div>
 
             {/* Bản đồ */}
-            <MapContainer center={[10.762622, 106.660172]} zoom={12} style={{ height: '400px', width: '100%' }}>
+            <MapContainer center={[21.0278, 105.8342]} zoom={12} style={{ height: '400px', width: '100%' }}>
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />

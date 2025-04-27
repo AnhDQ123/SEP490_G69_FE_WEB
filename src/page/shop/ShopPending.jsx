@@ -126,45 +126,42 @@ const ShopPending = () => {
                 <CRow className="mb-3">
                     <CCol>
                         <label>Tên cửa hàng</label>
-                        <CFormInput disabled value={shop.name} />
+                        <CFormInput disabled value={shop.name}/>
                     </CCol>
                     <CCol>
                         <label>Chủ cửa hàng</label>
-                        <CFormInput disabled value={shop.owner.username} />
+                        <CFormInput disabled value={shop.owner.username}/>
                     </CCol>
                     <CCol>
                         <label>Số điện thoại</label>
-                        <CFormInput disabled value={shop.phone} />
+                        <CFormInput disabled value={shop.phone}/>
                     </CCol>
                 </CRow>
                 <CRow className="mb-3">
-                    <CCol md={12}>
+                    <CCol>
                         <label>Địa chỉ</label>
-                        <CFormInput disabled value={shop.address} />
+                        <CFormInput disabled value={shop.address}/>
                     </CCol>
                 </CRow>
                 <CRow className="mb-3">
-                    <CCol md={4}>
-                        <label>Loại cửa hàng</label>
-                        <CFormInput disabled value={shop.sellType} />
-                    </CCol>
+
                     <CCol md={4}>
                         <label>Giờ hoạt động</label>
-                        <CFormInput disabled value={shop.openTime} />
+                        <CFormInput disabled value={shop.openTime}/>
                     </CCol>
                     <CCol md={4}>
                         <label>Giờ đóng cửa</label>
-                        <CFormInput disabled value={shop.closeTime} />
+                        <CFormInput disabled value={shop.closeTime}/>
+                    </CCol>
+                    <CCol md={4}>
+                        <label>Trạng thái</label>
+                        <CFormInput disabled value={shop.isActive}/>
                     </CCol>
                 </CRow>
                 <CRow className="mb-3">
-                    <CCol md={6}>
+                    <CCol md={4}>
                         <label>Mã số thuế</label>
-                        <CFormInput disabled value={shop.owner.profile.taxCode} />
-                    </CCol>
-                    <CCol md={6}>
-                        <label>Trạng thái</label>
-                        <CFormInput disabled value={shop.isActive ? 'Chờ duyệt' : 'Hoạt động'} />
+                        <CFormInput disabled value={shop.owner.profile.taxCode}/>
                     </CCol>
                 </CRow>
 

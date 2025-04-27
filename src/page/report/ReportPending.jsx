@@ -33,6 +33,7 @@ const ReportPending = () => {
 
     // Lấy thông tin báo cáo
     const { data: reportData, error: reportError, isLoading: isReportLoading } = useGetReportByIdQuery(reportId);
+    console.log("reportData", reportId);
 
     // Lấy thông tin người dùng từ báo cáo
     const customerUserId = reportData?.reporterId;

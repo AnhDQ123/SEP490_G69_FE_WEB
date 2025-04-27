@@ -216,20 +216,13 @@ const ShopActive = () => {
                     </CCol>
                 </CRow>
                 <CRow className="mb-3">
-                    <CCol md={10}>
+                    <CCol>
                         <label>Địa chỉ</label>
                         <CFormInput disabled value={shop.address}/>
                     </CCol>
-                    <CCol md={2}>
-                        <label>Đánh giá</label>
-                        <CFormInput disabled value={shop.rate}/>
-                    </CCol>
                 </CRow>
                 <CRow className="mb-3">
-                    <CCol md={4}>
-                        <label>Loại cửa hàng</label>
-                        <CFormInput disabled value={shop.sellType}/>
-                    </CCol>
+
                     <CCol md={4}>
                         <label>Giờ hoạt động</label>
                         <CFormInput disabled value={shop.openTime}/>
@@ -238,6 +231,10 @@ const ShopActive = () => {
                         <label>Giờ đóng cửa</label>
                         <CFormInput disabled value={shop.closeTime}/>
                     </CCol>
+                    <CCol md={4}>
+                        <label>Trạng thái</label>
+                        <CFormInput disabled value={shop.isActive}/>
+                    </CCol>
                 </CRow>
                 <CRow className="mb-3">
                     <CCol md={4}>
@@ -245,8 +242,8 @@ const ShopActive = () => {
                         <CFormInput disabled value={shop.owner.profile.taxCode}/>
                     </CCol>
                     <CCol md={4}>
-                        <label>Trạng thái</label>
-                        <CFormInput disabled value={shop.isActive}/>
+                        <label>Đánh giá</label>
+                        <CFormInput disabled value={shop.rate}/>
                     </CCol>
                     <CCol md={4}>
                         <label>Số khiếu nại</label>
