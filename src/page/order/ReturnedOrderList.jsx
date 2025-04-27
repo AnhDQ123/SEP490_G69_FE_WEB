@@ -122,8 +122,8 @@ const ReturnedOrderList = () => {
                 <CTable striped hover className="mt-4">
                     <CTableHead>
                         <CTableRow>
-                            <CTableHeaderCell>Mã báo cáo</CTableHeaderCell>
-                            <CTableHeaderCell>Trạng thái</CTableHeaderCell>
+                            <CTableHeaderCell>Mã đơn hàng</CTableHeaderCell>
+                            <CTableHeaderCell>Loại báo cáo</CTableHeaderCell>
                             <CTableHeaderCell>Ngày tạo</CTableHeaderCell>
                             <CTableHeaderCell>Giá trị</CTableHeaderCell>
                             <CTableHeaderCell>Hành động</CTableHeaderCell> {/* Column for View Detail */}

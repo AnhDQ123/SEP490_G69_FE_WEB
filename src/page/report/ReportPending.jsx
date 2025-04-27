@@ -33,6 +33,7 @@ const ReportPending = () => {
 
     // Lấy thông tin báo cáo
     const { data: reportData, error: reportError, isLoading: isReportLoading } = useGetReportByIdQuery(reportId);
+    console.log("reportData", reportId);
 
     // Lấy thông tin người dùng từ báo cáo
     const customerUserId = reportData?.reporterId;
@@ -41,7 +42,7 @@ const ReportPending = () => {
     });
 
     // Lấy thông tin cửa hàng từ báo cáo
-    const shopId = reportData?.reportItemId;
+    const shopId = reportData?.orderId;
     const { data: shopData, error: shopError, isLoading: isShopLoading } = useGetShopByIdQuery(shopId, {
         skip: !shopId
     });
