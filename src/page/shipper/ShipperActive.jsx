@@ -16,11 +16,11 @@ const ShipperActive = () => {
 
     const [shipper, setShipper] = useState(null);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const [confirmStatus, setConfirmStatus] = useState('');  // 'INACTIVE' when deactivating
     const [showCitizenIdModal, setShowCitizenIdModal] = useState(false);
     const [showDrivingLicenseModal, setShowDrivingLicenseModal] = useState(false);
     const [currentSide, setCurrentSide] = useState('front'); // 'front' or 'back'
     const [reason, setReason] = useState('');  // Store the reason for deactivating the shipper
+    const [showResumeModal, setShowResumeModal] = useState(false);
 
     useEffect(() => {
         if (data) {
@@ -66,6 +66,14 @@ const ShipperActive = () => {
         setShowCitizenIdModal(false);
     };
 
+    const handleOpenResumeModal = () => {
+        setShowResumeModal(true);
+    };
+
+    const handleCloseResumeModal = () => {
+        setShowResumeModal(false);
+    };
+
     // Modal for Driving License images
     const handleOpenDrivingLicenseModal = () => {
         setShowDrivingLicenseModal(true);
@@ -99,34 +107,39 @@ const ShipperActive = () => {
                     <CCol md={6}><label>Trạng thái</label><CFormInput disabled value={shipper.shipperStatus} /></CCol>
                 </CRow>
 
-                {/* Citizen ID and Driving License */}
-                <CRow>
-                    <CCol md={6}>
-                        <label>Ảnh CMND/CCCD</label>
-                        <FaArrowCircleRight
-                            size={24}
-                            style={{ cursor: 'pointer' }}
-                            onClick={handleOpenCitizenIdModal} // Open Citizen ID modal
-                        />
+                <CRow className="mb-3">
+                    <CCol md={4} className="d-flex align-items-center">
+                        <label
+                            style={{ cursor: 'pointer', color: 'blue' }}
+                            onClick={handleOpenDrivingLicenseModal}
+                        >
+                            Giấy phép lái xe
+                        </label>
                     </CCol>
-                    <CCol md={6}>
-                        <label>Ảnh GPLX</label>
-                        <FaArrowCircleRight
-                            size={24}
-                            style={{ cursor: 'pointer' }}
-                            onClick={handleOpenDrivingLicenseModal} // Open Driving License modal
-                        />
+                    <CCol md={4} className="d-flex align-items-center">
+                        <label
+                            style={{ cursor: 'pointer', color: 'blue' }}
+                            onClick={handleOpenCitizenIdModal}
+                        >
+                            Căn cước công dân
+                        </label>
+                    </CCol>
+                    <CCol md={4} className="d-flex align-items-center">
+                        <label
+                            style={{ cursor: 'pointer', color: 'blue' }}
+                            onClick={handleOpenResumeModal}
+                        >
+                            Sơ yếu lý lịch
+                        </label>
                     </CCol>
                 </CRow>
+
 
                 <CRow className="text-center mt-4">
                     <CCol><CButton color="danger" className="w-100" onClick={handleOpenConfirmModal}>Chặn người dùng</CButton></CCol>
                     <CCol><CButton color="secondary" className="w-100" onClick={() => navigate('/shipper-list')}>Quay lại</CButton></CCol>
                 </CRow>
-                <CRow className="text-center mt-4">
-                    <CCol><CButton color="success" className="w-100" onClick={() => navigate('/orders-list')}>Danh sách đơn hàng</CButton></CCol>
-                    <CCol><CButton color="dark" className="w-100" onClick={() => navigate('/reports-list')}>Danh sách cáo buộc</CButton></CCol>
-                </CRow>
+
             </CCardBody>
 
             {/* Modal for confirming action */}
@@ -220,6 +233,29 @@ const ShipperActive = () => {
                     <CButton color="secondary" onClick={handleCloseDrivingLicenseModal}>Đóng</CButton>
                 </CModalFooter>
             </CModal>
+
+            <CModal visible={showResumeModal} onClose={handleCloseResumeModal} centered>
+                <CModalHeader>
+                    <CModalTitle>Ảnh Sơ yếu lý lịch</CModalTitle>
+                </CModalHeader>
+                <CModalBody>
+                    <div className="d-flex justify-content-center align-items-center bg-white position-relative">
+                        {shipper.judicialRecord ? (
+                            <img
+                                src={shipper.judicialRecord}
+                                alt="Sơ yếu lý lịch"
+                                style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' }}
+                            />
+                        ) : (
+                            <p>Không có ảnh Sơ yếu lý lịch</p>
+                        )}
+                    </div>
+                </CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={handleCloseResumeModal}>Đóng</CButton>
+                </CModalFooter>
+            </CModal>
+
         </CCard>
     );
 };

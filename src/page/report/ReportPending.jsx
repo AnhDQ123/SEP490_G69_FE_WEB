@@ -15,6 +15,7 @@ const ReportPending = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [solution, setSolution] = useState("");
     const [assignee, setAssignee] = useState("");
+    const [successModalVisible, setSuccessModalVisible] = useState(false);
 
     const { order, image } = returnOrderData || {};
     const status = order?.status;
@@ -36,7 +37,12 @@ const ReportPending = () => {
     const handleSubmit = () => {
         console.log("Giải quyết tranh chấp:", { solution, assignee });
         handleCloseModal();
+        setSuccessModalVisible(true);
+        setTimeout(() => {
+            setSuccessModalVisible(false);
+        }, 2000);
     };
+
 
     return (
         <div>
@@ -75,10 +81,10 @@ const ReportPending = () => {
                                             {order?.orderItem?.length > 0 ? (
                                                 order.orderItem.map((item, index) => (
                                                     <CTableRow key={index}>
-                                                        <CTableDataCell>{item.productName || 'Không xác định'}</CTableDataCell>
-                                                        <CTableDataCell>{item.quantity || 0}</CTableDataCell>
+                                                        <CTableDataCell>{item.productName}</CTableDataCell>
+                                                        <CTableDataCell>{item.quantity}</CTableDataCell>
                                                         <CTableDataCell>
-                                                            {item.total ? item.total.toLocaleString() + ' VNĐ' : '0 VNĐ'}
+                                                            {item.total ? item.total.toLocaleString() + ' đ' : '0 đ'}
                                                         </CTableDataCell>
                                                     </CTableRow>
                                                 ))
@@ -195,6 +201,17 @@ const ReportPending = () => {
                     <CButton color="primary" onClick={handleSubmit}>Xử lý</CButton>
                 </CModalFooter>
             </CModal>
+
+            <CModal visible={successModalVisible} onClose={() => setSuccessModalVisible(false)}>
+                <CModalHeader closeButton>Xử lý thành công</CModalHeader>
+                <CModalBody>
+                    Đã xử lý tranh chấp thành công!
+                </CModalBody>
+                <CModalFooter>
+                    <CButton color="primary" onClick={() => setSuccessModalVisible(false)}>OK</CButton>
+                </CModalFooter>
+            </CModal>
+
         </div>
     );
 };

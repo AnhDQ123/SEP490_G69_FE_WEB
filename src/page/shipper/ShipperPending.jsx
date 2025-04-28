@@ -25,6 +25,7 @@ const ShipperPending = () => {
     const [showRejectionReasonModal, setShowRejectionReasonModal] = useState(false);
     const [currentSide, setCurrentSide] = useState('front');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [showResumeModal, setShowResumeModal] = useState(false);
 
     const [isChecked, setIsChecked] = useState(false); // State for the checkbox
 
@@ -99,6 +100,14 @@ const ShipperPending = () => {
         }
     };
 
+    const handleOpenResumeModal = () => {
+        setShowResumeModal(true);
+    };
+
+    const handleCloseResumeModal = () => {
+        setShowResumeModal(false);
+    };
+
     return (
         <CCard className="p-4">
             <CCardBody>
@@ -116,21 +125,30 @@ const ShipperPending = () => {
                     <CCol md={6}><label>Ngày đăng ký</label><CFormInput disabled value={shipper.registrationDate} /></CCol>
                 </CRow>
                 <CRow className="mb-3">
-                    <CCol md={6} className="d-flex align-items-center">
-                        <label>Căn cước công dân</label>
-                        <FaArrowRight
-                            size={24}
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => setShowCitizenId(true)}
-                        />
-                    </CCol>
-                    <CCol md={6} className="d-flex align-items-center">
-                        <label>Giấy phép lái xe</label>
-                        <FaArrowRight
-                            size={24}
-                            style={{ cursor: 'pointer' }}
+                    <CCol md={4} className="d-flex align-items-center">
+                        <label
+                            style={{ cursor: 'pointer', color: 'blue' }}
                             onClick={() => setShowDrivingLicense(true)}
-                        />
+                        >
+                            Giấy phép lái xe
+                        </label>
+                    </CCol>
+                    <CCol md={4} className="d-flex align-items-center">
+                        <label
+                            style={{ cursor: 'pointer', color: 'blue' }}
+                            onClick={() => setShowCitizenId(true)}
+                        >
+                            Căn cước công dân
+                        </label>
+                    </CCol>
+
+                    <CCol md={4} className="d-flex align-items-center">
+                        <label
+                            style={{ cursor: 'pointer', color: 'blue' }}
+                            onClick={handleOpenResumeModal}
+                        >
+                            Sơ yếu lý lịch
+                        </label>
                     </CCol>
                 </CRow>
 
@@ -272,6 +290,28 @@ const ShipperPending = () => {
                 </CModalBody>
                 <CModalFooter>
                     <CButton color="secondary" onClick={() => setShowDrivingLicense(false)}>Đóng</CButton>
+                </CModalFooter>
+            </CModal>
+
+            <CModal visible={showResumeModal} onClose={handleCloseResumeModal} centered>
+                <CModalHeader>
+                    <CModalTitle>Ảnh Sơ yếu lý lịch</CModalTitle>
+                </CModalHeader>
+                <CModalBody>
+                    <div className="d-flex justify-content-center align-items-center bg-white position-relative">
+                        {shipper.judicialRecord ? (
+                            <img
+                                src={shipper.judicialRecord}
+                                alt="Sơ yếu lý lịch"
+                                style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: '8px' }}
+                            />
+                        ) : (
+                            <p>Không có ảnh Sơ yếu lý lịch</p>
+                        )}
+                    </div>
+                </CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={handleCloseResumeModal}>Đóng</CButton>
                 </CModalFooter>
             </CModal>
         </CCard>

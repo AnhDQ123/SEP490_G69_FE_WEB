@@ -49,6 +49,8 @@ import {
     useGetTopSellingProductsThisMonthQuery, useGetTopSellingProductsThisYearQuery,
     useGetTopSellingProductsTodayQuery
 } from "../../service/productService.js";
+import { useGetReportCountByShopQuery } from '../../service/reportService';
+
 import * as PropTypes from "prop-types";
 
 ChartJS.register(
@@ -76,6 +78,7 @@ const ShopActive = () => {
 
     const {data, error, isLoading} = useGetShopByIdQuery(id);
     const [inactivateShop] = useInactivateShopMutation();
+    const { data: reportCount, isLoading: isLoadingReportCount, error: errorReportCount } = useGetReportCountByShopQuery(id);
 
     const [bestSellerData, setBestSellerData] = useState([]);
     const { data: topSellingToday } = useGetTopSellingProductsTodayQuery(id);
@@ -247,8 +250,18 @@ const ShopActive = () => {
                     </CCol>
                     <CCol md={4}>
                         <label>Số khiếu nại</label>
-                        <CFormInput disabled value={shop.owner.profile.taxCode}/>
+                        <CFormInput
+                            disabled
+                            value={
+                                isLoadingReportCount
+                                    ? 'Đang tải...'
+                                    : errorReportCount
+                                        ? 'Không thể lấy dữ liệu'
+                                        : reportCount
+                            }
+                        />
                     </CCol>
+
                 </CRow>
 
                 <CRow className="mb-3">

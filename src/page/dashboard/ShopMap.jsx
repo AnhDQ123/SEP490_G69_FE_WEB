@@ -26,7 +26,7 @@ const ShopMap = () => {
     const [activeShops, setActiveShops] = useState([]);
     useEffect(() => {
         if (data?.content) {
-            const newActiveShops = data.content.filter(shop => shop.isActive === "ACTIVE");
+            const newActiveShops = data.content.filter(shop => shop.isActive?.includes("ACTIVE"));
             if (JSON.stringify(newActiveShops) !== JSON.stringify(activeShops)) {
                 setActiveShops(newActiveShops); // Chỉ cập nhật khi nội dung thực sự thay đổi
             }

@@ -5,7 +5,7 @@ import {
     CCardHeader,
     CRow,
     CCol,
-    CSpinner
+    CSpinner, CTableDataCell, CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody
 } from '@coreui/react';
 import {useParams} from 'react-router-dom';
 import {useGetOrderByIdQuery} from '../../service/orderService';
@@ -38,7 +38,6 @@ const OrderDetail = () => {
                 <CRow>
                     <CCol md={6}>
                         <p><strong>Người mua:</strong> {order.ownerName || 'N/A'}</p>
-                        <p><strong>Email:</strong> {order.ownerEmail || 'N/A'}</p>
                         <p><strong>SĐT:</strong> {order.ownerPhone || 'N/A'}</p>
                         <p><strong>Ngày đặt:</strong> {order.createdAt?.slice(0, 10) || 'N/A'}</p>
                         <p><strong>Trạng thái:</strong> {order.status || 'N/A'}</p>
@@ -46,10 +45,46 @@ const OrderDetail = () => {
                     <CCol md={6}>
                         <p><strong>Cửa hàng:</strong> {order.shopName || 'N/A'}</p>
                         <p><strong>Tổng tiền:</strong> {order.total?.toLocaleString('vi-VN') || 0} đ</p>
-                        <p><strong>Phương thức thanh toán:</strong> {order.paymentMethod || 'N/A'}</p>
-                        <p><strong>Trạng thái thanh toán:</strong> {order.paymentStatus || 'N/A'}</p>
+                        <p><strong>Phí ship: </strong> {order.shippingFee?.toLocaleString('vi-VN')}đ</p>
+                        <p><strong>Phương thức thanh toán:</strong> {order.paymentMethodName}</p>
                     </CCol>
                 </CRow>
+                    <CRow>
+                        <CCol xs={12}>
+                            <strong>Sản phẩm trong đơn:</strong>
+                            <CTable bordered responsive className="mt-2">
+                                <CTableHead>
+                                    <CTableRow>
+                                        <CTableHeaderCell style={{ width: '66.66%' }}>Tên sản phẩm</CTableHeaderCell>
+                                        <CTableHeaderCell style={{ width: '16.66%' }}>Số lượng</CTableHeaderCell>
+                                        <CTableHeaderCell style={{ width: '16.66%' }}>Đơn giá</CTableHeaderCell>
+                                    </CTableRow>
+                                </CTableHead>
+                                <CTableBody>
+                                    {order?.orderItem?.length > 0 ? (
+                                        order.orderItem.map((item, index) => (
+                                            <CTableRow key={index}>
+                                                <CTableDataCell>{item.productName}</CTableDataCell>
+                                                <CTableDataCell>{item.quantity}</CTableDataCell>
+                                                <CTableDataCell>
+                                                    {item.total ? item.total.toLocaleString('vi-VN') + ' đ' : '0 đ'}
+                                                </CTableDataCell>
+                                            </CTableRow>
+                                        ))
+                                    ) : (
+                                        <CTableRow>
+                                            <CTableDataCell colSpan={3} className="text-center">
+                                                Không có sản phẩm
+                                            </CTableDataCell>
+                                        </CTableRow>
+                                    )}
+                                </CTableBody>
+                            </CTable>
+                        </CCol>
+                    </CRow>
+                <CTableRow>
+                    <CTableDataCell><strong>Tổng giá:</strong> {order?.total?.toLocaleString()} VNĐ</CTableDataCell>
+                </CTableRow>
             </CCardBody>
         </CCard>
     );

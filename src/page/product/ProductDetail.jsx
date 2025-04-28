@@ -58,7 +58,7 @@ const ProductDetail = () => {
                             </CCol>
                             <CCol md={6}>
                                 <label className="fw-semibold">Giá thành</label>
-                                <CFormInput disabled value={product.price || ''} className="border rounded-2" />
+                                <CFormInput disabled value={product.defaultPrice || ''} className="border rounded-2" />
                             </CCol>
                         </CRow>
 
