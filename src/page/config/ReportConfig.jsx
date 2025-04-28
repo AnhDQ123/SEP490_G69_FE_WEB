@@ -1,308 +1,248 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import {
-    CRow,
-    CCol,
-    CCard,
-    CCardBody,
-    CFormInput,
-    CButton,
-    CModal,
-    CModalBody,
-    CModalFooter,
-    CModalHeader,
-    CModalTitle,
-    CFormTextarea, CFormCheck
+    CCard, CCardBody, CCardHeader, CFormSelect, CFormLabel, CTable, CTableHead,
+    CTableRow, CTableHeaderCell, CTableBody, CTableDataCell, CButton, CRow, CCol,
+    CFormInput, CModalFooter, CModalHeader, CModal, CModalBody, CPagination, CPaginationItem
 } from '@coreui/react';
-import { FaArrowRight, FaArrowCircleRight, FaArrowCircleLeft } from 'react-icons/fa';
-import { useGetShopByIdQuery, useRejectShopMutation, useApproveShopMutation } from '../../service/shopService.js';
+import {
+    useGetConfigsByCategoryQuery,
+    useCreateConfigMutation,
+    useDeleteConfigMutation,
+    useUpdateConfigMutation
+} from '../../service/reasonConfigService';
 
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+const ReportConfig = () => {
+    const [configOptions] = useState([
+        { value: 'REPORT_PRODUCT_REASON', label: 'Lý do báo cáo sản phẩm' },
+        { value: 'REPORT_SHOP_REASON', label: 'Lý do báo cáo cửa hàng' },
+        { value: 'REPORT_BLOG_REASON', label: 'Lý do báo cáo bài viết' }
+    ]);
 
-const ShopPending = () => {
-    const [shop, setShop] = useState(null);
-    const { id } = useParams();
-    const navigate = useNavigate();
+    const [configType, setConfigType] = useState('REPORT_PRODUCT_REASON');
+    const [page, setPage] = useState(0);
+    const [size] = useState(10);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [successModal, setSuccessModal] = useState({ visible: false, message: '' });
 
-    const { data, error, isLoading } = useGetShopByIdQuery(id);
-    const [rejectShop] = useRejectShopMutation();
-    const [approveShop] = useApproveShopMutation();
+    const [newItemKey, setNewItemKey] = useState('');
+    const [newItemName, setNewItemName] = useState('');
+    const [newItemPublished, setNewItemPublished] = useState(true);
 
-    const [showImageBackground, setShowImageBackground] = useState(false);
-    const [showImageRegistrationCertificate, setShowImageRegistrationCertificate] = useState(false);
-    const [showFoodSafetyCertificate, setShowFoodSafetyCertificate] = useState(false);
-    const [showCitizenId, setShowCitizenId] = useState(false);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-    const [showConfirmModal, setShowConfirmModal] = useState(false);
-    const [confirmStatus, setConfirmStatus] = useState('');
-    const [rejectionReason, setRejectionReason] = useState('');
-    const [rejectionReasonError, setRejectionReasonError] = useState('');
-    const [showRejectionReasonModal, setShowRejectionReasonModal] = useState(false);
+    const [editingConfig, setEditingConfig] = useState(null);
+    const [configToDelete, setConfigToDelete] = useState(null);
+    const [duplicateCodeError, setDuplicateCodeError] = useState('');
 
-    const [currentSide, setCurrentSide] = useState('front');
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [isChecked, setIsChecked] = useState(false);
+    const { data: configData, isLoading, isError, refetch } = useGetConfigsByCategoryQuery({
+        category: configType,
+        page,
+        size,
+        search: debouncedSearch
+    });
 
+    const [createConfig] = useCreateConfigMutation();
+    const [deleteConfig] = useDeleteConfigMutation();
+    const [updateConfig] = useUpdateConfigMutation();
+
+    // Debounce search input
     useEffect(() => {
-        if (data) {
-            setShop(data);
-        }
-    }, [data]);
+        const delay = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+            setPage(0);
+        }, 400);
+        return () => clearTimeout(delay);
+    }, [searchTerm]);
 
-    if (isLoading) return <p>Đang tải dữ liệu...</p>;
-    if (error) return <p>Có lỗi xảy ra khi lấy dữ liệu cửa hàng</p>;
-    if (!shop) return <p>Không tìm thấy thông tin cửa hàng</p>;
-
-    // Mở modal xác nhận
-    const handleOpenConfirmModal = (status) => {
-        setConfirmStatus(status);
-        if (status === 'REJECTED') {
-            setShowRejectionReasonModal(true); // Hiện modal nhập lý do từ chối khi chọn 'REJECTED'
-        } else {
-            setShowConfirmModal(true); // Mở modal xác nhận nếu không phải từ chối
-        }
+    const showSuccess = (message) => {
+        setSuccessModal({ visible: true, message });
+        setTimeout(() => {
+            setSuccessModal({ visible: false, message: '' });
+            refetch();
+        }, 2000);
     };
 
-    const handleRejectShop = async () => {
-        if (!rejectionReason.trim()) {
-            setRejectionReasonError('Lý do từ chối là bắt buộc!');
+    const handleAddModal = async () => {
+        if (!newItemKey || !newItemName) return;
+
+        const isCodeExist = configData?.content?.some(item => item.key === newItemKey);
+        if (isCodeExist) {
+            setDuplicateCodeError('Mã này đã tồn tại. Vui lòng chọn mã khác.');
             return;
+        } else {
+            setDuplicateCodeError('');
         }
-        setRejectionReasonError('');
 
         try {
-            await rejectShop({ shopId: id, reason: rejectionReason }).unwrap();
-            toast.success('Cửa hàng đã bị từ chối!', {
-                position: "top-center", // Toast position in the center of the screen
-                autoClose: 3000, // Duration for the toast to appear
-                hideProgressBar: true, // Hide the progress bar
-                closeOnClick: true, // Close on click
-                pauseOnHover: true, // Pause on hover
-            });
-            navigate('/shop-list');
+            await createConfig({
+                category: configType,
+                key: newItemKey,
+                value: newItemName,
+                status: newItemPublished ? 'ACTIVE' : 'INACTIVE'
+            }).unwrap();
+
+            setShowAddModal(false);
+            setNewItemKey('');
+            setNewItemName('');
+            setNewItemPublished(true);
+            showSuccess('Thêm cấu hình thành công!');
         } catch (error) {
-            toast.error('Không thể từ chối cửa hàng!', {
-                position: "top-center", // Toast position in the center of the screen
-                autoClose: 3000, // Duration for the toast to appear
-                hideProgressBar: true, // Hide the progress bar
-                closeOnClick: true, // Close on click
-                pauseOnHover: true, // Pause on hover
-            });
-        } finally {
-            setShowRejectionReasonModal(false);
+            console.error(error);
         }
     };
 
-    const handleConfirmUpdateStatus = async () => {
-        if (confirmStatus === 'REJECTED') {
-            await handleRejectShop();
-        } else {
-            try {
-                await approveShop(id).unwrap();
-                toast.success('Cửa hàng đã được duyệt và chuyển sang trạng thái hoạt động', {
-                    position: "top-center", // Toast position in the center of the screen
-                    autoClose: 3000,
-                    hideProgressBar: true,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                });
-                navigate('/shop-list');
-            } catch (error) {
-                toast.error('Cập nhật thất bại!', {
-                    position: "top-center", // Toast position in the center of the screen
-                    autoClose: 3000,
-                    hideProgressBar: true,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                });
-            } finally {
-                setShowConfirmModal(false);
-            }
+    const handleEditModal = (config) => {
+        setEditingConfig(config);
+        setNewItemKey(config.key);
+        setNewItemName(config.value);
+        setNewItemPublished(config.status === 'ACTIVE');
+        setShowEditModal(true);
+    };
+
+    const handleSaveEdit = async () => {
+        if (!newItemName || !editingConfig?.id) return;
+
+        try {
+            await updateConfig({
+                id: editingConfig.id,
+                value: newItemName,
+                status: newItemPublished ? 'ACTIVE' : 'INACTIVE'
+            }).unwrap();
+
+            setShowEditModal(false);
+            showSuccess('Cập nhật cấu hình thành công!');
+        } catch (error) {
+            console.error(error);
         }
+    };
+
+    const handleDeleteConfig = async () => {
+        if (!configToDelete?.id) return;
+
+        try {
+            await deleteConfig(configToDelete.id).unwrap();
+            setShowDeleteModal(false);
+            showSuccess('Xóa cấu hình thành công!');
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const renderTable = () => {
+        if (isLoading) return <div>🔄 Đang tải dữ liệu...</div>;
+        if (isError) return <div>❌ Lỗi khi lấy dữ liệu!</div>;
+
+        return (
+            <CTable striped hover responsive bordered className="table-sm">
+                <CTableHead>
+                    <CTableRow>
+                        <CTableHeaderCell>Tên cấu hình</CTableHeaderCell>
+                        <CTableHeaderCell>Mã</CTableHeaderCell>
+                        <CTableHeaderCell>Ngày tạo</CTableHeaderCell>
+                        <CTableHeaderCell>Hành động</CTableHeaderCell>
+                    </CTableRow>
+                </CTableHead>
+                <CTableBody>
+                    {configData?.content?.length === 0 ? (
+                        <CTableRow>
+                            <CTableDataCell colSpan={4} className="text-center text-muted">
+                                Không có dữ liệu
+                            </CTableDataCell>
+                        </CTableRow>
+                    ) : (
+                        configData?.content?.map(item => (
+                            <CTableRow key={item.id}>
+                                <CTableDataCell>{item.value}</CTableDataCell>
+                                <CTableDataCell>{item.key}</CTableDataCell>
+                                <CTableDataCell>{new Date(item.createdAt).toLocaleString()}</CTableDataCell>
+                                <CTableDataCell>
+                                    <CButton size="sm" color="warning" onClick={() => handleEditModal(item)}>Sửa</CButton>{' '}
+                                    <CButton size="sm" color="danger" onClick={() => { setConfigToDelete(item); setShowDeleteModal(true); }}>Xóa</CButton>
+                                </CTableDataCell>
+                            </CTableRow>
+                        ))
+                    )}
+                </CTableBody>
+            </CTable>
+        );
     };
 
     return (
-        <CCard className="p-4">
+        <CCard>
+            <CCardHeader>
+                <CRow className="align-items-end justify-content-between">
+                    <CCol md={4}>
+                        <CFormLabel>Chọn loại cấu hình</CFormLabel>
+                        <CFormSelect value={configType} onChange={(e) => setConfigType(e.target.value)}>
+                            {configOptions.map(option => (
+                                <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                        </CFormSelect>
+                    </CCol>
+                    <CCol className="text-end">
+                        <CButton size="sm" color="primary" onClick={() => setShowAddModal(true)}>
+                            Thêm mới
+                        </CButton>
+                    </CCol>
+                </CRow>
+            </CCardHeader>
             <CCardBody>
-                <h4 className="mb-3">Danh sách cửa hàng {'>'} Cửa hàng chờ duyệt</h4>
-                <CRow className="mb-3">
-                    <CCol>
-                        <label>Tên cửa hàng</label>
-                        <CFormInput disabled value={shop.name} />
-                    </CCol>
-                    <CCol>
-                        <label>Chủ cửa hàng</label>
-                        <CFormInput disabled value={shop.owner.username} />
-                    </CCol>
-                    <CCol>
-                        <label>Số điện thoại</label>
-                        <CFormInput disabled value={shop.phone} />
-                    </CCol>
-                </CRow>
-                <CRow className="mb-3">
-                    <CCol md={12}>
-                        <label>Địa chỉ</label>
-                        <CFormInput disabled value={shop.address} />
-                    </CCol>
-                </CRow>
-                <CRow className="mb-3">
-                    <CCol md={4}>
-                        <label>Loại cửa hàng</label>
-                        <CFormInput disabled value={shop.sellType} />
-                    </CCol>
-                    <CCol md={4}>
-                        <label>Giờ hoạt động</label>
-                        <CFormInput disabled value={shop.openTime} />
-                    </CCol>
-                    <CCol md={4}>
-                        <label>Giờ đóng cửa</label>
-                        <CFormInput disabled value={shop.closeTime} />
-                    </CCol>
-                </CRow>
+                {renderTable()}
 
-                <CRow className="mb-3">
-                    <CCol md={6}>
-                        <label>Mã số thuế</label>
-                        <CFormInput disabled value={shop.tax_code} />
-                    </CCol>
-                    <CCol md={6}>
-                        <label>Trạng thái</label>
-                        <CFormInput disabled value={shop.isActive ? 'Chờ duyệt' : 'Hoạt động'} />
-                    </CCol>
-                </CRow>
-
-                <CRow className="mb-3">
-                    <CCol md={6} className="d-flex align-items-center">
-                        <label>Ảnh cửa hàng</label>
-                        <FaArrowRight
-                            className="ms-3"
-                            size={24}
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => setShowImageBackground(true)}
-                        />
-                    </CCol>
-                </CRow>
-
-                <CRow className="mb-3">
-                    <CCol md={6} className="d-flex align-items-center">
-                        <label>Giấy phép kinh doanh</label>
-                        <FaArrowRight
-                            className="ms-3"
-                            size={24}
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => setShowImageRegistrationCertificate(true)}
-                        />
-                    </CCol>
-                </CRow>
-
-                {/* New section for food safety certificate */}
-                <CRow className="mb-3">
-                    <CCol md={6} className="d-flex align-items-center">
-                        <label>Giấy phép vệ sinh an toàn thực phẩm</label>
-                        <FaArrowRight
-                            className="ms-3"
-                            size={24}
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => setShowFoodSafetyCertificate(true)} // Show food safety certificate modal
-                        />
-                    </CCol>
-                </CRow>
-
-                {/* New section for Citizen ID */}
-                <CRow className="mb-3">
-                    <CCol md={6} className="d-flex align-items-center">
-                        <label>Căn cước công dân</label>
-                        <FaArrowRight
-                            className="ms-3"
-                            size={24}
-                            style={{ cursor: 'pointer' }}
-                            onClick={() => setShowCitizenId(true)} // Show Citizen ID modal
-                        />
-                    </CCol>
-                </CRow>
-
-                <CRow className="mb-3">
-                    <CCol md={12}>
-                        <CFormCheck
-                            type="checkbox"
-                            label="Đã xem đủ thông tin cửa hàng"
-                            checked={isChecked}
-                            onChange={(e) => setIsChecked(e.target.checked)}
-                        />
-                    </CCol>
-                </CRow>
-
-                <CRow className="text-center mt-4">
-                    <CCol md={4}>
-                        <CButton
-                            color="danger"
-                            className="w-100"
-                            onClick={() => setShowRejectionReasonModal(true)}
-                        >
-                            Từ chối đăng ký
-                        </CButton>
-                    </CCol>
-                    <CCol md={4}>
-                        <CButton color="secondary" className="w-100" onClick={() => navigate('/shop-list')}>
-                            Quay lại
-                        </CButton>
-                    </CCol>
-                    <CCol md={4}>
-                        <CButton
-                            color="success"
-                            className="w-100"
-                            onClick={() => setShowConfirmModal(true)}
-                        >
-                            Duyệt cửa hàng
-                        </CButton>
-                    </CCol>
+                {/* Pagination */}
+                <CRow className="justify-content-center mt-3">
+                    <CPagination>
+                        <CPaginationItem active>{page + 1}</CPaginationItem>
+                    </CPagination>
                 </CRow>
             </CCardBody>
 
-            {/* Modal xác nhận */}
-            <CModal visible={showConfirmModal} onClose={() => setShowConfirmModal(false)} centered>
-                <CModalHeader>
-                    <CModalTitle>Xác nhận</CModalTitle>
-                </CModalHeader>
+            {/* Add Modal */}
+            <CModal visible={showAddModal} onClose={() => setShowAddModal(false)}>
+                <CModalHeader closeButton>Thêm mới cấu hình</CModalHeader>
                 <CModalBody>
-                    Bạn có chắc chắn muốn {confirmStatus === 'ACTIVE' ? 'duyệt' : 'từ chối'} cửa hàng này?
-                </CModalBody>
-                <CModalFooter>
-                    <CButton color="secondary" onClick={() => setShowConfirmModal(false)}>Hủy</CButton>
-                    <CButton
-                        color={confirmStatus === 'ACTIVE' ? 'success' : 'danger'}
-                        onClick={handleConfirmUpdateStatus}
-                    >
-                        {confirmStatus === 'ACTIVE' ? 'Duyệt' : 'Từ chối'}
-                    </CButton>
-                </CModalFooter>
-            </CModal>
-
-            {/* Modal nhập lý do từ chối */}
-            <CModal visible={showRejectionReasonModal} onClose={() => setShowRejectionReasonModal(false)} centered>
-                <CModalHeader>
-                    <CModalTitle>Nhập lý do từ chối</CModalTitle>
-                </CModalHeader>
-                <CModalBody>
-                    <CFormTextarea
-                        rows={4}
-                        placeholder="Vui lòng nhập lý do từ chối cửa hàng này"
-                        value={rejectionReason}
-                        onChange={(e) => setRejectionReason(e.target.value)}
+                    <CFormLabel>Mã</CFormLabel>
+                    <CFormInput
+                        value={newItemKey}
+                        onChange={(e) => setNewItemKey(e.target.value)}
+                        placeholder="Nhập mã..."
+                        className="mb-3"
                     />
-                    {rejectionReasonError && <div className="text-danger mb-2">{rejectionReasonError}</div>} {/* Error message */}
+                    {duplicateCodeError && <div style={{ color: 'red' }}>{duplicateCodeError}</div>}
+                    <CFormLabel>Tên cấu hình</CFormLabel>
+                    <CFormInput
+                        value={newItemName}
+                        onChange={(e) => setNewItemName(e.target.value)}
+                        placeholder="Nhập tên..."
+                        className="mb-3"
+                    />
                 </CModalBody>
                 <CModalFooter>
-                    <CButton color="secondary" onClick={() => setShowRejectionReasonModal(false)}>Hủy</CButton>
-                    <CButton color="danger" onClick={handleRejectShop}>Từ chối</CButton>
+                    <CButton color="secondary" onClick={() => setShowAddModal(false)}>Hủy</CButton>
+                    <CButton color="primary" onClick={handleAddModal}>Lưu</CButton>
                 </CModalFooter>
             </CModal>
 
-            {/* ToastContainer for success/error messages */}
-            <ToastContainer position="top-center" autoClose={3000} hideProgressBar={true} />
+            {/* Success Modal */}
+            <CModal visible={successModal.visible} onClose={() => setSuccessModal({ visible: false, message: '' })}>
+                <CModalHeader closeButton>Thông báo</CModalHeader>
+                <CModalBody>{successModal.message}</CModalBody>
+            </CModal>
+
+            {/* Delete Modal */}
+            <CModal visible={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
+                <CModalHeader closeButton>Xác nhận xóa</CModalHeader>
+                <CModalBody>Bạn có chắc chắn muốn xóa mục này không?</CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={() => setShowDeleteModal(false)}>Hủy</CButton>
+                    <CButton color="danger" onClick={handleDeleteConfig}>Xóa</CButton>
+                </CModalFooter>
+            </CModal>
         </CCard>
     );
 };
 
-export default ShopPending;
+export default ReportConfig;

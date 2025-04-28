@@ -65,7 +65,7 @@ const routes = [
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/reports-list/shop/:shopId', name: 'ReportListById', element: ReportListById },
   { path: '/report-completed/:reportId', name: 'ReportCompleted', element: ReportCompleted },
-  { path: '/report-pending/:reportId', name: 'ReportPending', element: ReportPending },
+  { path: '/report-pending/:id', name: 'ReportPending', element: ReportPending },
   { path: '/product-report-pending/:reportId', name: 'ProductReportPending', element: ProductReportPending },
   { path: '/product-report-completed/:reportId', name: 'ProductReportCompleted', element: ProductReportCompleted },
   { path: '/blog-report-pending/:reportId', name: 'BlogReportPending', element: BlogReportPending },

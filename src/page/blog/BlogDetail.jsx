@@ -1,35 +1,54 @@
 import React, { useState } from 'react';
 import {
-    CCard, CCardBody, CCardHeader, CCol, CRow, CImage,
-    CFormInput, CFormSelect, CButton, CTable, CTableBody,
-    CTableDataCell, CTableHead, CTableHeaderCell, CTableRow,
-    CBadge
+    CCard, CCardBody, CCardHeader, CCol, CRow, CButton, CFormInput,
+    CTable, CTableBody, CTableDataCell, CTableHead, CTableHeaderCell, CTableRow, CBadge
 } from '@coreui/react';
 import { useParams } from 'react-router-dom';
-import { useGetBlogByIdQuery } from '../../service/blogService';
-import { useGetCommentsByBlogQuery } from '../../service/commentService';
+import { useGetBlogByIdQuery, useUpdateBlogMutation } from '../../service/blogService';
+import { useGetCommentsByBlogQuery, useDeleteCommentMutation } from '../../service/commentService';
 
 const BlogDetail = () => {
     const { id } = useParams();
     const [showFullContent, setShowFullContent] = useState(false);
     const previewLength = 200;
+
     const { data: blog, isLoading, isError } = useGetBlogByIdQuery(id);
     const {
-        data: comments = [], // Đảm bảo rằng comments luôn là mảng mặc định
+        data: comments = [],
         isLoading: isCommentsLoading,
         isError: isCommentsError,
+        refetch: refetchComments,
     } = useGetCommentsByBlogQuery({ blogId: id, offset: 0, limit: 20 });
 
-    // Kiểm tra nếu dữ liệu bài viết không có hoặc lỗi
+    const [unblockBlog] = useUpdateBlogMutation();
+    const [deleteComment] = useDeleteCommentMutation();
+
     if (isLoading) return <div>🔄 Đang tải dữ liệu bài viết...</div>;
     if (isError || !blog) return <div>❌ Không thể tải bài viết.</div>;
 
-    const {
-        createdAt,
-        reportCount,
-        status,
-        content,
-    } = blog;
+    const { createdAt, reportCount = 0, status, content = '', writer } = blog;
+
+    const handleUnblock = async () => {
+        try {
+            await unblockBlog(id).unwrap();
+            alert('✅ Đã bỏ chặn blog!');
+        } catch (error) {
+            console.error('Unblock error:', error);
+            alert('❌ Lỗi khi bỏ chặn blog.');
+        }
+    };
+
+    const handleDeleteComment = async (commentId) => {
+        if (!window.confirm('Bạn chắc chắn muốn xóa bình luận này?')) return;
+        try {
+            await deleteComment(commentId).unwrap();
+            await refetchComments();
+            alert('✅ Đã xóa bình luận!');
+        } catch (error) {
+            console.error('Delete comment error:', error);
+            alert('❌ Lỗi khi xóa bình luận.');
+        }
+    };
 
     return (
         <div>
@@ -43,64 +62,71 @@ const BlogDetail = () => {
                         <CCol md={8}>
                             <div>
                                 <strong>Nội dung bài viết:</strong>
-
-                                {!showFullContent ? (
-                                    <>
-                                        <div
-                                            className="text-truncate p-2 border rounded bg-light"
-                                            style={{
-                                                maxWidth: '100%',
-                                                whiteSpace: 'nowrap',
-                                                overflow: 'hidden',
-                                                textOverflow: 'ellipsis',
-                                            }}
-                                            title={content} // hiện toàn bộ khi hover
-                                        >
-                                            {content}
-                                        </div>
-                                        {content.length > previewLength && (
+                                {content ? (
+                                    !showFullContent ? (
+                                        <>
+                                            <div
+                                                className="text-truncate p-2 border rounded bg-light"
+                                                style={{
+                                                    maxWidth: '100%',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                }}
+                                                title={content}
+                                            >
+                                                {content}
+                                            </div>
+                                            {content.length > previewLength && (
+                                                <div>
+                                                    <CButton
+                                                        size="sm"
+                                                        color="link"
+                                                        onClick={() => setShowFullContent(true)}
+                                                    >
+                                                        Xem thêm
+                                                    </CButton>
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div
+                                                className="mt-2 p-2 border rounded"
+                                                style={{ whiteSpace: 'pre-line', backgroundColor: '#f8f9fa' }}
+                                                dangerouslySetInnerHTML={{ __html: content }}
+                                            />
                                             <div>
                                                 <CButton
                                                     size="sm"
                                                     color="link"
-                                                    onClick={() => setShowFullContent(true)}
+                                                    onClick={() => setShowFullContent(false)}
                                                 >
-                                                    Xem thêm
+                                                    Ẩn bớt
                                                 </CButton>
                                             </div>
-                                        )}
-                                    </>
+                                        </>
+                                    )
                                 ) : (
-                                    <>
-                                        <div
-                                            className="mt-2 p-2 border rounded"
-                                            style={{whiteSpace: 'pre-line', backgroundColor: '#f8f9fa'}}
-                                            dangerouslySetInnerHTML={{__html: content}}
-                                        />
-                                        <div>
-                                            <CButton
-                                                size="sm"
-                                                color="link"
-                                                onClick={() => setShowFullContent(false)}
-                                            >
-                                                Ẩn bớt
-                                            </CButton>
-                                        </div>
-                                    </>
+                                    <div className="text-muted">Không có nội dung.</div>
                                 )}
                             </div>
                         </CCol>
                         <CCol md={4}>
-                            <div><strong>Tài khoản viết:</strong> {id.username}</div>
+                            <div><strong>Tài khoản viết:</strong> {writer?.username || 'Không xác định'}</div>
                             <div><strong>Ngày đăng:</strong> {new Date(createdAt).toLocaleDateString('vi-VN')}</div>
-                            <div><strong>Bị báo cáo:</strong> {reportCount || 0}</div>
+                            <div><strong>Bị báo cáo:</strong> {reportCount}</div>
                             <div>
                                 <strong>Trạng thái:</strong>{' '}
                                 <CBadge color={status === 'ACTIVE' ? 'warning' : 'success'}>
                                     {status === 'ACTIVE' ? 'Đang bị chặn' : 'Đang hoạt động'}
                                 </CBadge>
                             </div>
-                            <CButton color="dark" size="sm" className="mt-2">Bỏ chặn</CButton>
+                            {status === 'ACTIVE' && (
+                                <CButton color="dark" size="sm" className="mt-2" onClick={handleUnblock}>
+                                    Bỏ chặn
+                                </CButton>
+                            )}
                         </CCol>
                     </CRow>
                 </CCardBody>
@@ -123,7 +149,7 @@ const BlogDetail = () => {
                     </CRow>
 
                     <CRow className="mb-2">
-                        <CCol md={6}><strong>🗨️ Tổng số bình luận</strong> {comments.length}</CCol>
+                        <CCol md={6}><strong>🗨️ Tổng số bình luận:</strong> {comments.length}</CCol>
                     </CRow>
 
                     <CTable striped hover bordered responsive>
@@ -152,14 +178,16 @@ const BlogDetail = () => {
                             ) : (
                                 comments.map((cmt) => (
                                     <CTableRow key={cmt.id}>
-                                        <CTableDataCell>{cmt.writer.name}</CTableDataCell>
+                                        <CTableDataCell>{cmt.writer?.name || 'Ẩn danh'}</CTableDataCell>
                                         <CTableDataCell>{cmt.content}</CTableDataCell>
                                         <CTableDataCell>{new Date(cmt.createdAt).toLocaleString('vi-VN')}</CTableDataCell>
                                         <CTableDataCell>
                                             <CBadge color="success">Hiển thị</CBadge>
                                         </CTableDataCell>
                                         <CTableDataCell>
-                                            <CButton size="sm" color="danger">Xóa</CButton>
+                                            <CButton size="sm" color="danger" onClick={() => handleDeleteComment(cmt.id)}>
+                                                Xóa
+                                            </CButton>
                                         </CTableDataCell>
                                     </CTableRow>
                                 ))

@@ -100,6 +100,15 @@ export const orderService = createApi({
         orderChangeRate: builder.query({
             query: () => 'api/order/change/rate',
         }),
+
+        viewReturnOrder: builder.query({
+            query: (id) => ({
+                url: `api/order/viewReturn`,
+                params: { id },
+            }),
+            providesTags: ['order'],
+        }),
+
     }),
 });
 
@@ -114,4 +123,5 @@ export const {
     useGetTopSellingProductsThisYearQuery,
     useCountAllOrdersQuery,
     useOrderChangeRateQuery,
+    useViewReturnOrderQuery,
 } = orderService;
