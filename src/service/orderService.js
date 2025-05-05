@@ -134,6 +134,7 @@ export const orderService = createApi({
 export const {
     useGetOrdersByFilterQuery,
     useGetOrderByIdQuery,
+    useLazyGetOrderByIdQuery,
     useGetOrderCountByStatusAndDayQuery,
     useGetOrderCountByStatusAndMonthQuery,
     useGetOrderCountByStatusAndYearQuery,

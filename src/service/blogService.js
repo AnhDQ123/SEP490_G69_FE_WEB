@@ -17,7 +17,7 @@ export const blogService = createApi({
 
         // get by id
         getBlogById: builder.query({
-            query: (id) => `api/blogs?id=${id}`,  // Truyền id qua query parameter
+            query: (id) => `api/blogs/${id}`,  // Truyền id qua query parameter
             providesTags: (result, error, id) => [{ type: "blog", id: id }],
         }),
 

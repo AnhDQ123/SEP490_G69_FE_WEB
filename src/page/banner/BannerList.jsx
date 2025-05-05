@@ -23,7 +23,7 @@ import {
     verticalListSortingStrategy
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import {useGetShopByIdQuery} from "../../service/shopService.js";
+import {useGetShopByIdQuery, useGetShopQuery} from "../../service/shopService.js";
 
 const BannerList = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -33,22 +33,53 @@ const BannerList = () => {
     const [itemsPerPage, setItemsPerPage] = useState(10);
 
     // Fetch banners
-    const { data, refetch } = useGetBannersQuery({ page: currentPage - 1, size: itemsPerPage });
+    const { data: bannerData, isLoading: isBannerLoading, refetch } = useGetBannersQuery({ page: currentPage - 1, size: itemsPerPage });
+    const { data: shopData, isLoading: isShopLoading } = useGetShopQuery();
+    const [mergedBanners, setMergedBanners] = useState([]);
+    console.log(bannerData);
+    console.log(shopData);
+    useEffect(() => {
+        if (
+            !isBannerLoading &&
+            !isShopLoading &&
+            bannerData?.content &&
+            shopData?.content
+        ) {
+            const bannerList = bannerData.content;
+            const shopList = shopData.content;
 
+            const shopMap = {};
+            shopList.forEach((shop) => {
+                const ownerId = shop?.owner?.profile?.id;
+                if (ownerId) {
+                    shopMap[ownerId] = shop;
+                }
+            });
+
+            const merged = bannerList.map((banner) => {
+                const shop = shopMap[banner.ownerId]; // banner.ownerId phải đúng kiểu với shopMap key
+                return {
+                    ...banner,
+                    shopName: shop?.name || 'Không rõ',
+                };
+            });
+
+            setMergedBanners(merged);
+        }
+    }, [bannerData, shopData, isBannerLoading, isShopLoading]);
     // Mutation hooks
     const [deleteBanner] = useDeleteBannerMutation();
     const [activeBanner] = useActiveBannerMutation(); // API for activating banners
     const [inactiveBanner] = useInactiveBannerMutation(); // API for deactivating banners
 
-    const banners = data?.content || [];
+    const banners = mergedBanners || [];
+    console.log(banners);
+    const ShopNameCell = ({ shopName }) => {
+        // const { data, isLoading, isError } = useGetShopByIdQuery(shopId);
 
-    const ShopNameCell = ({ id }) => {
-        const { data, isLoading, isError } = useGetShopByIdQuery(id);
+        if (!shopName) return <span>Không xác định</span>;
 
-        if (isLoading) return <span>Đang tải...</span>;
-        if (isError || !data) return <span>Không xác định</span>;
-
-        return <span>{data.name || 'Không tên'}</span>;
+        return <span>{shopName || 'Không tên'}</span>;
     };
 
     const confirmDelete = (id) => {
@@ -100,7 +131,6 @@ const BannerList = () => {
                     <CTable striped hover responsive>
                         <CTableHead>
                             <CTableRow>
-                                <CTableHeaderCell>Chủ banner</CTableHeaderCell>
                                 <CTableHeaderCell>Ảnh</CTableHeaderCell>
                                 <CTableHeaderCell>Trạng thái</CTableHeaderCell>
                                 <CTableHeaderCell>Hành động</CTableHeaderCell>
@@ -111,9 +141,7 @@ const BannerList = () => {
                                 <SortableContext items={banners.map(b => b.id)} strategy={verticalListSortingStrategy}>
                                     {banners.map((banner) => (
                                         <CTableRow key={banner.id}>
-                                            <CTableDataCell>
-                                                {banner.ownerId ? <ShopNameCell shopId={banner.ownerId} /> : '---'}
-                                            </CTableDataCell>
+
                                             <CTableDataCell>
                                                 {banner.url && (
                                                     <img src={banner.url} alt="banner" width={80} height={60} style={{ objectFit: 'cover' }} />
@@ -182,7 +210,7 @@ const BannerList = () => {
 
                     <div className="d-flex justify-content-between align-items-center mt-3">
                         <span>
-                            Trang <strong>{currentPage}</strong> / {Math.ceil(data?.totalElements / itemsPerPage)}
+                            Trang <strong>{currentPage}</strong> / {Math.ceil(bannerData?.totalElements / itemsPerPage)}
                         </span>
                         <div>
                             <CButton
@@ -195,8 +223,8 @@ const BannerList = () => {
                             </CButton>
                             <CButton
                                 size="sm"
-                                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(data?.totalElements / itemsPerPage)))}
-                                disabled={currentPage === Math.ceil(data?.totalElements / itemsPerPage)}
+                                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.ceil(bannerData?.totalElements / itemsPerPage)))}
+                                disabled={currentPage === Math.ceil(bannerData?.totalElements / itemsPerPage)}
                             >
                                 Sau
                             </CButton>

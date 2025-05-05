@@ -17,7 +17,7 @@ function App() {
             >
                 <Routes>
                     {/* Trang Login sẽ không có layout */}
-                    <Route path="/" element={<Login />} />
+                    {/*<Route path="/" element={<Login />} />*/}
                     <Route path="/login" element={<Login />} />                    {/* Các trang khác sẽ dùng DefaultLayout */}
                     <Route path="*" element={<DefaultLayout />} />
                 </Routes>

@@ -23,6 +23,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     useGetAllReportsByTypeQuery
 } from '../../service/reportService.js';
+import {useGetOrderByIdQuery, useLazyGetOrderByIdQuery} from "../../service/orderService.js";
 
 const ReturnedOrderList = () => {
     const [reports, setReports] = useState([]);
@@ -37,14 +38,38 @@ const ReturnedOrderList = () => {
     });
 
     const { reportType, startDate, endDate, orderCode } = searchParams;
-
+    const [triggerGetOrderById] = useLazyGetOrderByIdQuery();
     // API hooks based on the status of the return order
     const { data, isLoading, isError } = useGetAllReportsByTypeQuery(searchParams);
+    // Cập nhật reports từ API
     useEffect(() => {
-        if (data) {
-            setReports(data.content);
+        if (data?.content) {
+            const fetchAndMergeOrders = async () => {
+                const rawReports = data.content;
+
+                // Gọi API lấy order cho từng reportItemId
+                const enrichedReports = await Promise.all(
+                    rawReports.map(async (report) => {
+                        try {
+                            const res = await triggerGetOrderById(report.reportItemId).unwrap(); // <-- định nghĩa hàm này bên dưới
+                            return {
+                                ...report,
+                                orderCode: res.orderCode,
+                                total: res.total,
+                            };
+                        } catch (error) {
+                            console.error(`Failed to fetch order for reportItemId ${report.reportItemId}`);
+                            return { ...report, orderCode: null, total: null };
+                        }
+                    })
+                );
+
+                setReports(enrichedReports);
+            };
+
+            fetchAndMergeOrders();
         }
-    }, [data]);
+    }, [data,triggerGetOrderById]);
 
     // Handle input change for search
     const handleInputChange = (e) => {
@@ -133,10 +158,10 @@ const ReturnedOrderList = () => {
                         {/* Ensure reports is always an array */}
                         {(Array.isArray(reports) ? reports : []).slice((page - 1) * searchParams.size, page * searchParams.size).map((report, index) => (
                             <CTableRow key={index} style={{ cursor: 'pointer' }}>
-                                <CTableDataCell>{report.reportCode}</CTableDataCell>
+                                <CTableDataCell>{report.orderCode}</CTableDataCell>
                                 <CTableDataCell>{report.reportType}</CTableDataCell>
                                 <CTableDataCell>{report.createdAt}</CTableDataCell>
-                                <CTableDataCell>{report.value?.toLocaleString('vi-VN')} đ</CTableDataCell>
+                                <CTableDataCell>{report.total?.toLocaleString('vi-VN')} đ</CTableDataCell>
                                 <CTableDataCell>
                                     <CButton color="info" onClick={() => navigate(`/report-pending/${report.reportItemId}`)}>
                                         Xem chi tiết

@@ -156,15 +156,8 @@ const BlogDetail = () => {
                             ) : <div className="text-muted">Không có nội dung.</div>}
                         </CCol>
                         <CCol md={4}>
-                            <div><strong>Tài khoản viết:</strong> {writer?.username || 'Không xác định'}</div>
+                            <div><strong>Tài khoản viết:</strong> {writer?.name|| 'Không xác định'}</div>
                             <div><strong>Ngày đăng:</strong> {new Date(createdAt).toLocaleDateString('vi-VN')}</div>
-                            <div><strong>Bị báo cáo:</strong> {reportCount}</div>
-                            <div>
-                                <strong>Trạng thái:</strong>{' '}
-                                <CBadge color={status === 'ACTIVE' ? 'warning' : 'success'}>
-                                    {status === 'ACTIVE' ? 'Đang bị chặn' : 'Đang hoạt động'}
-                                </CBadge>
-                            </div>
                             {status === 'ACTIVE' && (
                                 <CButton color="dark" size="sm" className="mt-2" onClick={handleUnblock}>
                                     Bỏ chặn
