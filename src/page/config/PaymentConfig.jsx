@@ -173,7 +173,7 @@ const PaymentConfig = () => {
                             data?.content?.map((item) => (
                                 <CTableRow key={item.id}>
                                     <CTableDataCell>{item.name}</CTableDataCell>
-                                    <CTableDataCell>{item.description}</CTableDataCell>
+                                    <CTableDataCell style={{ width: '300px' }} >{item.description}</CTableDataCell>
                                     <CTableDataCell>{new Date(item.createdAt).toLocaleString()}</CTableDataCell>
                                     <CTableDataCell>
                                         <CButton size="sm" color="secondary" onClick={() => {
