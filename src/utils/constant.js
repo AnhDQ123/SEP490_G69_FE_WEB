@@ -1,1 +1,1 @@
-export const BASE_URL = "https://ffb-be-318865989290.asia-southeast1.run.app/"
+export const BASE_URL = "http://localhost:8080"

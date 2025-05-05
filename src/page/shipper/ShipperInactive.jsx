@@ -117,11 +117,9 @@ const ShipperInactive = () => {
                     <CCol md={6}><label>Email</label><CFormInput disabled value={shipper.email} /></CCol>
                 </CRow>
                 <CRow className="mb-3">
-                    <CCol md={6}><label>Ngày sinh</label><CFormInput disabled value={shipper.dob} /></CCol>
-                    <CCol md={6}><label>Ngày đăng ký</label><CFormInput disabled value={shipper.registrationDate} /></CCol>
-                </CRow>
-                <CRow className="mb-3">
-                    <CCol md={6}><label>Trạng thái</label><CFormInput disabled value={shipper.shipperStatus} /></CCol>
+                    <CCol md={4}><label>Ngày sinh</label><CFormInput disabled value={shipper.dob} /></CCol>
+                    <CCol md={4}><label>Ngày đăng ký</label><CFormInput disabled value={shipper.createdAt} /></CCol>
+                    <CCol md={4}><label>Trạng thái</label><CFormInput disabled value={shipper.shipperStatus} /></CCol>
                 </CRow>
 
                 {/* Citizen ID and Driving License */}

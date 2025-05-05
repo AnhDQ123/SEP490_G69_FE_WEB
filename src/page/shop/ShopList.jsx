@@ -24,7 +24,7 @@ const ShopList = () => {
     const [page, setPage] = useState(1);
     const [size, setSize] = useState();
     const navigate = useNavigate();
-    const [statusFilter, setStatusFilter] = useState("");
+    const [statusFilter, setStatusFilter] = useState("ACTIVE");
 
 
     // Gọi API lấy danh sách cửa hàng theo search và status
@@ -93,7 +93,6 @@ const ShopList = () => {
                             </CTableDataCell>
                             <CTableDataCell>
                                 <CFormSelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                                    <option value="">Tất cả</option>
                                     <option value="ACTIVE">Hoạt động</option>
                                     <option value="INACTIVE">Dừng hoạt động</option>
                                     <option value="PENDING">Chờ duyệt</option>

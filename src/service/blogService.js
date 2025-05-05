@@ -8,7 +8,7 @@ export const blogService = createApi({
     tagTypes: ["blog"], // Tagging to invalidate specific cache
     endpoints: (builder) => ({
         getBlogs: builder.query({
-            query: ({ search = "", page = 1, size = 10 }) => ({
+            query: ({ search = "", page = 0, size = 10 }) => ({
                 url: "api/blogs",
                 params: { search, page, size },  // Make sure these parameters are passed correctly
             }),

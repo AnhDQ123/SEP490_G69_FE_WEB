@@ -76,13 +76,7 @@ const BlogList = () => {
                                     onChange={(e) => setSearch(e.target.value)}
                                 />
                             </CTableDataCell>
-                            <CTableDataCell>
-                                <CFormSelect>
-                                    <option value="0">Sắp xếp theo</option>
-                                    <option value="1">Ngày đăng</option>
-                                    <option value="2">Trạng thái</option>
-                                </CFormSelect>
-                            </CTableDataCell>
+
                         </CTableRow>
                     </CTableBody>
                 </CTable>
@@ -95,7 +89,6 @@ const BlogList = () => {
                             <CTableHeaderCell>Tiêu đề</CTableHeaderCell>
                             <CTableHeaderCell>Tác giả</CTableHeaderCell>
                             <CTableHeaderCell>Ngày đăng</CTableHeaderCell>
-                            <CTableHeaderCell>Trạng thái</CTableHeaderCell>
                             <CTableHeaderCell>Hành động</CTableHeaderCell>
                         </CTableRow>
                     </CTableHead>
@@ -108,11 +101,9 @@ const BlogList = () => {
                                     onClick={() => navigate(`/blog-detail/${blog.id}`)}
                                 >
                                     <CTableDataCell>{blog.title}</CTableDataCell>
-                                    <CTableDataCell>{blog.author}</CTableDataCell>
-                                    <CTableDataCell>{blog.date}</CTableDataCell>
-                                    <CTableDataCell>
-                                        {blog.status === 'ACTIVE' ? 'Hoạt động' : 'Bị chặn'}
-                                    </CTableDataCell>
+                                    <CTableDataCell>{blog.writer.name}</CTableDataCell>
+                                    <CTableDataCell>{blog.createdAt}</CTableDataCell>
+
                                     <CTableDataCell>
                                         <button type="button" className="btn btn-info mb-3">
                                             Xem chi tiết
@@ -156,9 +147,9 @@ const BlogList = () => {
                         onChange={(e) => handlePageSizeChange(e.target.value)}
                         className="w-auto"
                     >
+                        <option value="10">10</option>
                         <option value="20">20</option>
                         <option value="50">50</option>
-                        <option value="100">100</option>
                     </CFormSelect>
                 </CCol>
             </CRow>

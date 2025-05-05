@@ -159,8 +159,10 @@ const ReportConfig = () => {
                                 <CTableDataCell>{item.key}</CTableDataCell>
                                 <CTableDataCell>{new Date(item.createdAt).toLocaleString()}</CTableDataCell>
                                 <CTableDataCell>
-                                    <CButton size="sm" color="warning" onClick={() => handleEditModal(item)}>Sửa</CButton>{' '}
-                                    <CButton size="sm" color="danger" onClick={() => { setConfigToDelete(item); setShowDeleteModal(true); }}>Xóa</CButton>
+                                    <CButton size="sm" color="warning" style={{ width: '45%' }}
+                                             onClick={() => handleEditModal(item)}>Sửa</CButton>{' '}
+                                    <CButton size="sm" color="danger" style={{ width: '45%' }}
+                                              onClick={() => { setConfigToDelete(item); setShowDeleteModal(true); }}>Xóa</CButton>
                                 </CTableDataCell>
                             </CTableRow>
                         ))

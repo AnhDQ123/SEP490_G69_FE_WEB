@@ -26,6 +26,11 @@ const ShipperPending = () => {
     const [currentSide, setCurrentSide] = useState('front');
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [showResumeModal, setShowResumeModal] = useState(false);
+    const [successModal, setSuccessModal] = useState({
+        visible: false,
+        message: ''
+    });
+    const [rejectionReasonError, setRejectionReasonError] = useState('');
 
     const [isChecked, setIsChecked] = useState(false); // State for the checkbox
 
@@ -50,21 +55,36 @@ const ShipperPending = () => {
 
     const handleRejectShipper = async () => {
         if (!rejectionReason.trim()) {
-            alert('Vui lòng nhập lý do từ chối!');
+            setRejectionReasonError('Lý do từ chối là bắt buộc!');
             return;
         }
 
+        setRejectionReasonError(''); // Xóa lỗi nếu hợp lệ
+
         try {
             await rejectShipper({ userId: id, reason: rejectionReason }).unwrap();
-            alert('Shipper đã bị từ chối');
-            navigate('/shipper-list');
-        } catch (e) {
-            alert('Không thể từ chối shipper!');
-            console.error(e);
-        } finally {
             setShowRejectionReasonModal(false);
-        }
+            handleShowSuccessModal('Shipper đã bị từ chối!');
+            setTimeout(() => {
+                navigate('/shipper-list');
+            }, 2500);
+        } catch (e) {
+            console.error(e);
+            handleShowSuccessModal('Shipper đã bị từ chối!');
+            setTimeout(() => {
+                navigate('/shipper-list');
+            }, 2500);        }
     };
+
+
+
+    const handleShowSuccessModal = (message) => {
+        setSuccessModal({ visible: true, message });
+        setTimeout(() => {
+            setSuccessModal({ visible: false, message: '' });
+        }, 2000); // Hiển thị 2 giây
+    };
+
 
     const handleApproveShipper = async () => {
         if (!isChecked) {
@@ -73,14 +93,17 @@ const ShipperPending = () => {
         }
         try {
             await approveShipper(id).unwrap();
-            alert('Shipper đã được duyệt');
-            navigate('/shipper-list');
-        } catch (error) {
-            alert('Không thể duyệt shipper!');
-        } finally {
             setShowConfirmModal(false);
+            handleShowSuccessModal('Shipper đã được duyệt!');
+            setTimeout(() => {
+                navigate('/shipper-list');
+            }, 2500); // Chờ thêm 0.5s để người dùng đọc
+        } catch (error) {
+            handleShowSuccessModal('Không thể duyệt shipper!');
         }
     };
+
+
 
     const shipperImage = shipper?.images || [shipper.profileImage];
     const citizenIdFront = shipper?.citizenIDCardFront ? [shipper.citizenIDCardFront] : [];
@@ -121,8 +144,9 @@ const ShipperPending = () => {
                     <CCol md={6}><label>Email</label><CFormInput disabled value={shipper.email} /></CCol>
                 </CRow>
                 <CRow className="mb-3">
-                    <CCol md={6}><label>Ngày sinh</label><CFormInput disabled value={shipper.dob} /></CCol>
-                    <CCol md={6}><label>Ngày đăng ký</label><CFormInput disabled value={shipper.registrationDate} /></CCol>
+                    <CCol md={4}><label>Ngày sinh</label><CFormInput disabled value={shipper.dob} /></CCol>
+                    <CCol md={4}><label>Ngày đăng ký</label><CFormInput disabled value={shipper.createdAt} /></CCol>
+                    <CCol md={4}><label>Trạng thái</label><CFormInput disabled value={shipper.shipperStatus} /></CCol>
                 </CRow>
                 <CRow className="mb-3">
                     <CCol md={4} className="d-flex align-items-center">
@@ -151,7 +175,6 @@ const ShipperPending = () => {
                         </label>
                     </CCol>
                 </CRow>
-
                 {/* Checkbox for confirmation */}
                 <CRow className="mb-3">
                     <CCol md={12}>
@@ -163,7 +186,6 @@ const ShipperPending = () => {
                         />
                     </CCol>
                 </CRow>
-
                 <CRow className="mb-3">
                     <CCol md={4}>
                         <CButton
@@ -191,7 +213,6 @@ const ShipperPending = () => {
                         </CButton>
                     </CCol>
                 </CRow>
-
             </CCardBody>
 
             {/* Confirmation Modal */}
@@ -216,9 +237,13 @@ const ShipperPending = () => {
                         rows={4}
                         placeholder="Vui lòng nhập lý do từ chối shipper này"
                         value={rejectionReason}
-                        onChange={(e) => setRejectionReason(e.target.value)} // Update rejection reason
+                        onChange={(e) => setRejectionReason(e.target.value)}
                     />
+                    {rejectionReasonError && (
+                        <div className="text-danger mt-2">{rejectionReasonError}</div>
+                    )}
                 </CModalBody>
+
                 <CModalFooter>
                     <CButton color="secondary" onClick={() => setShowRejectionReasonModal(false)}>Hủy</CButton>
                     <CButton color="danger" onClick={handleRejectShipper}>Từ chối</CButton>
@@ -314,6 +339,27 @@ const ShipperPending = () => {
                     <CButton color="secondary" onClick={handleCloseResumeModal}>Đóng</CButton>
                 </CModalFooter>
             </CModal>
+
+            <CModal visible={successModal.visible} onClose={() => setSuccessModal({ visible: false, message: '' })} centered>
+                <CModalHeader>
+                    <CModalTitle>Thông báo</CModalTitle>
+                </CModalHeader>
+                <CModalBody>{successModal.message}</CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={() => setSuccessModal({ visible: false, message: '' })}>Đóng</CButton>
+                </CModalFooter>
+            </CModal>
+
+            <CModal visible={successModal.visible} onClose={() => setSuccessModal({ visible: false, message: '' })} centered>
+                <CModalHeader>
+                    <CModalTitle>Thông báo</CModalTitle>
+                </CModalHeader>
+                <CModalBody>{successModal.message}</CModalBody>
+                <CModalFooter>
+                    <CButton color="secondary" onClick={() => setSuccessModal({ visible: false, message: '' })}>Đóng</CButton>
+                </CModalFooter>
+            </CModal>
+
         </CCard>
     );
 };

@@ -19,8 +19,8 @@ export const commentService = createApi({
 
         // get all reply of each comment
         getMoreReplies: builder.query({
-            query: ({ parentId, offset = 0, limit = 5 }) => ({
-                url: 'api/comments/replies',
+            query: ({ parentId, offset = 0, limit = 3 }) => ({
+                url: `api/comments/replies`, // đúng với @GetMapping("/replies")
                 params: { parentId, offset, limit },
             }),
             providesTags: (result, error, { parentId }) => [{ type: 'Comment', id: parentId }],
@@ -34,6 +34,7 @@ export const commentService = createApi({
             }),
             invalidatesTags: ['Comment'],
         }),
+
     }),
 });
 

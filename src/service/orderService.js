@@ -109,6 +109,25 @@ export const orderService = createApi({
             providesTags: ['order'],
         }),
 
+        // Accept return order
+        acceptReturnOrder: builder.mutation({
+            query: (id) => ({
+                url: `api/order/acceptReturn`,
+                method: 'PUT',
+                params: { id },
+            }),
+            invalidatesTags: ['order'],
+        }),
+
+        // Reject return order
+        rejectReturnOrder: builder.mutation({
+            query: (id) => ({
+                url: `api/order/rejectReturn`,
+                method: 'POST',
+                params: { id },
+            }),
+            invalidatesTags: ['order'],
+        }),
     }),
 });
 
@@ -124,4 +143,6 @@ export const {
     useCountAllOrdersQuery,
     useOrderChangeRateQuery,
     useViewReturnOrderQuery,
+    useAcceptReturnOrderMutation,
+    useRejectReturnOrderMutation,
 } = orderService;

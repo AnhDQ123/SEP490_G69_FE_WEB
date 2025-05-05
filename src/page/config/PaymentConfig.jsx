@@ -182,7 +182,7 @@ const PaymentConfig = () => {
                                             setNewDescription(item.description);
                                             setNewItemPublished(item.status === 'ACTIVE');
                                             setShowEditModal(true);
-                                        }} className="me-2">Chỉnh sửa</CButton>
+                                        }} className="me-2">Sửa</CButton>
                                         <CButton size="sm" color="danger" onClick={() => {
                                             setDeletingId(item.id);
                                             setShowDeleteModal(true);

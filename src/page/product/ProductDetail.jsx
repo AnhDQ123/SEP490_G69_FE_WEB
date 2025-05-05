@@ -58,27 +58,24 @@ const ProductDetail = () => {
                             </CCol>
                             <CCol md={6}>
                                 <label className="fw-semibold">Giá thành</label>
-                                <CFormInput disabled value={product.defaultPrice || ''} className="border rounded-2" />
+                                <CFormInput
+                                    disabled
+                                    value={product.defaultPrice ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.defaultPrice) : ''}
+                                    className="border rounded-2"
+                                />
                             </CCol>
                         </CRow>
 
                         <CRow className="mb-3">
-                            <CCol md={6}>
+                            <CCol md={4}>
                                 <label className="fw-semibold">Danh mục sản phẩm</label>
                                 <CFormInput disabled value={product.category || ''} className="border rounded-2" />
                             </CCol>
-                            <CCol md={6}>
-                                <label className="fw-semibold">Discount</label>
-                                <CFormInput disabled value={product.discount || ''} className="border rounded-2" />
-                            </CCol>
-                        </CRow>
-
-                        <CRow className="mb-3">
-                            <CCol md={6}>
+                            <CCol md={4}>
                                 <label className="fw-semibold">Ngày hết hạn</label>
                                 <CFormInput disabled value={product.expiryDate || ''} className="border rounded-2" />
                             </CCol>
-                            <CCol md={6}>
+                            <CCol md={4}>
                                 <label className="fw-semibold">Giảm giá</label>
                                 <CFormInput
                                     disabled

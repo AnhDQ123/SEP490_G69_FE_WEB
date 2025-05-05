@@ -38,13 +38,13 @@ const OrderDetail = () => {
                 <CRow>
                     <CCol md={6}>
                         <p><strong>Người mua:</strong> {order.ownerName || 'N/A'}</p>
-                        <p><strong>SĐT:</strong> {order.ownerPhone || 'N/A'}</p>
+                        <p><strong>SĐT:</strong> {order.phone || 'N/A'}</p>
                         <p><strong>Ngày đặt:</strong> {order.createdAt?.slice(0, 10) || 'N/A'}</p>
                         <p><strong>Trạng thái:</strong> {order.status || 'N/A'}</p>
                     </CCol>
                     <CCol md={6}>
                         <p><strong>Cửa hàng:</strong> {order.shopName || 'N/A'}</p>
-                        <p><strong>Tổng tiền:</strong> {order.total?.toLocaleString('vi-VN') || 0} đ</p>
+                        <p><strong>Tổng tiền:</strong> {order.total?.toLocaleString('vi-VN')}đ</p>
                         <p><strong>Phí ship: </strong> {order.shippingFee?.toLocaleString('vi-VN')}đ</p>
                         <p><strong>Phương thức thanh toán:</strong> {order.paymentMethodName}</p>
                     </CCol>
@@ -56,8 +56,7 @@ const OrderDetail = () => {
                                 <CTableHead>
                                     <CTableRow>
                                         <CTableHeaderCell style={{ width: '66.66%' }}>Tên sản phẩm</CTableHeaderCell>
-                                        <CTableHeaderCell style={{ width: '16.66%' }}>Số lượng</CTableHeaderCell>
-                                        <CTableHeaderCell style={{ width: '16.66%' }}>Đơn giá</CTableHeaderCell>
+                                        <CTableHeaderCell style={{ width: '34.33%' }}>Số lượng</CTableHeaderCell>
                                     </CTableRow>
                                 </CTableHead>
                                 <CTableBody>
@@ -66,9 +65,6 @@ const OrderDetail = () => {
                                             <CTableRow key={index}>
                                                 <CTableDataCell>{item.productName}</CTableDataCell>
                                                 <CTableDataCell>{item.quantity}</CTableDataCell>
-                                                <CTableDataCell>
-                                                    {item.total ? item.total.toLocaleString('vi-VN') + ' đ' : '0 đ'}
-                                                </CTableDataCell>
                                             </CTableRow>
                                         ))
                                     ) : (

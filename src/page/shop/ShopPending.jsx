@@ -145,25 +145,24 @@ const ShopPending = () => {
                 </CRow>
                 <CRow className="mb-3">
 
-                    <CCol md={4}>
+                    <CCol md={3}>
                         <label>Giờ hoạt động</label>
                         <CFormInput disabled value={shop.openTime}/>
                     </CCol>
-                    <CCol md={4}>
+                    <CCol md={3}>
                         <label>Giờ đóng cửa</label>
                         <CFormInput disabled value={shop.closeTime}/>
                     </CCol>
-                    <CCol md={4}>
+                    <CCol md={3}>
                         <label>Trạng thái</label>
                         <CFormInput disabled value={shop.isActive}/>
                     </CCol>
-                </CRow>
-                <CRow className="mb-3">
-                    <CCol md={4}>
+                    <CCol md={3}>
                         <label>Mã số thuế</label>
                         <CFormInput disabled value={shop.owner.profile.taxCode}/>
                     </CCol>
                 </CRow>
+
 
                 <CRow className="mb-3">
                     <CCol md={6} className="d-flex align-items-center">

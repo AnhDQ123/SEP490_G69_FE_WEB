@@ -6,7 +6,10 @@ import {
     CBadge, CSpinner, CModal, CModalHeader, CModalBody, CModalFooter,
     CForm, CFormTextarea, CFormSelect
 } from "@coreui/react";
-import { useViewReturnOrderQuery } from "../../service/orderService";
+import { useViewReturnOrderQuery, useAcceptReturnOrderMutation,
+    useRejectReturnOrderMutation } from "../../service/orderService";
+import { BASE_URL } from "../../utils/constant";
+
 
 const ReportPending = () => {
     const { id } = useParams();
@@ -16,6 +19,10 @@ const ReportPending = () => {
     const [solution, setSolution] = useState("");
     const [assignee, setAssignee] = useState("");
     const [successModalVisible, setSuccessModalVisible] = useState(false);
+    const [acceptReturnOrder] = useAcceptReturnOrderMutation();
+    const [rejectReturnOrder] = useRejectReturnOrderMutation();
+    const [selectedImage, setSelectedImage] = useState(null);
+
 
     const { order, image } = returnOrderData || {};
     const status = order?.status;
@@ -34,14 +41,28 @@ const ReportPending = () => {
     const handleOpenModal = () => setModalVisible(true);
     const handleCloseModal = () => setModalVisible(false);
 
-    const handleSubmit = () => {
-        console.log("Giải quyết tranh chấp:", { solution, assignee });
-        handleCloseModal();
-        setSuccessModalVisible(true);
-        setTimeout(() => {
-            setSuccessModalVisible(false);
-        }, 2000);
+    const handleSubmit = async () => {
+        try {
+            if (assignee === "shop" || assignee === "shipper") {
+                await acceptReturnOrder(id).unwrap();
+            } else if (assignee === "user") {
+                await rejectReturnOrder(id).unwrap();
+            } else {
+                alert("Vui lòng chọn người xử lý.");
+                return;
+            }
+
+            handleCloseModal();
+            setSuccessModalVisible(true);
+            setTimeout(() => {
+                setSuccessModalVisible(false);
+            }, 2000);
+        } catch (error) {
+            console.error("Lỗi khi xử lý hoàn hàng:", error);
+            alert("❌ Có lỗi xảy ra khi xử lý yêu cầu.");
+        }
     };
+
 
 
     return (
@@ -107,9 +128,22 @@ const ReportPending = () => {
                                     <strong>Hình ảnh:</strong>
                                     <div className="d-flex gap-2 mt-2">
                                         {image?.length > 0 ? (
-                                            image.map((src, index) => (
-                                                <CImage key={index} src={src} width={70} thumbnail />
+                                            image.map((img, index) => (
+                                                <CImage
+                                                    key={index}
+                                                    src={img.url}
+                                                    width={70}
+                                                    thumbnail
+                                                    alt={`Ảnh ${index + 1}`}
+                                                    style={{ cursor: "pointer" }}
+                                                    onClick={() => setSelectedImage(img.url)}
+                                                    onError={(e) => {
+                                                        e.target.src = "/no-image.png";
+                                                    }}
+                                                />
                                             ))
+
+
                                         ) : (
                                             <div className="text-muted">Không có hình ảnh</div>
                                         )}
@@ -137,7 +171,7 @@ const ReportPending = () => {
                             <CTableRow>
                                 <CTableDataCell>{order?.shopName || 'Không xác định'}</CTableDataCell>
                                 <CTableDataCell>{order?.shopAddress || 'Không xác định'}</CTableDataCell>
-                                <CTableDataCell>Không xác định</CTableDataCell> {/* Không có số điện thoại shop trong API */}
+                                <CTableDataCell>{order?.shopPhone || 'Không xác định'}</CTableDataCell> {/* Không có số điện thoại shop trong API */}
                             </CTableRow>
                         </CTableBody>
                     </CTable>
@@ -176,10 +210,10 @@ const ReportPending = () => {
                     <CForm>
                         <div className="mb-3">
                             <CFormTextarea
-                                label="Cách xử lý"
+                                label="Lý do"
                                 value={solution}
                                 onChange={(e) => setSolution(e.target.value)}
-                                placeholder="Nhập cách xử lý"
+                                placeholder="Nhập lý do"
                             />
                         </div>
                         <div className="mb-3">
@@ -210,6 +244,13 @@ const ReportPending = () => {
                 <CModalFooter>
                     <CButton color="primary" onClick={() => setSuccessModalVisible(false)}>OK</CButton>
                 </CModalFooter>
+            </CModal>
+
+            <CModal visible={!!selectedImage} onClose={() => setSelectedImage(null)}>
+                <CModalHeader onClose={() => setSelectedImage(null)}>Xem ảnh</CModalHeader>
+                <CModalBody className="d-flex justify-content-center">
+                    <CImage src={selectedImage} fluid alt="Ảnh phóng to" />
+                </CModalBody>
             </CModal>
 
         </div>

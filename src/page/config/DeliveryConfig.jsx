@@ -210,7 +210,7 @@ const DeliveryConfig = () => {
                                 <CTableRow key={item.id}>
                                     <CTableDataCell>{item.name}</CTableDataCell>
                                     <CTableDataCell>{item.description}</CTableDataCell>
-                                    <CTableDataCell>{item.fee}</CTableDataCell>
+                                    <CTableDataCell>{item.fee.toLocaleString(('vi-VN'))}đ</CTableDataCell>
                                     <CTableDataCell>{new Date(item.createdAt).toLocaleString()}</CTableDataCell>
                                     <CTableDataCell>
                                         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -220,7 +220,7 @@ const DeliveryConfig = () => {
                                                 onClick={() => handleEditModal(item)}
                                                 style={{ width: '45%' }}
                                             >
-                                                Chỉnh sửa
+                                                Sửa
                                             </CButton>
                                             <CButton
                                                 size="sm"

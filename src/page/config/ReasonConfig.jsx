@@ -187,7 +187,7 @@ const ReasonConfig = () => {
                                                 onClick={() => handleEditModal(item)}
                                                 style={{ width: '45%' }}
                                             >
-                                                Chỉnh sửa
+                                                Sửa
                                             </CButton>
                                             <CButton
                                                 size="sm"

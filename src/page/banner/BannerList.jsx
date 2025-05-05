@@ -23,6 +23,7 @@ import {
     verticalListSortingStrategy
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import {useGetShopByIdQuery} from "../../service/shopService.js";
 
 const BannerList = () => {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -40,6 +41,15 @@ const BannerList = () => {
     const [inactiveBanner] = useInactiveBannerMutation(); // API for deactivating banners
 
     const banners = data?.content || [];
+
+    const ShopNameCell = ({ id }) => {
+        const { data, isLoading, isError } = useGetShopByIdQuery(id);
+
+        if (isLoading) return <span>Đang tải...</span>;
+        if (isError || !data) return <span>Không xác định</span>;
+
+        return <span>{data.name || 'Không tên'}</span>;
+    };
 
     const confirmDelete = (id) => {
         setSelectedBanner(id);
@@ -90,7 +100,6 @@ const BannerList = () => {
                     <CTable striped hover responsive>
                         <CTableHead>
                             <CTableRow>
-                                <CTableHeaderCell>Thứ tự banner</CTableHeaderCell>
                                 <CTableHeaderCell>Chủ banner</CTableHeaderCell>
                                 <CTableHeaderCell>Ảnh</CTableHeaderCell>
                                 <CTableHeaderCell>Trạng thái</CTableHeaderCell>
@@ -102,8 +111,9 @@ const BannerList = () => {
                                 <SortableContext items={banners.map(b => b.id)} strategy={verticalListSortingStrategy}>
                                     {banners.map((banner) => (
                                         <CTableRow key={banner.id}>
-                                            <CTableDataCell>{`Banner #${banner.id}`}</CTableDataCell>
-                                            <CTableDataCell>{banner.ownerId?.name || '---'}</CTableDataCell>
+                                            <CTableDataCell>
+                                                {banner.ownerId ? <ShopNameCell shopId={banner.ownerId} /> : '---'}
+                                            </CTableDataCell>
                                             <CTableDataCell>
                                                 {banner.url && (
                                                     <img src={banner.url} alt="banner" width={80} height={60} style={{ objectFit: 'cover' }} />

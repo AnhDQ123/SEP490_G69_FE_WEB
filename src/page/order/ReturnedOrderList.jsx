@@ -138,10 +138,11 @@ const ReturnedOrderList = () => {
                                 <CTableDataCell>{report.createdAt}</CTableDataCell>
                                 <CTableDataCell>{report.value?.toLocaleString('vi-VN')} đ</CTableDataCell>
                                 <CTableDataCell>
-                                    <CButton color="info" onClick={() => navigate(`/report-pending/${report.id}`)}>
+                                    <CButton color="info" onClick={() => navigate(`/report-pending/${report.reportItemId}`)}>
                                         Xem chi tiết
                                     </CButton>
                                 </CTableDataCell>
+
                             </CTableRow>
                         ))}
                     </CTableBody>
