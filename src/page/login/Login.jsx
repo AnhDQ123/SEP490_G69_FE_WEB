@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CButton, CForm, CFormInput, CFormLabel, CContainer, CRow, CCol, CCard, CCardBody, CCardHeader, CCardFooter, CModal, CModalHeader, CModalBody, CModalFooter } from '@coreui/react';
 import { useLoginMutation } from "../../service/loginService.js";
 import * as jwt_decode from 'jwt-decode';
+import {BASE_URL} from "../../utils/constant.js";
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -10,12 +11,14 @@ const Login = () => {
     const [showModal, setShowModal] = useState(false);  // State để điều khiển modal
     const navigate = useNavigate();
     const [login, { isLoading, error }] = useLoginMutation(); // Hook để gọi mutation
+    const [errorModal, setErrorModal] = useState({ visible: false, message: '' });
+    const [loginError, setLoginError] = useState('');
 
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
             // Gọi API đăng nhập và nhận token JWT
-            const response = await fetch(`http://localhost:8080/api/auth/login`, {
+            const response = await fetch(`${BASE_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -25,12 +28,6 @@ const Login = () => {
                     password,
                 }),
             }); // Kiểm tra phản hồi từ API
-
-            // Kiểm tra nếu token được trả về không phải null hoặc undefined
-            if (!response.ok) {
-                alert('Không thể đăng nhập. Vui lòng thử lại!');
-                return;
-            }
 
             // Lưu token vào localStorage
             const textToken = await response.text();
@@ -43,10 +40,18 @@ const Login = () => {
             localStorage.setItem('userId', decodedToken.userId);
 
             // Kiểm tra vai trò người dùng từ token
-            if (decodedToken.role && decodedToken.role.toLowerCase() !== 'operator') {
-                alert('Bạn không có quyền đăng nhập! Chỉ người dùng có vai trò Operator mới có thể đăng nhập.');
+            if (decodedToken.status && decodedToken.status.toUpperCase() === 'INACTIVE') {
+                localStorage.removeItem('token');
+                setErrorModal({
+                    visible: true,
+                    message: 'Tài khoản người dùng đã bị chặn. Vui lòng liên hệ quản trị viên để biết thêm chi tiết.'
+                });
+                setTimeout(() => {
+                    setErrorModal({ visible: false, message: '' });
+                }, 2000);
                 return;
             }
+
 
             // Kiểm tra thời gian hết hạn của token
             const currentTime = Date.now() / 1000;  // Lấy thời gian hiện tại (giây)
@@ -66,7 +71,7 @@ const Login = () => {
 
         } catch (err) {
             console.error("Login error:", err);
-            alert('Đăng nhập thất bại! Vui lòng kiểm tra lại số điện thoại và mật khẩu.');
+            setLoginError('Số điện thoại hoặc mật khẩu không đúng.');
         }
     };
 
@@ -86,7 +91,10 @@ const Login = () => {
                                             id="phone"
                                             placeholder="Nhập số điện thoại"
                                             value={username}
-                                            onChange={(e) => setUsername(e.target.value)}
+                                            onChange={(e) =>{
+                                                setUsername(e.target.value);
+                                                setLoginError('');
+                                            }}
                                             required
                                         />
                                     </div>
@@ -97,9 +105,17 @@ const Login = () => {
                                             id="password"
                                             placeholder="Nhập mật khẩu"
                                             value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
+                                            onChange={(e) => {
+                                                setPassword(e.target.value);
+                                                setLoginError('');
+                                            }}
                                             required
                                         />
+                                        {loginError && (
+                                            <div style={{ color: 'red', marginTop: '4px', fontSize: '0.9rem' }}>
+                                                {loginError}
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="mb-3 text-center">
@@ -125,6 +141,8 @@ const Login = () => {
                     <CButton color="secondary" onClick={() => setShowModal(false)}>Đóng</CButton>
                 </CModalFooter>
             </CModal>
+
+
         </div>
     );
 };
