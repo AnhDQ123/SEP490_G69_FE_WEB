@@ -122,7 +122,8 @@ const DeliveryConfig = () => {
         setEditingDeliveryMethod(deliveryMethod);
         setNewItemName(deliveryMethod.name);
         setNewItemDescription(deliveryMethod.description);
-        setNewItemFee(deliveryMethod.fee);
+        setNewItemFee(deliveryMethod.fee.toString());
+        setNewItemFee(deliveryMethod.fee.toString());
         setNewItemPublished(deliveryMethod.status === 'ACTIVE');
         setEditErrorMessage('');
         setShowEditModal(true);
@@ -151,6 +152,7 @@ const DeliveryConfig = () => {
                 id: editingDeliveryMethod.id,
                 name: newItemName,
                 description: newItemDescription,
+
                 fee: parseInt(newItemFee.replace(/\./g, '')),
                 status: newItemPublished ? 'ACTIVE' : 'INACTIVE',
             };
